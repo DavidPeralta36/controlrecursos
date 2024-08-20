@@ -5,6 +5,16 @@
  */
 
 require('./bootstrap');
+import axios from 'axios'
+
+// Configuración global de Axios para incluir credenciales y token CSRF
+axios.defaults.withCredentials = true;
+const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+if (token) {
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+} else {
+    console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
+}
 
 window.Vue = require('vue');
 

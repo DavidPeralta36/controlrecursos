@@ -8,8 +8,10 @@
 
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
-
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <!-- Styles -->
+        <link href="{{ asset('css/login.css') }}" rel="stylesheet">
         <style>
             html, body {
                 background-color: #fff;
@@ -45,7 +47,15 @@
             }
 
             .title {
-                font-size: 84px;
+                font-size: 5vw;
+            }
+
+            .subtitle {
+                font-size: 2.5vw;
+            }
+
+            .txt{
+                font-size: 1vw;
             }
 
             .links > a {
@@ -79,9 +89,11 @@
                 </div>
             @endif
 
-            <div class="content">
-                <div class="title m-b-md">
-                    Laravel
+            <div class="container h-100 w-100 d-flex justify-content-start align-items-center p-5">
+                <div class="m-b-md">
+                    <p class="title">Sistema de control y monitoreo de recursos </p>
+                    <p class="subtitle">En tiempo real, en cualquier momento</p>
+                    <small>Inicia sesion para acceder a todas las funcionalidades</small>
                 </div>
             </div>
         </div>

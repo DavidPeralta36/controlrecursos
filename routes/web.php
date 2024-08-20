@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\HomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,3 +19,9 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+Route::get('/users', [HomeController::class,'getUsers']);
+
+Route::middleware('auth')->get('/user', function () {
+    return \App\User::all();
+});

@@ -84,7 +84,7 @@
             </div>
         </nav>
 
-        <main class="pageContainer">
+        <main class="pageContainer" >
             @yield('content')
         </main>
     </div>
