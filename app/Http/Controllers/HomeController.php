@@ -24,15 +24,6 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $users = User::all();
-
-        return view('home', ['users' => $users]);
-    }
-
-    public function getUsers(){
-        $users = User::all();
-
-
-        return response()->json($users);
+        return view('home');
     }
 }
