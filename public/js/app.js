@@ -1910,9 +1910,15 @@ module.exports = {
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   __name: 'HomePage',
+  props: {
+    user: Object,
+    fuentes: Array
+  },
   setup: function setup(__props) {
+    var props = __props;
     return {
-      __sfc: true
+      __sfc: true,
+      props: props
     };
   }
 });
@@ -1934,11 +1940,22 @@ var render = function render() {
   var _vm = this,
     _c = _vm._self._c,
     _setup = _vm._self._setupProxy;
+  return _vm._m(0);
+};
+var staticRenderFns = [function () {
+  var _vm = this,
+    _c = _vm._self._c,
+    _setup = _vm._self._setupProxy;
   return _c("div", {
     staticClass: "h-100 w-100"
-  }, [_vm._v("\n    HomePage\n")]);
-};
-var staticRenderFns = [];
+  }, [_c("div", {
+    staticClass: "mt-5"
+  }, [_c("p", {
+    staticClass: "h3"
+  }, [_vm._v("Reporte general por fuentes de financiamiento")]), _vm._v(" "), _c("div", {
+    staticClass: "container"
+  })])]);
+}];
 render._withStripped = true;
 
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\User;
+use App\models\fuentefinan;
 
 class HomeController extends Controller
 {
@@ -24,6 +24,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $fuentes = fuentefinan::all();
+        return view('home', compact('fuentes'));
     }
 }
