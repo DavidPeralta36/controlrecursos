@@ -22,3 +22,5 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 //Route::get('/users', [HomeController::class,'getUsers']);
 
+Route::get('/report', 'HomeController@getReport')->name('report');
+

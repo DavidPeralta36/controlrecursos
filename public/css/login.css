@@ -33,3 +33,9 @@ body {
     pointer-events: none;
     cursor: default;
 }
+
+@media screen and (max-height: 768px) {
+.mainContainer {
+    overflow: auto;
+}
+}
