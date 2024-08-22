@@ -38,6 +38,9 @@ class HomeController extends Controller
         $endDate = $request->endDate;
         $sources = $request->sources;
 
+        Log::info('beginingDate: ' . $beginingDate);
+        Log::info('endDate: ' . $endDate);
+
         $registros = registrobancos::whereBetween('fechas', [$beginingDate, $endDate]) 
             ->whereIn('idfuente', [1])
             ->get();

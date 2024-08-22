@@ -8,11 +8,11 @@
               <div class="d-flex ">
                 <div>
                   <label for="dpInicio" class="ml-1">Fecha de inicio</label>
-                  <VueDatePicker id="dpInicio" v-model="beginingDate" clereable/>
+                  <VueDatePicker v-model="beginingDate" id="dpInicio" clereable/>
                 </div>
                 <div class="mx-3">
                   <label for="dpFin" class="ml-1">Fecha de fin</label>
-                  <VueDatePicker id="dpFin" v-model="endDate" clereable/>
+                  <VueDatePicker v-model="endDate" id="dpFin" clereable/>
                 </div>
               </div>
               <div class="w-100 h-50 d-flex justify-content-end mt-1">
@@ -28,70 +28,7 @@
               <div v-if="!skeleton" class="w-100 mt-4">
                 <p class="nunito h5">Banco generado para el periodo con las fuentes de financiamiento seleccionadas:</p>
                 <div class="tableWrapper">
-                  <table class="table w-100">
-                    <thead>
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Fecha</th>
-                        <th scope="col">Forma de pago</th>
-                        <th scope="col">RFC</th>
-                        <th scope="col">Proveedor</th>
-                        <th scope="col">Factura</th>
-                        <th scope="col">Parcialidad</th>
-                        <th scope="col">Depositos</th>
-                        <th scope="col">Retiros</th>
-                        <th scope="col">Saldo</th>
-                        <th scope="col">R</th>
-                        <th scope="col">Partida</th>
-                        <th scope="col">Fecha factura</th>
-                        <th scope="col">Folio fiscal</th>
-                        <th scope="col">Tipo de adjudicación</th>
-                        <th scope="col">Num adjudicación o contrato</th>
-                        <th scope="col">Num suficiencia presupuestal</th>
-                        <th scope="col">Orden de servidor o compra</th>
-                        <th scope="col">CLC</th>
-                        <th scope="col">Poliza</th>
-                        <th scope="col">Numero cuenta proveedor</th>
-                        <th scope="col">Referencia bancaria</th>
-                        <th scope="col">CLUE</th>
-                        <th scope="col">Aplica en</th>
-                        <th scope="col">Nombre partida</th>
-                        <th scope="col">Mes de servicio</th>
-                        <th scope="col">Metodo de pago</th>
-                      </tr>
-                    </thead>
-                    <tbody class="tableBody nunito">
-                      <tr v-for="r in registros" :key="r.id">
-                        <th scope="row">{{ r.id }}</th>
-                        <td>{{r.fechas}}</td>
-                        <td>{{r.mes}}</td>
-                        <td>{{r.mes}}</td>
-                        <td>{{ r.proveedor }}</td>
-                        <td>{{ r.factura }}</td>
-                        <td>{{ r.parcial }}</td>
-                        <td>{{ r.depositos }}</td>
-                        <td>{{ r.retiros }}</td>
-                        <td>{{ r.saldo }}</td>
-                        <td>{{ r.r }}</td>
-                        <td>{{ r.partida }}</td>
-                        <td>{{ r.fecha_factura }}</td>
-                        <td>{{ r.folio_fiscal }}</td>
-                        <td>{{ r.tipo_adjudicacion }}</td>
-                        <td>{{ r.num_adj_contrato }}</td>
-                        <td>{{ r.num_suficiencia_presupuestal }}</td>
-                        <td>{{ r.orden_servocio_compra }}</td>
-                        <td>{{ r.clc }}</td>
-                        <td>{{ r.poliza }}</td>
-                        <td>{{ r.numero_cuenta_proveedor }}</td>
-                        <td>{{ r.referencia_bancaria }}</td>
-                        <td>{{ r.clue }}</td>
-                        <td>{{ r.nombre_clue }}</td>
-                        <td>{{ r.nombrepartida }}</td>
-                        <td>{{ r.mes_servicio }}</td>
-                        <td>{{ r.metodo_pago }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  
                 </div>
               </div>
             </div>
@@ -102,8 +39,8 @@
 import { ref, defineProps } from 'vue';
 import '../../sass/app.scss';
 import SourcePicker from './homepageComponents/sourcePicker.vue';
-import { VueDatePicker } from '@mathieustan/vue-datepicker';
-import '@mathieustan/vue-datepicker/dist/vue-datepicker.min.css';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 
 const props = defineProps({
   user: Object,
@@ -134,6 +71,7 @@ const handleGenReport = async () => {
       }
     });
     registros.value = response.data;
+    console.log(registros.value);
   }catch(e){
     console.log(e);
   }

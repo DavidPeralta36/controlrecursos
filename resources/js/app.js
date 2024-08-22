@@ -5,7 +5,8 @@
  */
 
 require('./bootstrap');
-import axios from 'axios'
+import axios from 'axios';
+import { createApp } from 'vue'; // Importar createApp desde Vue 3
 
 // Configuración global de Axios para incluir credenciales y token CSRF
 axios.defaults.withCredentials = true;
@@ -16,26 +17,15 @@ if (token) {
     console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
 }
 
-window.Vue = require('vue');
+// Cargar los componentes de Vue (versión Vue 3)
+import HomePage from './components/HomePage.vue'; // Importa tu componente
 
-/**
- * The following block of code may be used to automatically register your
- * Vue components. It will recursively scan this directory for the Vue
- * components and automatically register them with their "basename".
- *
- * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
- */
-
-// const files = require.context('./', true, /\.vue$/i);
-// files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
-Vue.component('home-page', require('./components/HomePage.vue').default);
-
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
-
-const app = new Vue({
-    el: '#app',
+// Crear la instancia de la aplicación con Vue 3
+const app = createApp({
+    components: {
+        'home-page': HomePage // Registra tu componente
+    }
 });
+
+// Montar la aplicación a un elemento específico
+app.mount('#app');
