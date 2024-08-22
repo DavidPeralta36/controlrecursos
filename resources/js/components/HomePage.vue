@@ -25,87 +25,70 @@
                 <img src="../../../public/assets/vacio.png" alt="vacio" class="img"/>
                 <p class="font-weight-bold nunito font-italic h5 text-center">Nada por aquí todavía...</p>
               </div> 
-              <div class="w-100 mt-4">
-                <p class="nunito h5">Banco generado para el periodo {{ beginingDate.toLocaleDateString() }} al {{ endDate.toLocaleDateString() }} con las fuentes de financiamiento seleccionadas:</p>
+              <div v-if="!skeleton" class="w-100 mt-4">
+                <p class="nunito h5">Banco generado para el periodo con las fuentes de financiamiento seleccionadas:</p>
                 <div class="tableWrapper">
                   <table class="table w-100">
                     <thead>
                       <tr>
                         <th scope="col">#</th>
-                        <th scope="col">First</th>
-                        <th scope="col">Last</th>
-                        <th scope="col">Handle</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Forma de pago</th>
+                        <th scope="col">RFC</th>
+                        <th scope="col">Proveedor</th>
+                        <th scope="col">Factura</th>
+                        <th scope="col">Parcialidad</th>
+                        <th scope="col">Depositos</th>
+                        <th scope="col">Retiros</th>
+                        <th scope="col">Saldo</th>
+                        <th scope="col">R</th>
+                        <th scope="col">Partida</th>
+                        <th scope="col">Fecha factura</th>
+                        <th scope="col">Folio fiscal</th>
+                        <th scope="col">Tipo de adjudicación</th>
+                        <th scope="col">Num adjudicación o contrato</th>
+                        <th scope="col">Num suficiencia presupuestal</th>
+                        <th scope="col">Orden de servidor o compra</th>
+                        <th scope="col">CLC</th>
+                        <th scope="col">Poliza</th>
+                        <th scope="col">Numero cuenta proveedor</th>
+                        <th scope="col">Referencia bancaria</th>
+                        <th scope="col">CLUE</th>
+                        <th scope="col">Aplica en</th>
+                        <th scope="col">Nombre partida</th>
+                        <th scope="col">Mes de servicio</th>
+                        <th scope="col">Metodo de pago</th>
                       </tr>
                     </thead>
                     <tbody class="tableBody nunito">
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">2</th>
-                        <td>Jacob</td>
-                        <td>Thornton</td>
-                        <td>@fat</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">3</th>
-                        <td colspan="2">Larry the Bird</td>
-                        <td>@twitter</td>
-                      </tr>
-                      <!-- Más filas aquí -->
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">2</th>
-                        <td>Jacob</td>
-                        <td>Thornton</td>
-                        <td>@fat</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">3</th>
-                        <td colspan="2">Larry the Bird</td>
-                        <td>@twitter</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">2</th>
-                        <td>Jacob</td>
-                        <td>Thornton</td>
-                        <td>@fat</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">3</th>
-                        <td colspan="2">Larry the Bird</td>
-                        <td>@twitter</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">2</th>
-                        <td>Jacob</td>
-                        <td>Thornton</td>
-                        <td>@fat</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">3</th>
-                        <td colspan="2">Larry the Bird</td>
-                        <td>@twitter</td>
+                      <tr v-for="r in registros" :key="r.id">
+                        <th scope="row">{{ r.id }}</th>
+                        <td>{{r.fechas}}</td>
+                        <td>{{r.mes}}</td>
+                        <td>{{r.mes}}</td>
+                        <td>{{ r.proveedor }}</td>
+                        <td>{{ r.factura }}</td>
+                        <td>{{ r.parcial }}</td>
+                        <td>{{ r.depositos }}</td>
+                        <td>{{ r.retiros }}</td>
+                        <td>{{ r.saldo }}</td>
+                        <td>{{ r.r }}</td>
+                        <td>{{ r.partida }}</td>
+                        <td>{{ r.fecha_factura }}</td>
+                        <td>{{ r.folio_fiscal }}</td>
+                        <td>{{ r.tipo_adjudicacion }}</td>
+                        <td>{{ r.num_adj_contrato }}</td>
+                        <td>{{ r.num_suficiencia_presupuestal }}</td>
+                        <td>{{ r.orden_servocio_compra }}</td>
+                        <td>{{ r.clc }}</td>
+                        <td>{{ r.poliza }}</td>
+                        <td>{{ r.numero_cuenta_proveedor }}</td>
+                        <td>{{ r.referencia_bancaria }}</td>
+                        <td>{{ r.clue }}</td>
+                        <td>{{ r.nombre_clue }}</td>
+                        <td>{{ r.nombrepartida }}</td>
+                        <td>{{ r.mes_servicio }}</td>
+                        <td>{{ r.metodo_pago }}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -129,7 +112,8 @@ const props = defineProps({
 const beginingDate = ref(new Date());
 const endDate = ref(new Date());
 const selectedSources = ref([]);
-const skeleton = ref(false);
+const skeleton = ref(true);
+const registros = ref([]);
 
 const handleSelect = (source) => {
   if (selectedSources.value.includes(source)) {
@@ -139,24 +123,17 @@ const handleSelect = (source) => {
   }
 }
 
-const handleEndDate = () => {
-  if(endDate.value < beginingDate.value){
-    alert("La fecha de fin no puede ser menor a la de inicio");
-  }
-}
-
 const handleGenReport = async () => {
-  console.log("Generando reporte");
-
+  skeleton.value = false;
   try{
     const response = await axios.get('/report', {
       params: {
-        beginingDate: "beginingDate.value.toISOString()",
-        endDate: "endDate.value.toISOString()",
+        beginingDate: beginingDate.value,
+        endDate: endDate.value,
         sources: selectedSources.value.map(s => s.id)
       }
     });
-    console.log(response);
+    registros.value = response.data;
   }catch(e){
     console.log(e);
   }

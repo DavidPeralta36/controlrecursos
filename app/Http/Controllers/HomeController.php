@@ -32,9 +32,17 @@ class HomeController extends Controller
 
     public function getReport(Request $request)
     {
-        Log::info('se disparo el metodo getReport');
+        //Log::info('se disparo el metodo getReport');
         
-        //Return ok message
-        return response()->json(['status' => 'bad request']);
+        $beginingDate = $request->beginingDate;
+        $endDate = $request->endDate;
+        $sources = $request->sources;
+
+        $registros = registrobancos::whereBetween('fechas', [$beginingDate, $endDate]) 
+            ->whereIn('idfuente', [1])
+            ->get();
+
+        
+        return response()->json($registros);
     }
 }

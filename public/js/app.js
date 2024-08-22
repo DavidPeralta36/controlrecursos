@@ -1992,7 +1992,8 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     var beginingDate = Object(vue__WEBPACK_IMPORTED_MODULE_0__["ref"])(new Date());
     var endDate = Object(vue__WEBPACK_IMPORTED_MODULE_0__["ref"])(new Date());
     var selectedSources = Object(vue__WEBPACK_IMPORTED_MODULE_0__["ref"])([]);
-    var skeleton = Object(vue__WEBPACK_IMPORTED_MODULE_0__["ref"])(false);
+    var skeleton = Object(vue__WEBPACK_IMPORTED_MODULE_0__["ref"])(true);
+    var registros = Object(vue__WEBPACK_IMPORTED_MODULE_0__["ref"])([]);
     var handleSelect = function handleSelect(source) {
       if (selectedSources.value.includes(source)) {
         selectedSources.value = selectedSources.value.filter(function (s) {
@@ -2002,24 +2003,19 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
         selectedSources.value.push(source);
       }
     };
-    var handleEndDate = function handleEndDate() {
-      if (endDate.value < beginingDate.value) {
-        alert("La fecha de fin no puede ser menor a la de inicio");
-      }
-    };
     var handleGenReport = /*#__PURE__*/function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
         var response;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
-              console.log("Generando reporte");
+              skeleton.value = false;
               _context.prev = 1;
               _context.next = 4;
               return axios.get('/report', {
                 params: {
-                  beginingDate: "beginingDate.value.toISOString()",
-                  endDate: "endDate.value.toISOString()",
+                  beginingDate: beginingDate.value,
+                  endDate: endDate.value,
                   sources: selectedSources.value.map(function (s) {
                     return s.id;
                   })
@@ -2027,7 +2023,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               });
             case 4:
               response = _context.sent;
-              console.log(response);
+              registros.value = response.data;
               _context.next = 11;
               break;
             case 8:
@@ -2051,8 +2047,8 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       endDate: endDate,
       selectedSources: selectedSources,
       skeleton: skeleton,
+      registros: registros,
       handleSelect: handleSelect,
-      handleEndDate: handleEndDate,
       handleGenReport: handleGenReport,
       SourcePicker: _homepageComponents_sourcePicker_vue__WEBPACK_IMPORTED_MODULE_2__["default"],
       VueDatePicker: _mathieustan_vue_datepicker__WEBPACK_IMPORTED_MODULE_3__["VueDatePicker"]
@@ -2176,21 +2172,31 @@ var render = function render() {
     }
   }), _vm._v(" "), _c("p", {
     staticClass: "font-weight-bold nunito font-italic h5 text-center"
-  }, [_vm._v("Nada por aquí todavía...")])]) : _vm._e(), _vm._v(" "), _c("div", {
+  }, [_vm._v("Nada por aquí todavía...")])]) : _vm._e(), _vm._v(" "), !_setup.skeleton ? _c("div", {
     staticClass: "w-100 mt-4"
   }, [_c("p", {
     staticClass: "nunito h5"
-  }, [_vm._v("Banco generado para el periodo " + _vm._s(_setup.beginingDate.toLocaleDateString()) + " al " + _vm._s(_setup.endDate.toLocaleDateString()) + " con las fuentes de financiamiento seleccionadas:")]), _vm._v(" "), _vm._m(0)])])], 1)]);
+  }, [_vm._v("Banco generado para el periodo con las fuentes de financiamiento seleccionadas:")]), _vm._v(" "), _c("div", {
+    staticClass: "tableWrapper"
+  }, [_c("table", {
+    staticClass: "table w-100"
+  }, [_vm._m(0), _vm._v(" "), _c("tbody", {
+    staticClass: "tableBody nunito"
+  }, _vm._l(_setup.registros, function (r) {
+    return _c("tr", {
+      key: r.id
+    }, [_c("th", {
+      attrs: {
+        scope: "row"
+      }
+    }, [_vm._v(_vm._s(r.id))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.fechas))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.mes))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.mes))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.proveedor))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.factura))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.parcial))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.depositos))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.retiros))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.saldo))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.r))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.partida))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.fecha_factura))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.folio_fiscal))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.tipo_adjudicacion))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.num_adj_contrato))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.num_suficiencia_presupuestal))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.orden_servocio_compra))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.clc))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.poliza))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.numero_cuenta_proveedor))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.referencia_bancaria))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.clue))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.nombre_clue))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.nombrepartida))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.mes_servicio))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(r.metodo_pago))])]);
+  }), 0)])])]) : _vm._e()])], 1)]);
 };
 var staticRenderFns = [function () {
   var _vm = this,
     _c = _vm._self._c,
     _setup = _vm._self._setupProxy;
-  return _c("div", {
-    staticClass: "tableWrapper"
-  }, [_c("table", {
-    staticClass: "table w-100"
-  }, [_c("thead", [_c("tr", [_c("th", {
+  return _c("thead", [_c("tr", [_c("th", {
     attrs: {
       scope: "col"
     }
@@ -2198,81 +2204,107 @@ var staticRenderFns = [function () {
     attrs: {
       scope: "col"
     }
-  }, [_vm._v("First")]), _vm._v(" "), _c("th", {
+  }, [_vm._v("Fecha")]), _vm._v(" "), _c("th", {
     attrs: {
       scope: "col"
     }
-  }, [_vm._v("Last")]), _vm._v(" "), _c("th", {
+  }, [_vm._v("Forma de pago")]), _vm._v(" "), _c("th", {
     attrs: {
       scope: "col"
     }
-  }, [_vm._v("Handle")])])]), _vm._v(" "), _c("tbody", {
-    staticClass: "tableBody nunito"
-  }, [_c("tr", [_c("th", {
+  }, [_vm._v("RFC")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("1")]), _vm._v(" "), _c("td", [_vm._v("Mark")]), _vm._v(" "), _c("td", [_vm._v("Otto")]), _vm._v(" "), _c("td", [_vm._v("@mdo")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Proveedor")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("2")]), _vm._v(" "), _c("td", [_vm._v("Jacob")]), _vm._v(" "), _c("td", [_vm._v("Thornton")]), _vm._v(" "), _c("td", [_vm._v("@fat")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Factura")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("3")]), _vm._v(" "), _c("td", {
+  }, [_vm._v("Parcialidad")]), _vm._v(" "), _c("th", {
     attrs: {
-      colspan: "2"
+      scope: "col"
     }
-  }, [_vm._v("Larry the Bird")]), _vm._v(" "), _c("td", [_vm._v("@twitter")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Depositos")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("1")]), _vm._v(" "), _c("td", [_vm._v("Mark")]), _vm._v(" "), _c("td", [_vm._v("Otto")]), _vm._v(" "), _c("td", [_vm._v("@mdo")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Retiros")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("2")]), _vm._v(" "), _c("td", [_vm._v("Jacob")]), _vm._v(" "), _c("td", [_vm._v("Thornton")]), _vm._v(" "), _c("td", [_vm._v("@fat")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Saldo")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("3")]), _vm._v(" "), _c("td", {
+  }, [_vm._v("R")]), _vm._v(" "), _c("th", {
     attrs: {
-      colspan: "2"
+      scope: "col"
     }
-  }, [_vm._v("Larry the Bird")]), _vm._v(" "), _c("td", [_vm._v("@twitter")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Partida")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("1")]), _vm._v(" "), _c("td", [_vm._v("Mark")]), _vm._v(" "), _c("td", [_vm._v("Otto")]), _vm._v(" "), _c("td", [_vm._v("@mdo")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Fecha factura")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("2")]), _vm._v(" "), _c("td", [_vm._v("Jacob")]), _vm._v(" "), _c("td", [_vm._v("Thornton")]), _vm._v(" "), _c("td", [_vm._v("@fat")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Folio fiscal")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("3")]), _vm._v(" "), _c("td", {
+  }, [_vm._v("Tipo de adjudicación")]), _vm._v(" "), _c("th", {
     attrs: {
-      colspan: "2"
+      scope: "col"
     }
-  }, [_vm._v("Larry the Bird")]), _vm._v(" "), _c("td", [_vm._v("@twitter")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Num adjudicación o contrato")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("1")]), _vm._v(" "), _c("td", [_vm._v("Mark")]), _vm._v(" "), _c("td", [_vm._v("Otto")]), _vm._v(" "), _c("td", [_vm._v("@mdo")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Num suficiencia presupuestal")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("2")]), _vm._v(" "), _c("td", [_vm._v("Jacob")]), _vm._v(" "), _c("td", [_vm._v("Thornton")]), _vm._v(" "), _c("td", [_vm._v("@fat")])]), _vm._v(" "), _c("tr", [_c("th", {
+  }, [_vm._v("Orden de servidor o compra")]), _vm._v(" "), _c("th", {
     attrs: {
-      scope: "row"
+      scope: "col"
     }
-  }, [_vm._v("3")]), _vm._v(" "), _c("td", {
+  }, [_vm._v("CLC")]), _vm._v(" "), _c("th", {
     attrs: {
-      colspan: "2"
+      scope: "col"
     }
-  }, [_vm._v("Larry the Bird")]), _vm._v(" "), _c("td", [_vm._v("@twitter")])])])])]);
+  }, [_vm._v("Poliza")]), _vm._v(" "), _c("th", {
+    attrs: {
+      scope: "col"
+    }
+  }, [_vm._v("Numero cuenta proveedor")]), _vm._v(" "), _c("th", {
+    attrs: {
+      scope: "col"
+    }
+  }, [_vm._v("Referencia bancaria")]), _vm._v(" "), _c("th", {
+    attrs: {
+      scope: "col"
+    }
+  }, [_vm._v("CLUE")]), _vm._v(" "), _c("th", {
+    attrs: {
+      scope: "col"
+    }
+  }, [_vm._v("Aplica en")]), _vm._v(" "), _c("th", {
+    attrs: {
+      scope: "col"
+    }
+  }, [_vm._v("Nombre partida")]), _vm._v(" "), _c("th", {
+    attrs: {
+      scope: "col"
+    }
+  }, [_vm._v("Mes de servicio")]), _vm._v(" "), _c("th", {
+    attrs: {
+      scope: "col"
+    }
+  }, [_vm._v("Metodo de pago")])])]);
 }];
 render._withStripped = true;
 
