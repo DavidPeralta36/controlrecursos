@@ -5,7 +5,7 @@
             <hr/>
             <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>
             <div class="d-flex align-items-center">
-              <Popper placement="top-start" hover>
+              <Popper placement="top-start" hover openDelay="500">
                 <template #content>
                   <div class="tlpContent">
                     Cambia entre el tipo de busqueda para el reporte
@@ -40,15 +40,22 @@
                 <img src="../../../public/assets/vacio.png" alt="vacio" class="img"/>
                 <p class="font-weight-bold nunito font-italic h5 text-center">Nada por aquí todavía...</p>
               </div> 
-              <div v-if="!skeleton" class="w-100 mt-4">
+              <div v-if="!skeleton" class="w-100 my-4 pb-5">
                 <p class="nunito h5">Banco generado para el periodo con las fuentes de financiamiento seleccionadas:</p>
-                
+                <AgGridVue
+                  :rowData="registros"
+                  :columnDefs="colDefs"
+                  style="height: 500px"
+                  class="ag-theme-quartz"
+                >
+                </AgGridVue>
               </div>
             </div>
         </div>
         <Notifications position="bottom left" />
     </div>
 </template>
+
 <script setup>
 import { ref, defineProps } from 'vue';
 import '../../sass/app.scss';
@@ -60,6 +67,10 @@ import Toggle from '@vueform/toggle'
 import VueSelect from "vue-select";
 import "vue-select/dist/vue-select.css"
 import { Notifications, notify } from '@kyvg/vue3-notification';
+import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
+import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
+import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
+
 
 const props = defineProps({
   user: Object,
@@ -77,12 +88,39 @@ const skeleton = ref(true);
 const registros = ref([]);
 const flow = ref(['year', 'month', 'day']);
 const selectedSource = ref(null);
-
+const colDefs = ref([
+  { field: 'fechas', headerName: 'Fecha' },
+  { field: 'forma_pago', headerName: 'Forma de pago' },
+  { field: 'rfc', headerName: 'RFC' },
+  { field: 'proveedor', headerName: 'Proveedor' },
+  { field: 'factura', headerName: 'Factura' },
+  { field: 'parcial', headerName: 'Parcial' },
+  { field: 'depositos', headerName: 'Depositos' },
+  { field: 'retiros', headerName: 'Retiros' },
+  { field: 'saldo', headerName: 'Saldo' },
+  { field: 'partida', headerName: 'Partida' },
+  { field: 'fecha_factura', headerName: 'Fecha de factura' },
+  { field: 'folio_fiscal', headerName: 'Folio fiscal' },
+  { field: 'tipo_adjudicacion', headerName: 'Tipo de adjudicación' },
+  { field: 'num_adj_contrato', headerName: 'Numero de adjudicación o contrato' },
+  { field: 'orden_servicio_compra', headerName: 'Orden de servicio o compra' },
+  { field: 'num_suficiencia_presupuestal', headerName: 'Numero de suficiencia presupuestal' },
+  { field: 'clc', headerName: 'CLC' },
+  { field: 'poliza', headerName: 'Poliza' },
+  { field: 'numero_cuenta_proovedor', headerName: 'Numero de cuenta de proveedor' },
+  { field: 'referencia_bancaria', headerName: 'Referencia bancaria' },
+  { field: 'nombre_clue', headerName: 'CLUE' },
+  { field: 'nombrepartida', headerName: 'Aplica en' },
+  { field: 'mes_servicio', headerName: 'Mes de servicio' },
+  { field: 'metodo_pago', headerName: 'Metodo de pago' },
+  { field: 'id', headerName: 'ID' },
+  { field: 'mes', headerName: 'Mes' },
+  { field: 'ejercicio', headerName: 'Ejercicio' },
+]);
 const selectedPeriod = ref("2024");
 
 const handleSelect = (source) => {
   selectedSource.value = source.id;
-  console.log(source.id)
 }
 
 const handleDateChange = (modelData, field) => {
@@ -95,20 +133,33 @@ const handleDateChange = (modelData, field) => {
   }
 };
 
+const getReport = async () => {
+  const response = await axios.get('/report', {
+    params: {
+      beginingDate: dates.value.startDate,
+      endDate: dates.value.endDate,
+      source: selectedSource.value
+    }
+  });
+  registros.value = response.data;
+}
+
+const getReportByPeriod = async () => {
+  const response = await axios.get('/report_by_period', {
+    params: {
+      source: selectedSource.value,
+      period: selectedPeriod.value.ejercicio
+    }
+  });
+  registros.value = response.data;
+}
+
 const handleGenReport = async () => {
   if(rangeSearch.value){
     if(dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value){
       skeleton.value = false;
       try{
-        const response = await axios.get('/report', {
-          params: {
-            beginingDate: dates.value.startDate,
-            endDate: dates.value.endDate,
-            source: selectedSource.value
-          }
-        });
-        registros.value = response.data;
-        console.log(registros.value);
+        await getReport();
       }catch(e){
         console.log(e);
       }
@@ -126,15 +177,7 @@ const handleGenReport = async () => {
     if(selectedSource.value && selectedPeriod.value){
       skeleton.value = false;
       try{
-        console.log(selectedPeriod.value);
-        const response = await axios.get('/report_by_period', {
-          params: {
-            source: selectedSource.value,
-            period: selectedPeriod.value.ejercicio
-          }
-        });
-        registros.value = response.data;
-        console.log(registros.value);
+        await getReportByPeriod();
       }catch(e){
         console.log(e);
       }

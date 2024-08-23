@@ -30,6 +30,7 @@
         "@kyvg/vue3-notification": "^3.2.1",
         "@vueform/toggle": "^2.1.4",
         "@vuepic/vue-datepicker": "^9.0.2",
+        "ag-grid-vue3": "^32.1.0",
         "vue-select": "^4.0.0-beta.6",
         "vue3-popper": "^1.5.0"
     }
