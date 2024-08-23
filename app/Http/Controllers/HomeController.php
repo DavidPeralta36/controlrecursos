@@ -27,7 +27,9 @@ class HomeController extends Controller
     public function index()
     {
         $fuentes = fuentefinan::all();
-        return view('home', compact('fuentes'));
+        $periodos = registrobancos::select('ejercicio')->distinct()->get();
+
+        return view('home', compact('fuentes', 'periodos'));
     }
 
     public function getReport(Request $request)
@@ -43,6 +45,22 @@ class HomeController extends Controller
             ->get();
 
         
+        return response()->json($registros);
+    }
+
+    public function getReportByPeriod(Request $request)
+    {
+        $source = $request->source;
+        $period = $request->period;
+
+        Log::info('period: ' . $period);
+        Log::info('source: ' . $source);
+
+        
+        $registros = registrobancos::where('ejercicio', $period)
+        ->where('idfuente', $source) 
+        ->get();
+
         return response()->json($registros);
     }
 }

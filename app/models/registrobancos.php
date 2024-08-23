@@ -38,6 +38,7 @@ class registrobancos extends Model
         'nombre_partida',
         'mes_servicio',
         'metodo_pago',
-        'idfuente'
+        'idfuente',
+        'ejercicio'
     ];
 }

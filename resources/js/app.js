@@ -7,6 +7,7 @@
 require('./bootstrap');
 import axios from 'axios';
 import { createApp } from 'vue'; // Importar createApp desde Vue 3
+import Popper from "vue3-popper";
 
 // Configuración global de Axios para incluir credenciales y token CSRF
 axios.defaults.withCredentials = true;
@@ -26,6 +27,8 @@ const app = createApp({
         'home-page': HomePage // Registra tu componente,
     }
 });
+
+app.use(Popper);
 
 // Montar la aplicación a un elemento específico
 app.mount('#app');
