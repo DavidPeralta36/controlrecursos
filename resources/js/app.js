@@ -23,7 +23,7 @@ import HomePage from './components/HomePage.vue'; // Importa tu componente
 // Crear la instancia de la aplicación con Vue 3
 const app = createApp({
     components: {
-        'home-page': HomePage // Registra tu componente
+        'home-page': HomePage // Registra tu componente,
     }
 });
 
