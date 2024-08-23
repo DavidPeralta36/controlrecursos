@@ -46,6 +46,7 @@
               </div>
             </div>
         </div>
+        <Notifications position="bottom left" />
     </div>
 </template>
 <script setup>
@@ -58,6 +59,7 @@ import '@vueform/toggle/themes/default.css'
 import Toggle from '@vueform/toggle'
 import VueSelect from "vue-select";
 import "vue-select/dist/vue-select.css"
+import { Notifications, notify } from '@kyvg/vue3-notification';
 
 const props = defineProps({
   user: Object,
@@ -94,35 +96,57 @@ const handleDateChange = (modelData, field) => {
 };
 
 const handleGenReport = async () => {
-  skeleton.value = false;
   if(rangeSearch.value){
-    try{
-      const response = await axios.get('/report', {
-        params: {
-          beginingDate: dates.value.startDate,
-          endDate: dates.value.endDate,
-          source: selectedSource.value
-        }
-      });
-      registros.value = response.data;
-      console.log(registros.value);
-    }catch(e){
-      console.log(e);
+    if(dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value){
+      skeleton.value = false;
+      try{
+        const response = await axios.get('/report', {
+          params: {
+            beginingDate: dates.value.startDate,
+            endDate: dates.value.endDate,
+            source: selectedSource.value
+          }
+        });
+        registros.value = response.data;
+        console.log(registros.value);
+      }catch(e){
+        console.log(e);
+      }
+    }else{
+      notify({
+        title: 'Formulario incompleto',
+        text: 'Debe completar los campos de fecha de inicio, fin y fuente de financiamiento para generar el reporte', 
+        type: 'error',
+        duration: 5000,
+        speed: 1000,
+      })
     }
   }
   else{
-    try{
-      console.log(selectedPeriod.value);
-      const response = await axios.get('/report_by_period', {
-        params: {
-          source: selectedSource.value,
-          period: selectedPeriod.value.ejercicio
-        }
-      });
-      registros.value = response.data;
-      console.log(registros.value);
-    }catch(e){
-      console.log(e);
+    if(selectedSource.value && selectedPeriod.value){
+      skeleton.value = false;
+      try{
+        console.log(selectedPeriod.value);
+        const response = await axios.get('/report_by_period', {
+          params: {
+            source: selectedSource.value,
+            period: selectedPeriod.value.ejercicio
+          }
+        });
+        registros.value = response.data;
+        console.log(registros.value);
+      }catch(e){
+        console.log(e);
+      }
+    }
+    else{
+      notify({
+        title: 'Formulario incompleto',
+        text: 'Debe completar el campo fuente de financiamiento y el periodo para generar el reporte', 
+        type: 'error',
+        duration: 5000,
+        speed: 1000,
+      })
     }
   }
 }

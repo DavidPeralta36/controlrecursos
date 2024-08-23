@@ -53,10 +53,6 @@ class HomeController extends Controller
         $source = $request->source;
         $period = $request->period;
 
-        Log::info('period: ' . $period);
-        Log::info('source: ' . $source);
-
-        
         $registros = registrobancos::where('ejercicio', $period)
         ->where('idfuente', $source) 
         ->get();

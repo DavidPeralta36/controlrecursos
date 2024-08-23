@@ -8,6 +8,7 @@ require('./bootstrap');
 import axios from 'axios';
 import { createApp } from 'vue'; // Importar createApp desde Vue 3
 import Popper from "vue3-popper";
+import Notifications from '@kyvg/vue3-notification'
 
 // Configuración global de Axios para incluir credenciales y token CSRF
 axios.defaults.withCredentials = true;
@@ -29,6 +30,7 @@ const app = createApp({
 });
 
 app.use(Popper);
+app.use(Notifications);
 
 // Montar la aplicación a un elemento específico
 app.mount('#app');

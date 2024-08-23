@@ -1,6 +1,423 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./node_modules/@kyvg/vue3-notification/dist/index.es.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@kyvg/vue3-notification/dist/index.es.js ***!
+  \***************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Notifications: () => (/* binding */ pt),
+/* harmony export */   "default": () => (/* binding */ vt),
+/* harmony export */   notify: () => (/* binding */ D),
+/* harmony export */   useNotification: () => (/* binding */ ht)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+(function(){var o;"use strict";try{if(typeof document<"u"){var e=document.createElement("style");e.nonce=(o=document.head.querySelector("meta[property=csp-nonce]"))==null?void 0:o.content,e.appendChild(document.createTextNode(".vue-notification-group{display:block;position:fixed;z-index:5000}.vue-notification-wrapper{display:block;overflow:hidden;width:100%;margin:0;padding:0}.notification-title{font-weight:600}.vue-notification-template{display:block;box-sizing:border-box;background:white;text-align:left}.vue-notification{display:block;box-sizing:border-box;text-align:left;font-size:12px;padding:10px;margin:0 5px 5px;color:#fff;background:#44A4FC;border-left:5px solid #187FE7}.vue-notification.warn{background:#ffb648;border-left-color:#f48a06}.vue-notification.error{background:#E54D42;border-left-color:#b82e24}.vue-notification.success{background:#68CD86;border-left-color:#42a85f}.vn-fade-enter-active,.vn-fade-leave-active,.vn-fade-move{transition:all .5s}.vn-fade-enter-from,.vn-fade-leave-to{opacity:0}")),document.head.appendChild(e)}}catch(i){console.error("vite-plugin-css-injected-by-js",i)}})();
+
+const j = /* @__PURE__ */ new Map();
+class it {
+  constructor(n, o, a) {
+    this.remaining = o, this.callback = n, this.notifyItem = a, this.resume();
+  }
+  pause() {
+    clearTimeout(this.notifyItem.timer), this.remaining -= Date.now() - this.start;
+  }
+  resume() {
+    this.start = Date.now(), clearTimeout(this.notifyItem.timer), this.notifyItem.timer = setTimeout(this.callback, this.remaining);
+  }
+}
+function ot(t) {
+  return { all: t = t || /* @__PURE__ */ new Map(), on: function(n, o) {
+    var a = t.get(n);
+    a ? a.push(o) : t.set(n, [o]);
+  }, off: function(n, o) {
+    var a = t.get(n);
+    a && (o ? a.splice(a.indexOf(o) >>> 0, 1) : t.set(n, []));
+  }, emit: function(n, o) {
+    var a = t.get(n);
+    a && a.slice().map(function(s) {
+      s(o);
+    }), (a = t.get("*")) && a.slice().map(function(s) {
+      s(n, o);
+    });
+  } };
+}
+const b = ot(), T = "[-+]?[0-9]*.?[0-9]+", k = [
+  {
+    name: "px",
+    regexp: new RegExp(`^${T}px$`)
+  },
+  {
+    name: "%",
+    regexp: new RegExp(`^${T}%$`)
+  },
+  /**
+   * Fallback option
+   * If no suffix specified, assigning "px"
+   */
+  {
+    name: "px",
+    regexp: new RegExp(`^${T}$`)
+  }
+], at = (t) => {
+  if (t === "auto")
+    return {
+      type: t,
+      value: 0
+    };
+  for (let n = 0; n < k.length; n++) {
+    const o = k[n];
+    if (o.regexp.test(t))
+      return {
+        type: o.name,
+        value: parseFloat(t)
+      };
+  }
+  return {
+    type: "",
+    value: t
+  };
+}, rt = (t) => {
+  switch (typeof t) {
+    case "number":
+      return { type: "px", value: t };
+    case "string":
+      return at(t);
+    default:
+      return { type: "", value: t };
+  }
+}, H = {
+  x: /* @__PURE__ */ new Set(["left", "center", "right"]),
+  y: /* @__PURE__ */ new Set(["top", "bottom"])
+}, st = ((t) => () => t++)(0), lt = (t) => typeof t != "string" ? [] : t.split(/\s+/gi).filter(Boolean), ct = (t) => {
+  typeof t == "string" && (t = lt(t));
+  let n = null, o = null;
+  return t.forEach((a) => {
+    H.y.has(a) && (o = a), H.x.has(a) && (n = a);
+  }), { x: n, y: o };
+}, E = {
+  position: ["top", "right"],
+  cssAnimation: "vn-fade",
+  velocityAnimation: {
+    enter: (t) => ({
+      height: [t.clientHeight, 0],
+      opacity: [1, 0]
+    }),
+    leave: {
+      height: 0,
+      opacity: [0, 1]
+    }
+  }
+}, ut = /* @__PURE__ */ (0,vue__WEBPACK_IMPORTED_MODULE_0__.defineComponent)({
+  name: "velocity-group",
+  inheritAttrs: !1,
+  props: {
+    name: {
+      type: String,
+      default: ""
+    }
+  },
+  emits: {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    enter: (t, n) => !0,
+    leave: (t, n) => !0,
+    afterLeave: () => !0
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+  },
+  setup: (t, {
+    slots: n,
+    emit: o
+  }) => {
+    const a = (c, u) => {
+      o("enter", c, u);
+    }, s = (c, u) => {
+      o("leave", c, u);
+    }, h = () => {
+      o("afterLeave");
+    };
+    return () => (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.TransitionGroup, {
+      tag: "div",
+      css: !1,
+      name: t.name,
+      onEnter: a,
+      onLeave: s,
+      onAfterLeave: h
+    }, {
+      default: () => {
+        var c;
+        return [(c = n.default) == null ? void 0 : c.call(n)];
+      }
+    });
+  }
+}), ft = /* @__PURE__ */ (0,vue__WEBPACK_IMPORTED_MODULE_0__.defineComponent)({
+  name: "css-group",
+  inheritAttrs: !1,
+  props: {
+    name: {
+      type: String,
+      default: ""
+    }
+  },
+  setup: (t, {
+    slots: n
+  }) => () => (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.TransitionGroup, {
+    tag: "div",
+    name: t.name
+  }, {
+    default: () => {
+      var o;
+      return [(o = n.default) == null ? void 0 : o.call(n)];
+    }
+  })
+});
+function dt(t) {
+  return typeof t == "function" || Object.prototype.toString.call(t) === "[object Object]" && !(0,vue__WEBPACK_IMPORTED_MODULE_0__.isVNode)(t);
+}
+const x = {
+  IDLE: 0,
+  DESTROYED: 2
+}, pt = /* @__PURE__ */ (0,vue__WEBPACK_IMPORTED_MODULE_0__.defineComponent)({
+  // eslint-disable-next-line vue/multi-word-component-names
+  name: "notifications",
+  props: {
+    group: {
+      type: String,
+      default: ""
+    },
+    /** 
+     * Width of notification holder, can be `%`, `px` string or number.
+     * @example '100%', '200px', 200 
+     * */
+    width: {
+      type: [Number, String],
+      default: 300
+    },
+    reverse: {
+      type: Boolean,
+      default: !1
+    },
+    position: {
+      type: [String, Array],
+      default: () => E.position
+    },
+    classes: {
+      type: [String, Array],
+      default: "vue-notification"
+    },
+    animationType: {
+      type: String,
+      default: "css",
+      validator(t) {
+        return t === "css" || t === "velocity";
+      }
+    },
+    animation: {
+      type: Object,
+      default() {
+        return E.velocityAnimation;
+      }
+    },
+    animationName: {
+      type: String,
+      default: E.cssAnimation
+    },
+    speed: {
+      type: Number,
+      default: 300
+    },
+    /** Time (in ms) to keep the notification on screen (if **negative** - notification will stay **forever** or until clicked) */
+    duration: {
+      type: Number,
+      default: 3e3
+    },
+    delay: {
+      type: Number,
+      default: 0
+    },
+    max: {
+      type: Number,
+      default: 1 / 0
+    },
+    ignoreDuplicates: {
+      type: Boolean,
+      default: !1
+    },
+    closeOnClick: {
+      type: Boolean,
+      default: !0
+    },
+    pauseOnHover: {
+      type: Boolean,
+      default: !1
+    },
+    /** Use [v-html](https://vuejs.org/api/built-in-directives.html#v-html) to set `title` and `text` */
+    dangerouslySetInnerHtml: {
+      type: Boolean,
+      default: !1
+    }
+  },
+  emits: {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    click: (t) => !0,
+    destroy: (t) => !0,
+    start: (t) => !0
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+  },
+  slots: Object,
+  setup: (t, {
+    emit: n,
+    slots: o,
+    expose: a
+  }) => {
+    const s = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)([]), h = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null), c = j.get("velocity"), u = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => t.animationType === "velocity"), B = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => u.value ? ut : ft), f = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => s.value.filter((e) => e.state !== x.DESTROYED)), N = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => rt(t.width)), O = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+      const {
+        x: e,
+        y: i
+      } = ct(t.position), r = N.value.value, d = N.value.type, m = {
+        width: r + d
+      };
+      return i && (m[i] = "0px"), e && (e === "center" ? m.left = `calc(50% - ${+r / 2}${d})` : m[e] = "0px"), m;
+    }), w = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(() => "bottom" in O.value), V = (e) => {
+      n("click", e), t.closeOnClick && y(e);
+    }, Y = () => {
+      var e;
+      t.pauseOnHover && ((e = h.value) == null || e.pause());
+    }, G = () => {
+      var e;
+      t.pauseOnHover && ((e = h.value) == null || e.resume());
+    }, _ = (e = {}) => {
+      if (e.group || (e.group = ""), e.data || (e.data = {}), t.group !== e.group)
+        return;
+      if (e.clean || e.clear) {
+        z();
+        return;
+      }
+      const i = typeof e.duration == "number" ? e.duration : t.duration, r = typeof e.speed == "number" ? e.speed : t.speed, d = typeof e.ignoreDuplicates == "boolean" ? e.ignoreDuplicates : t.ignoreDuplicates, {
+        title: m,
+        text: Q,
+        type: U,
+        data: X,
+        id: Z
+      } = e, p = {
+        id: Z || st(),
+        title: m,
+        text: Q,
+        type: U,
+        state: x.IDLE,
+        speed: r,
+        length: i + 2 * r,
+        data: X,
+        duplicates: 0
+      };
+      i >= 0 && (h.value = new it(() => y(p), p.length, p));
+      const tt = t.reverse ? !w.value : w.value;
+      let v = -1;
+      const L = f.value.find(($) => $.title === e.title && $.text === e.text);
+      if (d && L) {
+        L.duplicates++;
+        return;
+      }
+      tt ? (s.value.push(p), n("start", p), f.value.length > t.max && (v = 0)) : (s.value.unshift(p), n("start", p), f.value.length > t.max && (v = f.value.length - 1)), v !== -1 && y(f.value[v]);
+    }, F = (e) => {
+      q(e);
+    }, P = (e) => ["vue-notification-template", t.classes, e.type || ""], W = (e) => u.value ? void 0 : {
+      transition: `all ${e.speed}ms`
+    }, y = (e) => {
+      clearTimeout(e.timer), e.state = x.DESTROYED, I(), n("destroy", e);
+    }, q = (e) => {
+      const i = s.value.find((r) => r.id === e);
+      i && y(i);
+    }, z = () => {
+      f.value.forEach(y);
+    }, A = (e, i) => {
+      var d;
+      const r = (d = t.animation) == null ? void 0 : d[e];
+      return typeof r == "function" ? r(i) : r;
+    }, J = (e, i) => {
+      if (!u.value)
+        return;
+      const r = A("enter", e);
+      c(e, r, {
+        duration: t.speed,
+        complete: i
+      });
+    }, K = (e, i) => {
+      if (!u.value)
+        return;
+      const r = A("leave", e);
+      c(e, r, {
+        duration: t.speed,
+        complete: i
+      });
+    };
+    function I() {
+      s.value = s.value.filter((e) => e.state !== x.DESTROYED);
+    }
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(() => {
+      b.on("add", _), b.on("close", F);
+    }), () => {
+      let e;
+      return (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+        class: "vue-notification-group",
+        style: O.value
+      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(B.value, {
+        name: t.animationName,
+        onEnter: J,
+        onLeave: K,
+        onAfterLeave: I
+      }, dt(e = f.value.map((i) => (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+        key: i.id,
+        class: "vue-notification-wrapper",
+        style: W(i),
+        "data-id": i.id,
+        onMouseenter: Y,
+        onMouseleave: G
+      }, [o.body ? o.body({
+        item: i,
+        class: [t.classes, i.type],
+        close: () => y(i)
+      }) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+        class: P(i),
+        onClick: () => V(i)
+      }, [t.dangerouslySetInnerHtml ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [i.title ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+        class: "notification-title",
+        innerHTML: i.title
+      }, null) : null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+        class: "notification-content",
+        innerHTML: i.text
+      }, null)]) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [i.title ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+        class: "notification-title"
+      }, [i.title]) : null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+        class: "notification-content"
+      }, [i.text])])])]))) ? e : {
+        default: () => [e]
+      })]);
+    };
+  }
+}), D = (t) => {
+  typeof t == "string" && (t = { title: "", text: t }), typeof t == "object" && b.emit("add", t);
+};
+D.close = (t) => {
+  b.emit("close", t);
+};
+const ht = () => ({ notify: D }), yt = "Notifications";
+function mt(t, n = {}) {
+  Object.entries(n).forEach((a) => j.set(...a));
+  const o = n.name || "notify";
+  t.config.globalProperties["$" + o] = D, t.component(n.componentName || yt, pt);
+}
+const vt = {
+  install: mt
+};
+
+
+
+/***/ }),
+
 /***/ "./node_modules/@vue/compiler-core/dist/compiler-core.esm-bundler.js":
 /*!***************************************************************************!*\
   !*** ./node_modules/@vue/compiler-core/dist/compiler-core.esm-bundler.js ***!
@@ -20335,10 +20752,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _vueform_toggle__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @vueform/toggle */ "./node_modules/@vueform/toggle/dist/toggle.js");
 /* harmony import */ var vue_select__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! vue-select */ "./node_modules/vue-select/dist/vue-select.es.js");
 /* harmony import */ var vue_select_dist_vue_select_css__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! vue-select/dist/vue-select.css */ "./node_modules/vue-select/dist/vue-select.css");
+/* harmony import */ var _kyvg_vue3_notification__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @kyvg/vue3-notification */ "./node_modules/@kyvg/vue3-notification/dist/index.es.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+
 
 
 
@@ -20390,13 +20809,17 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
-              skeleton.value = false;
               if (!rangeSearch.value) {
-                _context.next = 15;
+                _context.next = 19;
                 break;
               }
-              _context.prev = 2;
-              _context.next = 5;
+              if (!(dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value)) {
+                _context.next = 16;
+                break;
+              }
+              skeleton.value = false;
+              _context.prev = 3;
+              _context.next = 6;
               return axios.get('/report', {
                 params: {
                   beginingDate: dates.value.startDate,
@@ -20404,44 +20827,71 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
                   source: selectedSource.value
                 }
               });
-            case 5:
+            case 6:
               response = _context.sent;
               registros.value = response.data;
               console.log(registros.value);
-              _context.next = 13;
+              _context.next = 14;
               break;
-            case 10:
-              _context.prev = 10;
-              _context.t0 = _context["catch"](2);
+            case 11:
+              _context.prev = 11;
+              _context.t0 = _context["catch"](3);
               console.log(_context.t0);
-            case 13:
-              _context.next = 27;
+            case 14:
+              _context.next = 17;
               break;
-            case 15:
-              _context.prev = 15;
+            case 16:
+              (0,_kyvg_vue3_notification__WEBPACK_IMPORTED_MODULE_9__.notify)({
+                title: 'Formulario incompleto',
+                text: 'Debe completar los campos de fecha de inicio, fin y fuente de financiamiento para generar el reporte',
+                type: 'error',
+                duration: 5000,
+                speed: 1000
+              });
+            case 17:
+              _context.next = 36;
+              break;
+            case 19:
+              if (!(selectedSource.value && selectedPeriod.value)) {
+                _context.next = 35;
+                break;
+              }
+              skeleton.value = false;
+              _context.prev = 21;
               console.log(selectedPeriod.value);
-              _context.next = 19;
+              _context.next = 25;
               return axios.get('/report_by_period', {
                 params: {
                   source: selectedSource.value,
                   period: selectedPeriod.value.ejercicio
                 }
               });
-            case 19:
+            case 25:
               _response = _context.sent;
               registros.value = _response.data;
               console.log(registros.value);
-              _context.next = 27;
+              _context.next = 33;
               break;
-            case 24:
-              _context.prev = 24;
-              _context.t1 = _context["catch"](15);
+            case 30:
+              _context.prev = 30;
+              _context.t1 = _context["catch"](21);
               console.log(_context.t1);
-            case 27:
+            case 33:
+              _context.next = 36;
+              break;
+            case 35:
+              (0,_kyvg_vue3_notification__WEBPACK_IMPORTED_MODULE_9__.notify)({
+                title: 'Formulario incompleto',
+                text: 'Debe completar el campo fuente de financiamiento y el periodo para generar el reporte',
+                type: 'error',
+                duration: 5000,
+                speed: 1000
+              });
+            case 36:
             case "end":
               return _context.stop();
           }
-        }, _callee, null, [[2, 10], [15, 24]]);
+        }, _callee, null, [[3, 11], [21, 30]]);
       }));
       return function handleGenReport() {
         return _ref2.apply(this, arguments);
@@ -20469,6 +20919,12 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       },
       get VueSelect() {
         return vue_select__WEBPACK_IMPORTED_MODULE_7__["default"];
+      },
+      get Notifications() {
+        return _kyvg_vue3_notification__WEBPACK_IMPORTED_MODULE_9__.Notifications;
+      },
+      get notify() {
+        return _kyvg_vue3_notification__WEBPACK_IMPORTED_MODULE_9__.notify;
       }
     };
     Object.defineProperty(__returned__, '__isScriptSetup', {
@@ -20656,7 +21112,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     onClick: $setup.handleGenReport
   }, "Generar reporte")])]), _hoisted_15, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)($setup.skeleton ? 'imgContainer' : 'tableContainer')
-  }, [$setup.skeleton ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_16, [].concat(_hoisted_19))) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !$setup.skeleton ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_20, [].concat(_hoisted_22))) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 2 /* CLASS */)])]);
+  }, [$setup.skeleton ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_16, [].concat(_hoisted_19))) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !$setup.skeleton ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_20, [].concat(_hoisted_22))) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 2 /* CLASS */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["Notifications"], {
+    position: "bottom left"
+  })]);
 }
 
 /***/ }),
@@ -20724,8 +21182,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
-/* harmony import */ var vue3_popper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! vue3-popper */ "./node_modules/vue3-popper/dist/popper.esm.js");
-/* harmony import */ var _components_HomePage_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/HomePage.vue */ "./resources/js/components/HomePage.vue");
+/* harmony import */ var vue3_popper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! vue3-popper */ "./node_modules/vue3-popper/dist/popper.esm.js");
+/* harmony import */ var _kyvg_vue3_notification__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @kyvg/vue3-notification */ "./node_modules/@kyvg/vue3-notification/dist/index.es.js");
+/* harmony import */ var _components_HomePage_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/HomePage.vue */ "./resources/js/components/HomePage.vue");
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -20735,6 +21194,7 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
  // Importar createApp desde Vue 3
+
 
 
 // Configuración global de Axios para incluir credenciales y token CSRF
@@ -20752,10 +21212,11 @@ if (token) {
 // Crear la instancia de la aplicación con Vue 3
 var app = (0,vue__WEBPACK_IMPORTED_MODULE_1__.createApp)({
   components: {
-    'home-page': _components_HomePage_vue__WEBPACK_IMPORTED_MODULE_2__["default"] // Registra tu componente,
+    'home-page': _components_HomePage_vue__WEBPACK_IMPORTED_MODULE_3__["default"] // Registra tu componente,
   }
 });
-app.use(vue3_popper__WEBPACK_IMPORTED_MODULE_3__["default"]);
+app.use(vue3_popper__WEBPACK_IMPORTED_MODULE_4__["default"]);
+app.use(_kyvg_vue3_notification__WEBPACK_IMPORTED_MODULE_2__["default"]);
 
 // Montar la aplicación a un elemento específico
 app.mount('#app');
