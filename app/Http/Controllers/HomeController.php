@@ -34,11 +34,14 @@ class HomeController extends Controller
 
     public function getReport(Request $request)
     {
-        //Log::info('se disparo el metodo getReport');
+        Log::info('se disparo el metodo getReport');
         
         $beginingDate = $request->beginingDate;
         $endDate = $request->endDate;
         $source = $request->source;
+
+        Log::info('beginingDate: ' . $beginingDate);
+        Log::info('endDate: ' . $endDate);
 
         $registros = registrobancos::whereBetween('fechas', [$beginingDate, $endDate]) 
             ->whereIn('idfuente', [$source])

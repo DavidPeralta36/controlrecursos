@@ -12,19 +12,28 @@
               :handleDateChange="handleDateChange" 
               :handleGenReport="handleGenReport"
               :handleSelectPeriod="handleSelectPeriod"
-              :toggleSetRangeSearch="toggleSetRangeSearch"
+              @update:rangeSearch="toggleSetRangeSearch"
               @update:selectedPeriod="handleSelectPeriod"/>
             <hr class="mt-2"/>
-            <div :class="skeleton ? 'imgContainer' : 'tableContainer'">
-              <div v-if="skeleton">
+            <div :class="!loads.loaded ? 'imgContainer' : 'tableContainer'">
+              <div v-if="loads.loading" class="text-center">
+                <div  class="spinner-border" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+                <p>Generando reporte</p>
+              </div>
+              <div v-if="loads.skeleton">
                 <img src="../../../public/assets/vacio.png" alt="vacio" class="img"/>
                 <p class="font-weight-bold nunito font-italic h5 text-center">Nada por aquí todavía...</p>
               </div> 
-              <div v-if="!skeleton" class="w-100 my-4 pb-5">
+              <div v-if="loads.loaded" class="w-100 my-4 pb-5">
                 <p class="nunito h5">Banco generado para el periodo con las fuentes de financiamiento seleccionadas:</p>
                 <AgGridVue
                   :rowData="registros"
                   :columnDefs="colDefs"
+                  :pagination="pagination"
+                  :paginationPageSize="paginationPageSize"
+                  :paginationPageSizeSelector="paginationPageSizeSelector"
                   style="height: 500px"
                   class="ag-theme-quartz"
                 >
@@ -59,39 +68,46 @@ const dates = ref({
   endDateSelected: false
 })
 const rangeSearch = ref(false);
-const skeleton = ref(true);
+const loads = ref({
+  loading: true,
+  skeleton: false,
+  loaded: false
+})
 const registros = ref([]);
 const selectedSource = ref(null);
 const colDefs = ref([
-  { field: 'fechas', headerName: 'Fecha' },
-  { field: 'forma_pago', headerName: 'Forma de pago' },
-  { field: 'rfc', headerName: 'RFC' },
-  { field: 'proveedor', headerName: 'Proveedor' },
-  { field: 'factura', headerName: 'Factura' },
-  { field: 'parcial', headerName: 'Parcial' },
-  { field: 'depositos', headerName: 'Depositos' },
-  { field: 'retiros', headerName: 'Retiros' },
-  { field: 'saldo', headerName: 'Saldo' },
-  { field: 'partida', headerName: 'Partida' },
-  { field: 'fecha_factura', headerName: 'Fecha de factura' },
-  { field: 'folio_fiscal', headerName: 'Folio fiscal' },
-  { field: 'tipo_adjudicacion', headerName: 'Tipo de adjudicación' },
-  { field: 'num_adj_contrato', headerName: 'Numero de adjudicación o contrato' },
-  { field: 'orden_servicio_compra', headerName: 'Orden de servicio o compra' },
-  { field: 'num_suficiencia_presupuestal', headerName: 'Numero de suficiencia presupuestal' },
-  { field: 'clc', headerName: 'CLC' },
-  { field: 'poliza', headerName: 'Poliza' },
-  { field: 'numero_cuenta_proovedor', headerName: 'Numero de cuenta de proveedor' },
-  { field: 'referencia_bancaria', headerName: 'Referencia bancaria' },
-  { field: 'nombre_clue', headerName: 'CLUE' },
+  { field: 'fechas', headerName: 'Fecha', filter: true, sortable: true },
+  { field: 'mes', headerName: 'Mes', filter: true, sortable: true },
+  { field: 'forma_pago', headerName: 'Forma de pago', filter: true, sortable: true },
+  { field: 'rfc', headerName: 'RFC', filter: true, sortable: true },
+  { field: 'proveedor', headerName: 'Proveedor', filter: true, sortable: true  },
+  { field: 'factura', headerName: 'Factura', filter: true, sortable: true  },
+  { field: 'parcial', headerName: 'Parcial', valueFormatter: formatCurrency  },
+  { field: 'depositos', headerName: 'Depositos', valueFormatter: formatCurrency  },
+  { field: 'retiros', headerName: 'Retiros', valueFormatter: formatCurrency  },
+  { field: 'saldo', headerName: 'Saldo' , valueFormatter: formatCurrency },
+  { field: 'r', headerName: 'Rubro', filter: true, sortable: true }, 
+  { field: 'partida', headerName: 'Partida', filter: true, sortable: true  },
+  { field: 'fecha_factura', headerName: 'Fecha de factura', filter: true, sortable: true  },
+  { field: 'folio_fiscal', headerName: 'Folio fiscal', filter: true, sortable: true  },
+  { field: 'tipo_adjudicacion', headerName: 'Tipo de adjudicación', filter: true, sortable: true  },
+  { field: 'num_adj_contrato', headerName: 'Numero de adjudicación o contrato', filter: true, sortable: true  },
+  { field: 'orden_servicio_compra', headerName: 'Orden de servicio o compra', filter: true, sortable: true  },
+  { field: 'num_suficiencia_presupuestal', headerName: 'Numero de suficiencia presupuestal', filter: true, sortable: true  },
+  { field: 'clc', headerName: 'CLC', filter: true, sortable: true  },
+  { field: 'poliza', headerName: 'Poliza', filter: true, sortable: true  },
+  { field: 'numero_cuenta_proovedor', headerName: 'Numero de cuenta de proveedor', filter: true, sortable: true  },
+  { field: 'referencia_bancaria', headerName: 'Referencia bancaria', filter: true, sortable: true  },
+  { field: 'nombre_clue', headerName: 'CLUE', filter: true, sortable: true  },
   { field: 'nombrepartida', headerName: 'Aplica en' },
   { field: 'mes_servicio', headerName: 'Mes de servicio' },
-  { field: 'metodo_pago', headerName: 'Metodo de pago' },
-  { field: 'id', headerName: 'ID' },
-  { field: 'mes', headerName: 'Mes' },
+  { field: 'metodo_pago', headerName: 'Metodo de pago', filter: true, sortable: true  },
   { field: 'ejercicio', headerName: 'Ejercicio' },
 ]);
-const selectedPeriod = ref("2024");
+const pagination = ref(true);
+const paginationPageSize = ref(500);
+const paginationPageSizeSelector = ref([200, 500, 1000]);
+const selectedPeriod = ref({ejercicio: "2024"});
 
 const handleSelect = (source) => {
   selectedSource.value = source.id;
@@ -116,6 +132,8 @@ const getReport = async () => {
     }
   });
   registros.value = response.data;
+  loads.value.loading = false;
+  loads.value.loaded = true;
 }
 
 const getReportByPeriod = async () => {
@@ -126,13 +144,16 @@ const getReportByPeriod = async () => {
     }
   });
   registros.value = response.data;
+  loads.value.loading = false;
+  loads.value.loaded = true;
 }
 
 const handleGenReport = async () => {
   if(rangeSearch.value){
     if(dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value){
-      skeleton.value = false;
+      loads.value.skeleton = false;
       try{
+        loads.value.loading = true;
         await getReport();
       }catch(e){
         console.log(e);
@@ -149,8 +170,9 @@ const handleGenReport = async () => {
   }
   else{
     if(selectedSource.value && selectedPeriod.value){
-      skeleton.value = false;
+      loads.value.skeleton = false;
       try{
+        loads.value.loading = true;
         await getReportByPeriod();
       }catch(e){
         console.log(e);
@@ -174,6 +196,15 @@ const toggleSetRangeSearch = () => {
 
 const handleSelectPeriod = (period) => {
   selectedPeriod.value = period;
+}
+
+function formatCurrency(params) {
+    if (!params.value) return ''; // Manejar valores nulos o indefinidos
+    
+    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); // Convertir a número
+    if (isNaN(number)) return ''; // Manejar valores que no se pueden convertir a número
+
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
 }
 </script>
 

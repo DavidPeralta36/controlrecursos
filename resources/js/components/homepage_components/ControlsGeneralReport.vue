@@ -6,12 +6,12 @@
                 Cambia entre el tipo de busqueda para el reporte
             </div>
             </template>
-            <Toggle v-model="props.rangeSearch" class="mt-1" @click="props.toggleSetRangeSearch"/>
+            <Toggle v-model="localRangeSearch" class="mt-1" />
         </Popper>
         <p class="mb-0 ms-2 mx-2 mt-1">Tipo de busqueda: <strong>{{ props.rangeSearch ? 'Fechas' : 'Periodo' }}</strong></p>
     </div>
     <div class="controlsContainer">
-        <div class="d-flex" v-if="rangeSearch">
+        <div class="d-flex" v-if="localRangeSearch">
             <div>
                 <label for="dpInicio" class="ml-1">Fecha de inicio</label>
                 <VueDatePicker :model-value="props.dates.startDate" @update:model-value="(value) => props.handleDateChange(value, 'startDate')" id="dpInicio" clereable auto-apply :flow="flow" :enable-time-picker="false" :state="props.dates.startDateSelected"/>
@@ -37,15 +37,16 @@ import '@vueform/toggle/themes/default.css'
 import Toggle from '@vueform/toggle'
 import VueSelect from "vue-select";
 import "vue-select/dist/vue-select.css"
-import { ref, defineProps, defineEmits, watch } from 'vue';
+import { ref, defineProps, defineEmits, watch, toRef } from 'vue';
 
 const flow = ref(['year', 'month', 'day']);
 const localSelectedPeriod = ref( '2024');
+const localRangeSearch = ref(false);
 
 const props = defineProps({
   dates: Object,
   rangeSearch: Boolean,
-  selectedPeriod: String,
+  selectedPeriod: Object,
   periodos: Array,
   handleDateChange: Function,
   handleGenReport: Function,
@@ -53,17 +54,23 @@ const props = defineProps({
   handleSelectPeriod: Function
 })
 
-const emit = defineEmits(['update:selectedPeriod']);
+const emit = defineEmits(['update:selectedPeriod', 'update:rangeSearch']);
 
-// Watch for changes in the local selected period and emit them
-watch(localSelectedPeriod, (newValue) => {
-  emit('update:selectedPeriod', newValue);
-});
+function syncPropsWithEmit(propName, localRef, emit) {
+  // Watch for local changes and emit them
+  watch(localRef, (newValue) => {
+    emit(`update:${propName}`, newValue);
+  });
 
-// Watch for prop changes and update local state accordingly
-watch(() => props.selectedPeriod, (newValue) => {
-  localSelectedPeriod.value = newValue;
-});
+  // Watch for prop changes and update local state accordingly
+  watch(() => props[propName], (newValue) => {
+    localRef.value = newValue;
+  });
+}
+
+// Eliminar duplicidad y sobrecarga del watch
+syncPropsWithEmit('selectedPeriod', localSelectedPeriod, emit);
+syncPropsWithEmit('rangeSearch', localRangeSearch, emit);
 
 </script>
 <style >
