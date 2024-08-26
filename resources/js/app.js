@@ -10,8 +10,10 @@ import { createApp } from 'vue'; // Importar createApp desde Vue 3
 import Popper from 'vue3-popper';
 import '../sass/theme.css'
 import Notifications from '@kyvg/vue3-notification'
+import { OhVueIcon, addIcons } from "oh-vue-icons";
+import { FaChartBar } from 'oh-vue-icons/icons';
+import HomePage from './components/HomePage.vue'; // Importa tu componente
 
-// Configuración global de Axios para incluir credenciales y token CSRF
 axios.defaults.withCredentials = true;
 const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 if (token) {
@@ -20,8 +22,8 @@ if (token) {
     console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
 }
 
-// Cargar los componentes de Vue (versión Vue 3)
-import HomePage from './components/HomePage.vue'; // Importa tu componente
+addIcons(FaChartBar);
+
 
 // Crear la instancia de la aplicación con Vue 3
 const app = createApp({
@@ -30,6 +32,7 @@ const app = createApp({
     }
 });
 
+app.component('v-icon', OhVueIcon);
 app.use(Popper);
 app.use(Notifications);
 

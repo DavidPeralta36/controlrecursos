@@ -1,7 +1,7 @@
 <template>
     <div class="d-flex align-items-center">
         <Popper placement="top-start" hover openDelay="500" content="Cambia entre el tipo de busqueda para el reporte" arrow>
-            <Toggle v-model="localRangeSearch" class="mt-1" />
+            <Toggle v-model="localRangeSearch" class="mt-2" />
         </Popper>
         <p class="mb-0 ms-2 mx-2 mt-1">Tipo de busqueda: <strong>{{ props.rangeSearch ? 'Fechas' : 'Periodo' }}</strong></p>
     </div>
@@ -21,7 +21,10 @@
             <VueSelect v-model="localSelectedPeriod" :options="periodos" label="ejercicio" class="mt-1"/>
         </div>
         <div class="w-100 h-100 d-flex justify-content-end mt-1">
-            <button class="btn btn-primary " @click="props.handleGenReport">Generar reporte</button>
+            <button class="btn btn-primary align-self-center" @click="props.handleGenReport">
+              <v-icon name="fa-chart-bar" animation="ring" hover/>
+              Generar reporte
+            </button>
         </div>
     </div>
 </template>
@@ -86,5 +89,10 @@ syncPropsWithEmit('rangeSearch', localRangeSearch, emit);
   --popper-theme-border-radius: 6px;
   --popper-theme-padding: 32px;
   --popper-theme-box-shadow: 0 6px 30px -6px rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary {
+  background-color: #691C32;
+  border-color: #691C32;
 }
 </style>

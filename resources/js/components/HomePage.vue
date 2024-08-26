@@ -16,17 +16,17 @@
               @update:selectedPeriod="handleSelectPeriod"/>
             <hr class="mt-2"/>
             <div :class="!loads.loaded ? 'imgContainer' : 'tableContainer'">
-              <div v-if="loads.loading" class="text-center">
+              <div v-if="loads.loading" class="text-center" ref="loadingDiv">
                 <div ref="spinner" class="spinner-border" role="status">
                   <span class="sr-only">Loading...</span>
                 </div>
                 <p ref="loadingText">Generando reporte</p>
               </div>
-              <div v-if="loads.skeleton">
+              <div v-if="loads.skeleton" ref="skeletonDiv">
                 <img src="../../../public/assets/vacio.png" alt="vacio" class="img"/>
                 <p class="font-weight-bold nunito font-italic h5 text-center">Nada por aquí todavía...</p>
               </div> 
-              <div v-if="loads.loaded" class="w-100 my-4 pb-5">
+              <div v-if="loads.loaded" class="w-100 my-4 pb-5" ref="tableDiv">
                 <p class="nunito h5">Banco generado para el periodo con las fuentes de financiamiento seleccionadas:</p>
                 <AgGridVue
                   :rowData="registros"
@@ -133,7 +133,9 @@ const paginationPageSizeSelector = ref([200, 500, 1000]);
 const selectedPeriod = ref({ejercicio: "2024"});
 const loadingText = ref(null); 
 const spinner = ref(null); 
-
+const skeletonDiv = ref(null);
+const loadingDiv = ref(null);
+const tableDiv = ref(null);
 
 const handleSelect = (source) => {
   selectedSource.value = source.id;
@@ -178,13 +180,7 @@ const handleGenReport = async () => {
   if(rangeSearch.value){
     if(dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value){
       try{
-        loads.value.skeleton = false;
-        loads.value.loading = true;
-
-        await nextTick();
-
-        startAnimations();
-
+        animateOut();
         await getReport();
         stopAnimations();
       }catch(e){
@@ -203,12 +199,7 @@ const handleGenReport = async () => {
   else{
     if(selectedSource.value && selectedPeriod.value){
       try{
-        loads.value.skeleton = false;
-        loads.value.loading = true;
-
-        await nextTick();
-
-        startAnimations();
+        animateOut();
         await getReportByPeriod();
         stopAnimations();
       }catch(e){
@@ -288,7 +279,27 @@ function customCellRenderer(params) {
   `;
 }
 
+const animateOut = () => {
+  if (skeletonDiv.value) {
+    anime({
+      targets: skeletonDiv.value,
+      opacity: [1, 0],
+      translateY: [0, -50],
+      duration: 500,
+      easing: 'easeInOutQuad',
+      complete: async () => {
+        loads.value.skeleton = false;
+        loads.value.loading = true;
+        await nextTick();
+        
 
+        startAnimations();
+      },
+    });
+  } else {
+    console.warn('skeletonDiv reference is not initialized');
+  }
+};
 </script>
 
 <style lang="scss">

@@ -32,6 +32,7 @@
         "@vuepic/vue-datepicker": "^9.0.2",
         "ag-grid-vue3": "^32.1.0",
         "animejs": "^3.2.2",
+        "oh-vue-icons": "^1.0.0-rc3",
         "vue-select": "^4.0.0-beta.6",
         "vue3-popper": "^1.5.0"
     }
