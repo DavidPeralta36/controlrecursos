@@ -10933,17 +10933,4 @@ a.text-dark:focus {
   }
 }
 
-.fuentesContainer {
-  background-color: rgb(235, 235, 235);
-  border-radius: 10px;
-  padding-top: 2vh;
-  padding-bottom: 2vh;
-}
-
-.nunito {
-  font-family: "Nunito", sans-serif;
-  font-weight: 200;
-  color: rgb(48, 69, 110);
-}
-
 

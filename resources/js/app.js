@@ -7,7 +7,8 @@
 require('./bootstrap');
 import axios from 'axios';
 import { createApp } from 'vue'; // Importar createApp desde Vue 3
-import Popper from "vue3-popper";
+import Popper from 'vue3-popper';
+import '../sass/theme.css'
 import Notifications from '@kyvg/vue3-notification'
 
 // Configuración global de Axios para incluir credenciales y token CSRF

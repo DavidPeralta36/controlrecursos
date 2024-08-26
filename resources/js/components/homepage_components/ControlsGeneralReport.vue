@@ -1,11 +1,6 @@
 <template>
     <div class="d-flex align-items-center">
-        <Popper placement="top-start" hover openDelay="500">
-            <template #content>
-            <div class="tlpContent">
-                Cambia entre el tipo de busqueda para el reporte
-            </div>
-            </template>
+        <Popper placement="top-start" hover openDelay="500" content="Cambia entre el tipo de busqueda para el reporte" arrow>
             <Toggle v-model="localRangeSearch" class="mt-1" />
         </Popper>
         <p class="mb-0 ms-2 mx-2 mt-1">Tipo de busqueda: <strong>{{ props.rangeSearch ? 'Fechas' : 'Periodo' }}</strong></p>
@@ -73,7 +68,7 @@ syncPropsWithEmit('selectedPeriod', localSelectedPeriod, emit);
 syncPropsWithEmit('rangeSearch', localRangeSearch, emit);
 
 </script>
-<style >
+<style scoped>
 .controlsContainer {
     display: flex;
     justify-content: space-between;
@@ -81,4 +76,15 @@ syncPropsWithEmit('rangeSearch', localRangeSearch, emit);
     width: 100%;
     margin-top: 1vh;
   }
+
+:root {
+  --popper-theme-background-color: #333333;
+  --popper-theme-background-color-hover: #333333;
+  --popper-theme-text-color: #ffffff;
+  --popper-theme-border-width: 0px;
+  --popper-theme-border-style: solid;
+  --popper-theme-border-radius: 6px;
+  --popper-theme-padding: 32px;
+  --popper-theme-box-shadow: 0 6px 30px -6px rgba(0, 0, 0, 0.25);
+}
 </style>

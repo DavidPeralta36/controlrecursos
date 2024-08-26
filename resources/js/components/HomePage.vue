@@ -17,10 +17,10 @@
             <hr class="mt-2"/>
             <div :class="!loads.loaded ? 'imgContainer' : 'tableContainer'">
               <div v-if="loads.loading" class="text-center">
-                <div  class="spinner-border" role="status">
+                <div ref="spinner" class="spinner-border" role="status">
                   <span class="sr-only">Loading...</span>
                 </div>
-                <p>Generando reporte</p>
+                <p ref="loadingText">Generando reporte</p>
               </div>
               <div v-if="loads.skeleton">
                 <img src="../../../public/assets/vacio.png" alt="vacio" class="img"/>
@@ -36,6 +36,7 @@
                   :paginationPageSizeSelector="paginationPageSizeSelector"
                   style="height: 500px"
                   class="ag-theme-quartz"
+                  :frameworkComponents="{ customCellRenderer }"
                 >
                 </AgGridVue>
               </div>
@@ -46,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, onMounted, nextTick } from 'vue';
 import '../../sass/app.scss';
 import SourcePicker from './homepage_components/SourcePicker.vue';
 import ControlsGeneralReport from './homepage_components/ControlsGeneralReport.vue';
@@ -54,6 +55,8 @@ import { Notifications, notify } from '@kyvg/vue3-notification';
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
 import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
+import anime from 'animejs';
+
 
 
 const props = defineProps({
@@ -69,10 +72,12 @@ const dates = ref({
 })
 const rangeSearch = ref(false);
 const loads = ref({
-  loading: true,
-  skeleton: false,
+  loading: false,
+  skeleton: true,
   loaded: false
 })
+let dotsAnimation = null;
+let spinnerAnimation = null;
 const registros = ref([]);
 const selectedSource = ref(null);
 const colDefs = ref([
@@ -83,9 +88,27 @@ const colDefs = ref([
   { field: 'proveedor', headerName: 'Proveedor', filter: true, sortable: true  },
   { field: 'factura', headerName: 'Factura', filter: true, sortable: true  },
   { field: 'parcial', headerName: 'Parcial', valueFormatter: formatCurrency  },
-  { field: 'depositos', headerName: 'Depositos', valueFormatter: formatCurrency  },
-  { field: 'retiros', headerName: 'Retiros', valueFormatter: formatCurrency  },
-  { field: 'saldo', headerName: 'Saldo' , valueFormatter: formatCurrency },
+  { 
+    field: 'depositos', 
+    headerName: 'Depositos', 
+    valueFormatter: formatCurrency, 
+    cellClass: (params) => params.value ? 'deposit-cell' : '',
+    cellRenderer: 'customCellRenderer' 
+  },
+  { 
+    field: 'retiros', 
+    headerName: 'Retiros', 
+    valueFormatter: formatCurrency, 
+    cellClass: (params) => params.value ? 'withdrawal-cell' : '',
+    cellRenderer: 'customCellRenderer' 
+  },
+  { 
+    field: 'saldo', 
+    headerName: 'Saldo', 
+    valueFormatter: formatCurrency, 
+    cellClass: (params) => params.value ? 'balance-cell' : '',
+    cellRenderer: 'customCellRenderer' 
+  },
   { field: 'r', headerName: 'Rubro', filter: true, sortable: true }, 
   { field: 'partida', headerName: 'Partida', filter: true, sortable: true  },
   { field: 'fecha_factura', headerName: 'Fecha de factura', filter: true, sortable: true  },
@@ -108,6 +131,9 @@ const pagination = ref(true);
 const paginationPageSize = ref(500);
 const paginationPageSizeSelector = ref([200, 500, 1000]);
 const selectedPeriod = ref({ejercicio: "2024"});
+const loadingText = ref(null); 
+const spinner = ref(null); 
+
 
 const handleSelect = (source) => {
   selectedSource.value = source.id;
@@ -151,10 +177,16 @@ const getReportByPeriod = async () => {
 const handleGenReport = async () => {
   if(rangeSearch.value){
     if(dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value){
-      loads.value.skeleton = false;
       try{
+        loads.value.skeleton = false;
         loads.value.loading = true;
+
+        await nextTick();
+
+        startAnimations();
+
         await getReport();
+        stopAnimations();
       }catch(e){
         console.log(e);
       }
@@ -170,10 +202,15 @@ const handleGenReport = async () => {
   }
   else{
     if(selectedSource.value && selectedPeriod.value){
-      loads.value.skeleton = false;
       try{
+        loads.value.skeleton = false;
         loads.value.loading = true;
+
+        await nextTick();
+
+        startAnimations();
         await getReportByPeriod();
+        stopAnimations();
       }catch(e){
         console.log(e);
       }
@@ -206,43 +243,102 @@ function formatCurrency(params) {
 
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
 }
+
+const startAnimations = () => {
+  dotsAnimation = anime({
+    targets: loadingText.value,
+    update: (anim) => {
+      const progress = Math.floor(anim.progress / 25);
+      const textStages = ['Generando reporte', 'Generando reporte.', 'Generando reporte..', 'Generando reporte...'];
+      loadingText.value.innerHTML = textStages[progress];
+    },
+    color: ['#28a745', '#ffc107', '#007bff', '#007bff', '#dc3545'],
+    easing: 'linear',
+    duration: 2000,
+    loop: true,
+  });
+
+  spinnerAnimation = anime({
+    targets: spinner.value,
+    color: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#007bff'],
+    easing: 'linear',
+    duration: 2000,
+    loop: true,
+  });
+};
+
+const stopAnimations = () => {
+  if (dotsAnimation) dotsAnimation.pause(); // Detiene la animación de puntos
+  if (spinnerAnimation) spinnerAnimation.pause(); // Detiene la animación del spinner
+};
+
+function customCellRenderer(params) {
+  const value = params.valueFormatted ? params.valueFormatted : params.value;
+  
+  // Si no hay valor, retornar una cadena vacía o solo el valor sin estilos
+  if (!value) {
+    return '';
+  }
+
+  // Retornar el valor con estilos sólo si hay contenido
+  return `
+    <span class="custom-cell">
+      ${value}
+    </span>
+  `;
+}
+
+
 </script>
 
 <style lang="scss">
-  .imgContainer{
-    width: 100%;
-    height: 50vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .img{
-    width: 300px;
-    height: 300px;
-  }
-
-
-  .tableContainer {
-    width: 100%;
-    height: 50vh;
-}
-
-.tlpContent{
-  background-color: rgb(13, 14, 41);
-  color: rgb(189, 189, 189);
-  font-weight: 500;
-  font-size: 0.9vw;
+.nunito{
   font-family: 'Nunito', sans-serif;
-  min-width: 10vw;
-  max-width: 13vw;
-  height: 8vh;
-  padding: 1rem;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  
+  font-weight: 200;
+  color: #691C32;
+}
+.imgContainer{
+  width: 100%;
+  height: 50vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.img{
+  width: 300px;
+  height: 300px;
 }
 
-.tlpContent:hover{
-  cursor: pointer;
+
+.tableContainer {
+  width: 100%;
+  height: 50vh;
+}
+
+
+.deposit-cell {
+  background-color: #e6f7e6; /* Fondo verde claro */
+  color: #2e7d32; /* Texto verde */
+  font-weight: bold;
+  border-radius: 10px;
+}
+
+/* Estilo para las celdas de retiros */
+.withdrawal-cell {
+  background-color: #fdecea; /* Fondo rojo claro */
+  color: #c62828; /* Texto rojo */
+  font-weight: bold;
+}
+
+/* Estilo para las celdas de saldo */
+.balance-cell {
+  background-color: #e3f2fd; /* Fondo azul claro */
+  color: #1565c0; /* Texto azul */  font-weight: bold;
+}
+
+/* Estilo común para todas las celdas personalizadas */
+.custom-cell {
+  display: flex;
+  align-items: center;
 }
 </style>
