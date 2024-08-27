@@ -26,7 +26,7 @@
                 <img src="../../../public/assets/vacio.png" alt="vacio" class="img"/>
                 <p class="font-weight-bold nunito font-italic h5 text-center">Nada por aquí todavía...</p>
               </div> 
-              <div v-if="loads.loaded" class="w-100 my-4 pb-5" ref="tableDiv">
+              <div v-if="loads.loaded" class="w-100 my-4 pb-5" ref="tableDiv" >
                 <p class="nunito h5">Banco generado para el periodo con las fuentes de financiamiento seleccionadas:</p>
                 <AgGridVue
                   :rowData="registros"
@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, onMounted, nextTick } from 'vue';
+import { ref, defineProps, nextTick } from 'vue';
 import '../../sass/app.scss';
 import SourcePicker from './homepage_components/SourcePicker.vue';
 import ControlsGeneralReport from './homepage_components/ControlsGeneralReport.vue';
@@ -55,8 +55,11 @@ import { Notifications, notify } from '@kyvg/vue3-notification';
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
 import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
-import anime from 'animejs';
-
+import {
+  animateSkeletonOut,
+  animateLoadingOut,
+  startAnimations,
+} from '../utils/animations.js';
 
 
 const props = defineProps({
@@ -76,8 +79,6 @@ const loads = ref({
   skeleton: true,
   loaded: false
 })
-let dotsAnimation = null;
-let spinnerAnimation = null;
 const registros = ref([]);
 const selectedSource = ref(null);
 const colDefs = ref([
@@ -160,8 +161,8 @@ const getReport = async () => {
     }
   });
   registros.value = response.data;
-  loads.value.loading = false;
-  loads.value.loaded = true;
+  await nextTick();
+  await animateLoadingOut(loadingDiv, tableDiv, loads);
 }
 
 const getReportByPeriod = async () => {
@@ -172,51 +173,49 @@ const getReportByPeriod = async () => {
     }
   });
   registros.value = response.data;
-  loads.value.loading = false;
-  loads.value.loaded = true;
+  await nextTick();
+  await animateLoadingOut(loadingDiv, tableDiv, loads);
 }
 
 const handleGenReport = async () => {
-  if(rangeSearch.value){
-    if(dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value){
-      try{
-        animateOut();
+  if (rangeSearch.value) {
+    if (dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value) {
+      try {
+        await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
+        startAnimations(loadingText, spinner);
         await getReport();
-        stopAnimations();
-      }catch(e){
+      } catch (e) {
         console.log(e);
       }
-    }else{
+    } else {
       notify({
         title: 'Formulario incompleto',
-        text: 'Debe completar los campos de fecha de inicio, fin y fuente de financiamiento para generar el reporte', 
+        text: 'Debe completar los campos de fecha de inicio, fin y fuente de financiamiento para generar el reporte',
         type: 'error',
         duration: 5000,
         speed: 1000,
-      })
+      });
     }
-  }
-  else{
-    if(selectedSource.value && selectedPeriod.value){
-      try{
-        animateOut();
+  } else {
+    if (selectedSource.value && selectedPeriod.value) {
+      try {
+        await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
+        startAnimations(loadingText, spinner);
         await getReportByPeriod();
-        stopAnimations();
-      }catch(e){
+      } catch (e) {
         console.log(e);
       }
-    }
-    else{
+    } else {
       notify({
         title: 'Formulario incompleto',
-        text: 'Debe completar el campo fuente de financiamiento y el periodo para generar el reporte', 
+        text: 'Debe completar el campo fuente de financiamiento y el periodo para generar el reporte',
         type: 'error',
         duration: 5000,
         speed: 1000,
-      })
+      });
     }
   }
-}
+};
 
 const toggleSetRangeSearch = () => {
   rangeSearch.value =  !rangeSearch.value;
@@ -235,34 +234,6 @@ function formatCurrency(params) {
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
 }
 
-const startAnimations = () => {
-  dotsAnimation = anime({
-    targets: loadingText.value,
-    update: (anim) => {
-      const progress = Math.floor(anim.progress / 25);
-      const textStages = ['Generando reporte', 'Generando reporte.', 'Generando reporte..', 'Generando reporte...'];
-      loadingText.value.innerHTML = textStages[progress];
-    },
-    color: ['#28a745', '#ffc107', '#007bff', '#007bff', '#dc3545'],
-    easing: 'linear',
-    duration: 2000,
-    loop: true,
-  });
-
-  spinnerAnimation = anime({
-    targets: spinner.value,
-    color: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#007bff'],
-    easing: 'linear',
-    duration: 2000,
-    loop: true,
-  });
-};
-
-const stopAnimations = () => {
-  if (dotsAnimation) dotsAnimation.pause(); // Detiene la animación de puntos
-  if (spinnerAnimation) spinnerAnimation.pause(); // Detiene la animación del spinner
-};
-
 function customCellRenderer(params) {
   const value = params.valueFormatted ? params.valueFormatted : params.value;
   
@@ -279,27 +250,7 @@ function customCellRenderer(params) {
   `;
 }
 
-const animateOut = () => {
-  if (skeletonDiv.value) {
-    anime({
-      targets: skeletonDiv.value,
-      opacity: [1, 0],
-      translateY: [0, -50],
-      duration: 500,
-      easing: 'easeInOutQuad',
-      complete: async () => {
-        loads.value.skeleton = false;
-        loads.value.loading = true;
-        await nextTick();
-        
 
-        startAnimations();
-      },
-    });
-  } else {
-    console.warn('skeletonDiv reference is not initialized');
-  }
-};
 </script>
 
 <style lang="scss">
