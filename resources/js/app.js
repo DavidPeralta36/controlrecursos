@@ -13,6 +13,7 @@ import Notifications from '@kyvg/vue3-notification'
 import { OhVueIcon, addIcons } from "oh-vue-icons";
 import { FaChartBar } from 'oh-vue-icons/icons';
 import HomePage from './components/HomePage.vue'; // Importa tu componente
+import CargaPage from './components/CargaPage.vue';
 
 axios.defaults.withCredentials = true;
 const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -28,7 +29,8 @@ addIcons(FaChartBar);
 // Crear la instancia de la aplicación con Vue 3
 const app = createApp({
     components: {
-        'home-page': HomePage // Registra tu componente,
+        'home-page': HomePage, // Registra tu componente,
+        'carga-page': CargaPage // Registra tu componente,
     }
 });
 
