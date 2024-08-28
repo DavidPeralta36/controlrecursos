@@ -31,14 +31,30 @@
                 <AgGridVue
                   :rowData="registros"
                   :columnDefs="colDefs"
-                  :pagination="pagination"
-                  :paginationPageSize="paginationPageSize"
-                  :paginationPageSizeSelector="paginationPageSizeSelector"
+                  :pagination="agProps.pagination"
+                  :paginationPageSize="agProps.paginationPageSize"
+                  :paginationPageSizeSelector="agProps.paginationPageSizeSelector"
                   style="height: 500px"
-                  class="ag-theme-quartz"
+                  class="ag-theme-quartz mb-5"
                   :frameworkComponents="{ customCellRenderer }"
+                  :animateRows="true"
+                  @firstDataRendered="onFirstDataRendered"
+                  @filterChanged="onFilterChanged"
                 >
                 </AgGridVue>
+              </div>
+            </div>
+            <hr class="mt-2"/>
+            <div v-if="loads.loaded" class="informe">
+              <div class="container p-2">
+                <h4 class="nunito-bold">Servicios Estatales de salud</h4>
+                <h5 class="nunito">Informe del ejercicio de los Recursos Federales para la prestacion gratuita de servicios de salud</h5>
+                <hr/>
+                <p>Total de registros: <strong>{{ registros.length }}</strong></p>
+                <p>Total de retiros: <strong>{{ formatearCantidad(totales.retiros) }}</strong></p>
+                <p>Total de depósitos: <strong>{{ formatearCantidad(totales.depositos) }}</strong></p>
+                <hr/>
+                <p>Total de saldo: <strong>{{ formatearCantidad(totales.saldo) }}</strong></p>
               </div>
             </div>
         </div>
@@ -79,8 +95,12 @@ const loads = ref({
   skeleton: true,
   loaded: false
 })
-const registros = ref([]);
-const selectedSource = ref(null);
+const totales = ref({
+  registros: 0,
+  depositos: 0,
+  retiros: 0,
+  saldo: 0
+});
 const colDefs = ref([
   { field: 'fechas', headerName: 'Fecha', filter: true, sortable: true },
   { field: 'mes', headerName: 'Mes', filter: true, sortable: true },
@@ -101,7 +121,7 @@ const colDefs = ref([
     headerName: 'Retiros', 
     valueFormatter: formatCurrency, 
     cellClass: (params) => params.value ? 'withdrawal-cell' : '',
-    cellRenderer: 'customCellRenderer' 
+    cellRenderer: 'customCellRenderer'
   },
   { 
     field: 'saldo', 
@@ -128,15 +148,22 @@ const colDefs = ref([
   { field: 'metodo_pago', headerName: 'Metodo de pago', filter: true, sortable: true  },
   { field: 'ejercicio', headerName: 'Ejercicio' },
 ]);
-const pagination = ref(true);
-const paginationPageSize = ref(500);
-const paginationPageSizeSelector = ref([200, 500, 1000]);
+const agProps = ref({
+  pagination: true,
+  paginationPageSize: 500,
+  paginationPageSizeSelector: [200, 500, 1000],
+});
+const registros = ref([]);
+const selectedSource = ref(null);
 const selectedPeriod = ref({ejercicio: "2024"});
 const loadingText = ref(null); 
 const spinner = ref(null); 
 const skeletonDiv = ref(null);
 const loadingDiv = ref(null);
 const tableDiv = ref(null);
+const filteredIngresos = ref(0);
+const filteredEgresos = ref(0);
+const filteredBalance = ref(0);
 
 const handleSelect = (source) => {
   selectedSource.value = source.id;
@@ -153,10 +180,13 @@ const handleDateChange = (modelData, field) => {
 };
 
 const getReport = async () => {
+  const formattedStartDate = dates.value.startDate.toISOString().split('T')[0];
+  const formattedEndDate = dates.value.endDate.toISOString().split('T')[0];
+
   const response = await axios.get('/report', {
     params: {
-      beginingDate: dates.value.startDate,
-      endDate: dates.value.endDate,
+      beginingDate: formattedStartDate,
+      endDate: formattedEndDate,
       source: selectedSource.value
     }
   });
@@ -184,6 +214,11 @@ const handleGenReport = async () => {
         await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
         startAnimations(loadingText, spinner);
         await getReport();
+
+        totales.value.registros = registros.value.length;
+        //totales.value.depositos = registros.value.reduce((total, item) => total + parseFloat(item.depositos || 0), 0).toFixed(2);
+        //totales.value.retiros = registros.value.reduce((total, item) => total + parseFloat(item.retiros || 0), 0).toFixed(2);
+        //totales.value.saldo = totales.value.depositos - totales.value.retiros;
       } catch (e) {
         console.log(e);
       }
@@ -202,6 +237,21 @@ const handleGenReport = async () => {
         await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
         startAnimations(loadingText, spinner);
         await getReportByPeriod();
+
+        /*totales.value.registros = registros.value.length;
+        totales.value.depositos = registros.value.reduce(
+          (total, item) => {
+            const depositValue = parseFloat(item.depositos);
+            return total + (!isNaN(depositValue) ? depositValue : 0);
+          }, 
+          0
+        ).toFixed(2);
+
+        totales.value.retiros = registros.value.reduce(
+          (total, item) => total + parseFloat(item.retiros || 0), 
+          0
+        ).toFixed(2);
+        totales.value.saldo = totales.value.depositos - totales.value.retiros;*/
       } catch (e) {
         console.log(e);
       }
@@ -226,23 +276,21 @@ const handleSelectPeriod = (period) => {
 }
 
 function formatCurrency(params) {
-    if (!params.value) return ''; // Manejar valores nulos o indefinidos
+    if (!params.value) return '';
     
-    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); // Convertir a número
-    if (isNaN(number)) return ''; // Manejar valores que no se pueden convertir a número
+    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); 
+    if (isNaN(number)) return ''; 
 
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
 }
 
 function customCellRenderer(params) {
   const value = params.valueFormatted ? params.valueFormatted : params.value;
-  
-  // Si no hay valor, retornar una cadena vacía o solo el valor sin estilos
+
   if (!value) {
     return '';
   }
 
-  // Retornar el valor con estilos sólo si hay contenido
   return `
     <span class="custom-cell">
       ${value}
@@ -250,7 +298,90 @@ function customCellRenderer(params) {
   `;
 }
 
+const formatearCantidad = (value) => {
+  const number = parseFloat(value); // Convertir a número flotante
+  if (isNaN(number)) return ""; // Verificar si no es un número
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 2, // Asegurar dos decimales
+    maximumFractionDigits: 2,
+  }).format(number);
+};
 
+const onFirstDataRendered = (params) => {
+  calculateTotals(params); 
+  //calculateFilteredTotals(params);
+}
+
+const onFilterChanged = async (params) => {
+  calculateFilteredTotals(params);
+}
+
+const isValidNumber = (value) => {
+  return !isNaN(parseFloat(value)) && isFinite(value);
+};
+
+const calculateTotals = async (params) => {
+  let saldoTotal = 0;
+  let ingresosSum = 0;
+  let egresosSum = 0;
+  let isFirstNode = true; // Bandera para identificar el primer nodo
+
+  const firstNode = params.api.getDisplayedRowAtIndex(0);
+  if (firstNode) {
+    saldoTotal = isValidNumber(firstNode.data.saldo) ? parseFloat(firstNode.data.saldo) : 0;
+    ingresosSum = isValidNumber(firstNode.data.depositos) ? parseFloat(firstNode.data.depositos) : 0;
+    //egresosSum = isValidNumber(firstNode.data.retiros) ? parseFloat(firstNode.data.retiros) : 0;
+  }
+
+  // Iterar sobre todos los nodos, independientemente de la paginación o el filtrado
+  params.api.forEachNode((node) => {
+    // Ignorar el primer nodo en el bucle
+    if (isFirstNode) {
+      isFirstNode = false;
+      return; // Saltar el primer nodo
+    }
+
+    const depositos = isValidNumber(node.data.depositos) ? parseFloat(node.data.depositos) : 0;
+    const retiros = isValidNumber(node.data.retiros) ? parseFloat(node.data.retiros) : 0;
+
+    // Log para depuración
+    //console.log(`Saldo actual: ${saldoTotal}, Depósitos: ${depositos}, Retiros: ${retiros}`);
+
+    // Sumar ingresos y egresos a los totales
+    ingresosSum += depositos;
+    egresosSum += retiros;
+
+    // Calcular saldo total acumulado
+    saldoTotal = (saldoTotal + depositos) - retiros;
+  });
+
+  await nextTick();
+  totales.value.depositos = ingresosSum;
+  totales.value.retiros = egresosSum;
+  totales.value.saldo = saldoTotal;
+};
+
+const calculateFilteredTotals = async (params) => {
+  let filteredIngresosSum = 0;
+  let filteredEgresosSum = 0;
+
+  // Iterar solo sobre los nodos visibles después del filtrado
+  params.api.forEachNodeAfterFilter((node) => {
+    if (isValidNumber(node.data.depositos)) {
+      filteredIngresosSum += parseFloat(node.data.depositos);
+    }
+    if (isValidNumber(node.data.retiros)) {
+      filteredEgresosSum += parseFloat(node.data.retiros);
+    }
+  });
+
+  await nextTick();
+  totales.value.depositos = filteredIngresosSum;
+  totales.value.retiros = filteredEgresosSum;
+  totales.value.saldo = filteredIngresosSum - filteredEgresosSum;
+};
 </script>
 
 <style lang="scss">
@@ -258,6 +389,12 @@ function customCellRenderer(params) {
   font-family: 'Nunito', sans-serif;
   font-weight: 200;
   color: #691C32;
+}
+.nunito-bold{
+  font-family: 'Nunito', sans-serif;
+  font-weight: 500;
+  color: #691C32;
+  font-style: italic;
 }
 .imgContainer{
   width: 100%;
@@ -271,36 +408,38 @@ function customCellRenderer(params) {
   height: 300px;
 }
 
-
 .tableContainer {
   width: 100%;
-  height: 50vh;
+  height: 60vh;
 }
-
 
 .deposit-cell {
   background-color: #e6f7e6; /* Fondo verde claro */
   color: #2e7d32; /* Texto verde */
   font-weight: bold;
-  border-radius: 10px;
 }
 
-/* Estilo para las celdas de retiros */
 .withdrawal-cell {
   background-color: #fdecea; /* Fondo rojo claro */
   color: #c62828; /* Texto rojo */
   font-weight: bold;
 }
 
-/* Estilo para las celdas de saldo */
 .balance-cell {
   background-color: #e3f2fd; /* Fondo azul claro */
   color: #1565c0; /* Texto azul */  font-weight: bold;
 }
 
-/* Estilo común para todas las celdas personalizadas */
 .custom-cell {
   display: flex;
   align-items: center;
+}
+
+.informe {
+  width: 100%;
+  min-height: 200px;
+  background-color: #f1f1f1;
+  border-radius: 15px;
+  margin-bottom: 5vh;
 }
 </style>

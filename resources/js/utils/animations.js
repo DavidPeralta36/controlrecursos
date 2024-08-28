@@ -1,11 +1,9 @@
-// Importa anime.js
 import anime from 'animejs';
 import { nextTick } from 'vue';
 
 let dotsAnimation = null;
 let spinnerAnimation = null;
 
-// Función para animar la salida del skeleton
 export const animateSkeletonOut = (skeletonDiv, loadingDiv, loads) => {
   return new Promise((resolve) => {
     anime({
@@ -25,7 +23,6 @@ export const animateSkeletonOut = (skeletonDiv, loadingDiv, loads) => {
   });
 };
 
-// Función para animar la entrada del loading
 export const animateLoadingIn = (loadingDiv) => {
   return new Promise((resolve) => {
     anime({
@@ -41,7 +38,6 @@ export const animateLoadingIn = (loadingDiv) => {
   });
 };
 
-// Función para iniciar las animaciones de carga
 export const startAnimations = (loadingText, spinner) => {
   dotsAnimation = anime({
     targets: loadingText.value,
@@ -65,13 +61,11 @@ export const startAnimations = (loadingText, spinner) => {
   });
 };
 
-// Función para detener las animaciones de carga
 export const stopAnimations = () => {
-  if (dotsAnimation) dotsAnimation.pause(); // Detiene la animación de puntos
-  if (spinnerAnimation) spinnerAnimation.pause(); // Detiene la animación del spinner
+  if (dotsAnimation) dotsAnimation.pause(); 
+  if (spinnerAnimation) spinnerAnimation.pause(); 
 };
 
-// Función para animar la salida del loading
 export const animateLoadingOut = (loadingDiv, tableDiv, loads) => {
   return new Promise((resolve) => {
     anime({
@@ -92,7 +86,6 @@ export const animateLoadingOut = (loadingDiv, tableDiv, loads) => {
   });
 };
 
-// Función para animar la entrada de la tabla
 export const animateTableIn = (tableDiv) => {
   return new Promise((resolve) => {
     anime({
@@ -100,7 +93,7 @@ export const animateTableIn = (tableDiv) => {
       opacity: [0, 1],
       translateY: [100, 0],
       duration: 500,
-      easing: 'easeOutBounce',
+      easing: 'easeInOutQuad',
       complete: () => {
         resolve();
       },
