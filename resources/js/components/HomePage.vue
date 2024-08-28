@@ -326,7 +326,7 @@ const calculateTotals = async (params) => {
   let saldoTotal = 0;
   let ingresosSum = 0;
   let egresosSum = 0;
-  let isFirstNode = true; // Bandera para identificar el primer nodo
+  let isFirstNode = true; 
 
   const firstNode = params.api.getDisplayedRowAtIndex(0);
   if (firstNode) {
@@ -335,25 +335,21 @@ const calculateTotals = async (params) => {
     //egresosSum = isValidNumber(firstNode.data.retiros) ? parseFloat(firstNode.data.retiros) : 0;
   }
 
-  // Iterar sobre todos los nodos, independientemente de la paginación o el filtrado
   params.api.forEachNode((node) => {
-    // Ignorar el primer nodo en el bucle
     if (isFirstNode) {
       isFirstNode = false;
-      return; // Saltar el primer nodo
+      return; 
     }
 
     const depositos = isValidNumber(node.data.depositos) ? parseFloat(node.data.depositos) : 0;
     const retiros = isValidNumber(node.data.retiros) ? parseFloat(node.data.retiros) : 0;
 
-    // Log para depuración
     //console.log(`Saldo actual: ${saldoTotal}, Depósitos: ${depositos}, Retiros: ${retiros}`);
 
-    // Sumar ingresos y egresos a los totales
+
     ingresosSum += depositos;
     egresosSum += retiros;
 
-    // Calcular saldo total acumulado
     saldoTotal = (saldoTotal + depositos) - retiros;
   });
 
@@ -366,21 +362,35 @@ const calculateTotals = async (params) => {
 const calculateFilteredTotals = async (params) => {
   let filteredIngresosSum = 0;
   let filteredEgresosSum = 0;
+  let filteredSaldoTotal = 0;
+  let filteredFirstNode = true;
 
-  // Iterar solo sobre los nodos visibles después del filtrado
+  const firstNode = params.api.getDisplayedRowAtIndex(0);
+  if (firstNode) {
+    filteredSaldoTotal = isValidNumber(firstNode.data.saldo) ? parseFloat(firstNode.data.saldo) : 0;
+    filteredIngresosSum = isValidNumber(firstNode.data.depositos) ? parseFloat(firstNode.data.depositos) : 0;
+    //filteredEgresosSum = isValidNumber(firstNode.data.retiros) ? parseFloat(firstNode.data.retiros) : 0;
+  }
+
   params.api.forEachNodeAfterFilter((node) => {
-    if (isValidNumber(node.data.depositos)) {
-      filteredIngresosSum += parseFloat(node.data.depositos);
+    if(filteredFirstNode) {
+      filteredFirstNode = false;
+      return;
     }
-    if (isValidNumber(node.data.retiros)) {
-      filteredEgresosSum += parseFloat(node.data.retiros);
-    }
+    const depositos = isValidNumber(node.data.depositos) ? parseFloat(node.data.depositos) : 0;
+    const retiros = isValidNumber(node.data.retiros) ? parseFloat(node.data.retiros) : 0;
+
+    filteredIngresosSum += depositos;
+    filteredEgresosSum += retiros;
+
+    filteredSaldoTotal = (filteredSaldoTotal + depositos) - retiros; 
+    
   });
 
   await nextTick();
   totales.value.depositos = filteredIngresosSum;
   totales.value.retiros = filteredEgresosSum;
-  totales.value.saldo = filteredIngresosSum - filteredEgresosSum;
+  totales.value.saldo = filteredSaldoTotal;
 };
 </script>
 
