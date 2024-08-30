@@ -60,47 +60,47 @@ class CargaController extends Controller
                     DB::beginTransaction();
     
                     foreach($data as $row){
-    
-                        if($row[0] == null || $row[0] == '_' || $row[0] == ' ' || $row[0] == '' ){
+
+                        if($row[1] == null || $row[1] == '_' || $row[1] == ' ' || $row[1] == '' ){
                             continue;
                         }
                         $registro = [
-                            'fechas' => $row[0], 
-                            'mes' => $row[1],
-                            'metodo_pago' => $row[2], 
-                            'rfc' => $row[3],
-                            'proveedor' => $row[4],
-                            'factura' => $row[5],
-                            'parcial' => $row[6],
-                            'depositos' => $row[7],
-                            'retiros' => $row[8],
-                            'saldo' => $row[9],
-                            'r' => $row[10],
-                            'partida' => $row[11],
-                            'fecha_factura' => $row[12],
-                            'folio_fiscal' => $row[13],
-                            'tipo_adjudicacion' => $row[14],
-                            'num_adj_contrato' => $row[15],
-                            //'num_techo_financiero' => $row[16],
+                            'fechas' => $row[1], 
+                            'mes' => $row[2],
+                            'metodo_pago' => $row[3], 
+                            'rfc' => $row[4],
+                            'proveedor' => $row[5],
+                            'factura' => $row[6],
+                            'parcial' => $row[7],
+                            'depositos' => $row[8],
+                            'retiros' => $row[9],
+                            'saldo' => $row[10],
+                            'r' => $row[11],
+                            'partida' => $row[12],
+                            'fecha_factura' => $row[13],
+                            'folio_fiscal' => $row[14],
+                            'tipo_adjudicacion' => $row[15],
+                            'num_adj_contrato' => $row[16],
+                            //'num_techo_financiero' => $row[17],
                             //'num_suficiencia_presupuestal' => $row[16],
-                            'orden_servicio_compra' => $row[17],
-                            'clc' => $row[18],
-                            'poliza' => $row[19],
-                            'numero_cuenta_proovedor' => $row[20],
-                            'referencia_bancaria' => $row[21],
-                            'clue' => $row[22],
-                            'nombre_clue' => $row[23],
-                            'nombrepartida' => $row[24] ?? null, // Evitar errores si falta índice
-                            'mes_servicio' => $row[25] ?? null,
+                            'orden_servicio_compra' => $row[18],
+                            'clc' => $row[19],
+                            'poliza' => $row[20],
+                            'numero_cuenta_proovedor' => $row[21],
+                            'referencia_bancaria' => $row[22],
+                            'clue' => $row[23],
+                            'nombre_clue' => $row[24],
+                            'nombrepartida' => $row[25] ?? null, // Evitar errores si falta índice
+                            'mes_servicio' => $row[26] ?? null,
                             //'metodo_pago' => $row[26] ?? null,
                             'idfuente' => $source,
                             'ejercicio' => $periodo,
                         ];
                         $ckp = $registro;
                         Log::info("Registro", $registro);
-                        //registrobancos::create($registro);
+                        registrobancos::create($registro);
                     }
-                    //DB::commit();
+                    DB::commit();
                     echo "Datos insertados correctamente.";
                     Log::info("Datos ingresados correctamente");
                 }catch(\Exception $ex){

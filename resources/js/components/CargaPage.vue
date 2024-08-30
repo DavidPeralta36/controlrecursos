@@ -59,7 +59,7 @@ const props = defineProps({
 
 const selectedSource = ref(null);
 const uploadContainer = ref(null);
-const newBank = ref(false);
+const newBank = ref(true);
 const selectedPeriod = ref(null);
 const newBankYear = ref(null);
 const valid = ref(false);
@@ -99,6 +99,17 @@ const handleFileChange = async (e) => {
 
   if (bankFile.value) {
     
+    if(selectedSource && selectedSource.value == 4){
+        loadASLE();
+    }
+
+    if(selectedSource && selectedSource.value == 5){
+        loadE001();
+    }
+  }
+}
+
+const loadE001 = () => {
     const reader = new FileReader();
 
     reader.onload = async (event) => {
@@ -146,7 +157,7 @@ const handleFileChange = async (e) => {
             });
 
             excelData.value = formattedDataRows;
-            console.log(excelData.value);
+            console.log(formattedDataRows);
         }
 
         notify({
@@ -174,8 +185,84 @@ const handleFileChange = async (e) => {
     };
 
     reader.readAsArrayBuffer(bankFile.value);
+}
+
+const loadASLE = () => {
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      const data = new Uint8Array(event.target.result);
+      const woorkbook = XLSX.read(data, { type: 'array' });
+
+      const sheetName = woorkbook.SheetNames[3];
     
-  }
+      if(sheetName){
+        const woorksheet = woorkbook.Sheets[sheetName];
+
+        const sheetJson = XLSX.utils.sheet_to_json(woorksheet, { header: 1, blankrows: false });
+
+        const headerRowIndex = sheetJson.findIndex(row => 
+            headerColumnsSearch.some(col => row.includes(col))
+        );
+
+        if(headerRowIndex !== -1){
+            const dataRows = sheetJson.slice(headerRowIndex);
+          
+            const maxColumns = dataRows.reduce((max, row) => Math.max(max, row.length), 0);
+
+            const formattedDataRows = dataRows.map(row => {
+                const formattedRow = row.map(cell => {
+                    if (typeof cell === 'number' && cell === row[1]) {
+                        if (cell > 59 && cell < 2958465) { 
+                            return XLSX.SSF.format("yyyy-mm-dd", cell);
+                        }
+                    }
+
+                    if (typeof cell === 'string' && cell === row[12]) {
+                        if(cell.length === 0 || cell === '' || cell === ' '){
+                            return null;
+                        }
+                    }
+
+                    return cell;
+                });
+
+                while (formattedRow.length < maxColumns) {
+                formattedRow.push(null);
+                }
+
+                return formattedRow;
+            });
+
+            excelData.value = formattedDataRows;
+            console.log(formattedDataRows);
+        }
+
+        notify({
+            title: 'Archivo cargado y listo para enviar',
+            text: 'Favor de verificar el archivo antes de enviar',
+            type: 'info',
+            duration: 5000,
+            speed: 1000,
+            })
+        }
+
+        readyToSend.value = true;
+        await nextTick();
+        animateSendButton();
+    }
+
+    reader.onerror = () => {
+      notify({
+        title: 'Error al leer el archivo',
+        text: 'Ocurrió un problema al leer el archivo, por favor intente nuevamente.',
+        type: 'error',
+        duration: 5000,
+        speed: 1000,
+      });
+    };
+
+    reader.readAsArrayBuffer(bankFile.value);
 }
 
 const habdleUploadFile = async () => {
