@@ -3,7 +3,9 @@
         <div class="mt-5">
             <p class="h3 mx-3 nunito font-weight-bold">Reporte general por fuentes de financiamiento</p>
             <hr/>
-            <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>
+            <div style="min-height: 16vh">
+              <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>
+            </div>
             <ControlsGeneralReport 
               :dates="dates" 
               :rangeSearch="rangeSearch" 
@@ -71,6 +73,7 @@ import { Notifications, notify } from '@kyvg/vue3-notification';
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
 import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
+import axios from 'axios';
 import {
   animateSkeletonOut,
   animateLoadingOut,

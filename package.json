@@ -34,6 +34,7 @@
         "animejs": "^3.2.2",
         "oh-vue-icons": "^1.0.0-rc3",
         "vue-select": "^4.0.0-beta.6",
-        "vue3-popper": "^1.5.0"
+        "vue3-popper": "^1.5.0",
+        "xlsx": "^0.18.5"
     }
 }

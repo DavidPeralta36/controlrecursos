@@ -4,7 +4,7 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-require('./bootstrap');
+//require('./bootstrap');
 import axios from 'axios';
 import { createApp } from 'vue'; // Importar createApp desde Vue 3
 import Popper from 'vue3-popper';

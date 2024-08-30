@@ -23,9 +23,12 @@ Route::get('/carga', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/carga', 'CargaController@index')->name('carga');
 
 //Route::get('/users', [HomeController::class,'getUsers']);
 
 Route::get('/report', 'HomeController@getReport')->name('report');
 Route::get('/report_by_period', 'HomeController@getReportByPeriod')->name('report_by_period');
 
+
+Route::post('/upload_report', 'CargaController@uploadReport')->name('upload_report');

@@ -10,6 +10,8 @@ class registrobancos extends Model
     protected $primaryKey = 'id';
     public $autoIncrement = true;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'fechas',
         'mes',
@@ -35,7 +37,7 @@ class registrobancos extends Model
         'referencia_bancaria',
         'clue',
         'nombre_clue',
-        'nombre_partida',
+        'nombrepartida',
         'mes_servicio',
         'metodo_pago',
         'idfuente',
