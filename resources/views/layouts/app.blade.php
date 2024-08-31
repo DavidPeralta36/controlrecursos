@@ -27,6 +27,9 @@
                 <a class="navbar-brand" href="{{ url('/') }}">
                     INDESALUDRH.COM
                 </a>
+                <a class="navbar-brand" href="{{ url('/home') }}">
+                    Consulta
+                </a>
                 <a class="navbar-brand" href="{{ url('/carga') }}">
                     Carga
                 </a>

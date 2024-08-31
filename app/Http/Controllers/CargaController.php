@@ -46,6 +46,72 @@ class CargaController extends Controller
         $source = $request->input('source');
         $periodo = $request->input('periodo');
 
+        if($source == 1){
+            if ($file->getClientOriginalExtension() === 'json') {
+                $data = json_decode(file_get_contents($file->getRealPath()), true);
+    
+                array_shift($data);
+    
+                $ckp = [];
+    
+                try{
+                    Log::info("Iniciando transaccion");
+    
+                    DB::beginTransaction();
+    
+                    foreach($data as $row){
+
+                        if($row[1] == null || $row[1] == '_' || $row[1] == ' ' || $row[1] == '' ){
+                            continue;
+                        }
+                        $registro = [
+                            'fechas' => $row[1], 
+                            'mes' => $row[2],
+                            'forma_pago' => $row[3], 
+                            'metodo_pago' => $row[4], 
+                            'rfc' => $row[5],
+                            'proveedor' => $row[6],
+                            'factura' => $row[7],
+                            'parcial' => $row[8],
+                            'depositos' => $row[9],
+                            'retiros' => $row[10],
+                            'saldo' => $row[11],
+                            'r' => $row[12],
+                            'partida' => $row[13],
+                            'fecha_factura' => $row[14],
+                            'folio_fiscal' => $row[15],
+                            'tipo_adjudicacion' => $row[16],
+                            'num_adj_contrato' => $row[17],
+                            //'num_techo_financiero' => $row[17],
+                            'num_suficiencia_presupuestal' => $row[18],
+                            'orden_servicio_compra' => $row[19],
+                            'clc' => $row[20],
+                            'poliza' => $row[21],
+                            'numero_cuenta_proovedor' => $row[22],
+                            'referencia_bancaria' => $row[23],
+                            'clue' => $row[24],
+                            'nombre_clue' => $row[25],
+                            'nombrepartida' => $row[26] ?? null, // Evitar errores si falta índice
+                            'mes_servicio' => $row[27] ?? null,
+                            //'metodo_pago' => $row[26] ?? null,
+                            'idfuente' => $source,
+                            'ejercicio' => $periodo,
+                        ];
+                        $ckp = $registro;
+                        Log::info("Registro", $registro);
+                        //registrobancos::create($registro);
+                    }
+                    //DB::commit();
+                    echo "Datos insertados correctamente.";
+                    Log::info("Datos ingresados correctamente");
+                }catch(\Exception $ex){
+                    Log::info("Errorsote: ".$ex->getMessage());
+                    Log::info("",$ckp);
+                    echo "Error al insertar los datos: " + $ex->getMessage();
+                }
+            } 
+        }
+
         if($source == 4){
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);
