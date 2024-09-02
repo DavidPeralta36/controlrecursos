@@ -43,9 +43,6 @@
                         <li class="nav-item">
                             <a class="nav-link" :class="{ 'disabled': currentRoute === 'login' }" href="/login">Entrar</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" :class="{ 'disabled': currentRoute === 'register' }" href="/register">Registrarse</a>
-                        </li>
                     </ul>
                 </div>
             </div>
