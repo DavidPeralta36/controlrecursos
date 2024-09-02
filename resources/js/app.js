@@ -14,6 +14,7 @@ import { OhVueIcon, addIcons } from "oh-vue-icons";
 import { FaChartBar } from 'oh-vue-icons/icons';
 import HomePage from './components/HomePage.vue'; // Importa tu componente
 import CargaPage from './components/CargaPage.vue';
+import NavBar from './components/auxiliares/NavBar.vue';
 
 axios.defaults.withCredentials = true;
 const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -30,7 +31,8 @@ addIcons(FaChartBar);
 const app = createApp({
     components: {
         'home-page': HomePage, // Registra tu componente,
-        'carga-page': CargaPage // Registra tu componente,
+        'carga-page': CargaPage, // Registra tu componente,
+        'navbar': NavBar, // Registra tu componente,
     }
 });
 

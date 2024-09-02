@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container marTop">
+<div class="container marTop flex justify-content-center align-items-center" style="margin-top: 20vh;"> 
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card d-flex flex-row">
@@ -40,7 +40,7 @@
                         </div>
 
                         <div class="loginButtonContainer">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary my-2">
                                 Iniciar sesion
                             </button>
 

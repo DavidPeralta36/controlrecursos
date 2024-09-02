@@ -1,7 +1,7 @@
 <template >
-    <div class="h-100 w-100 d-flex flex-column">
-        <div class="mt-5">
-            <p class="h3 mx-3 nunito font-weight-bold">Reporte general por fuentes de financiamiento</p>
+    <div class="h-100 w-100 d-flex flex-column container con">
+        <div>
+            <p class="h3 nunito font-weight-bold">Reporte general por fuentes de financiamiento</p>
             <hr/>
             <div style="min-height: 16vh">
               <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>
@@ -398,6 +398,9 @@ const calculateFilteredTotals = async (params) => {
 </script>
 
 <style lang="scss">
+.con{
+  margin-top: 10vh;
+}
 .nunito{
   font-family: 'Nunito', sans-serif;
   font-weight: 200;

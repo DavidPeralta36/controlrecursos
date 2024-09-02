@@ -1,5 +1,5 @@
 <template lang="html">
-    <div class="container">
+    <div class="container con">
         <div class="mt-3">
             <p class="h2 nunito-bold" style="font-style: normal">Carga de banco a la base de datos</p>
             <hr/>
@@ -501,6 +501,11 @@ const endAnimation = () => {
 
 
 <style >
+.con{
+    margin-top: 10vh;
+}
+
+
 .fuentes{
     height: 10vh;
     width: 100%;
