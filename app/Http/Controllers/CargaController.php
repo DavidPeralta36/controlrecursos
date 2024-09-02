@@ -46,7 +46,7 @@ class CargaController extends Controller
         $source = $request->input('source');
         $periodo = $request->input('periodo');
 
-        if($source == 1){
+        if($source == 1){//U013
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);
     
@@ -98,12 +98,11 @@ class CargaController extends Controller
                             'ejercicio' => $periodo,
                         ];
                         $ckp = $registro;
-                        Log::info("Registro", $registro);
-                        //registrobancos::create($registro);
+                        
+                        registrobancos::create($registro);
                     }
-                    //DB::commit();
+                    DB::commit();
                     echo "Datos insertados correctamente.";
-                    Log::info("Datos ingresados correctamente");
                 }catch(\Exception $ex){
                     Log::info("Errorsote: ".$ex->getMessage());
                     Log::info("",$ckp);
@@ -112,7 +111,7 @@ class CargaController extends Controller
             } 
         }
 
-        if($source == 4){
+        if($source == 4){//ASLE
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);
     
@@ -163,12 +162,10 @@ class CargaController extends Controller
                             'ejercicio' => $periodo,
                         ];
                         $ckp = $registro;
-                        Log::info("Registro", $registro);
                         registrobancos::create($registro);
                     }
                     DB::commit();
                     echo "Datos insertados correctamente.";
-                    Log::info("Datos ingresados correctamente");
                 }catch(\Exception $ex){
                     Log::info("Errorsote: ".$ex->getMessage());
                     Log::info("",$ckp);
@@ -227,12 +224,10 @@ class CargaController extends Controller
                             'ejercicio' => $periodo,
                         ];
                         $ckp = $registro;
-                        Log::info("Registro", $registro);
-                        //registrobancos::create($registro);
+                        registrobancos::create($registro);
                     }
-                    //DB::commit();
+                    DB::commit();
                     echo "Datos insertados correctamente.";
-                    Log::info("Datos ingresados correctamente");
                 }catch(\Exception $ex){
                     Log::info("Errorsote: ".$ex->getMessage());
                     Log::info("",$ckp);

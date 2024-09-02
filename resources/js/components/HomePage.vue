@@ -20,7 +20,7 @@
             <div :class="!loads.loaded ? 'imgContainer' : 'tableContainer'">
               <div v-if="loads.loading" class="text-center" ref="loadingDiv">
                 <div ref="spinner" class="spinner-border" role="status">
-                  <span class="sr-only">Loading...</span>
+                  <span class="visually-hidden">Loading...</span>
                 </div>
                 <p ref="loadingText">Generando reporte</p>
               </div>

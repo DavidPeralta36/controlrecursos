@@ -160,7 +160,6 @@ const loadE001 = () => {
             });
 
             excelData.value = formattedDataRows;
-            console.log(formattedDataRows);
         }
 
         notify({
@@ -238,7 +237,6 @@ const loadASLE = () => {
             });
 
             excelData.value = formattedDataRows;
-            console.log(formattedDataRows);
         }
 
         notify({
@@ -328,7 +326,6 @@ const loadU013= () => {
             });
 
             excelData.value = formattedDataRows;
-            console.log(formattedDataRows);
         }
 
         notify({
@@ -359,12 +356,23 @@ const loadU013= () => {
 }
 
 const habdleUploadFile = async () => {
+    sendButtonAnimated.value = false;
+    await nextTick();
+    animateLoading();
+
     const formData = new FormData();
     const jsonBlob = new Blob([JSON.stringify(excelData.value)], { type: 'application/json' });
     formData.append('archivo', jsonBlob, 'data.json');
     formData.append('source', selectedSource.value);
     formData.append('periodo', newBankYear.value);
     try {
+        notify({
+                title: 'Subiendo archivo',
+                text: 'La información se esta guardando en el servidor',
+                type: 'warn',
+                duration: 5000,
+                speed: 1000,
+            });
         const response = await axios.post('/upload_report', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -379,6 +387,10 @@ const habdleUploadFile = async () => {
                 duration: 5000,
                 speed: 1000,
             });
+            endAnimation();
+            selectedPeriod.value = null;
+            selectedSource.value = null;
+            newBankYear.value = null;
         } else {
             notify({
                 title: 'Error al subir archivo',
@@ -442,6 +454,49 @@ const animateSendButton = () => {
     });
 }
 
+const animateLoading = () => {
+    anime.remove(sendButton.value);
+    
+    anime({
+        targets: sendButton.value,
+        opacity: [0, 1],
+        width: ['200px', '30px'],
+        height: ['40px', '30px'],
+        borderRadius: '5px',
+        easing: 'easeOutExpo',
+        duration: 500,
+    })
+    //alterna la rotación de la imagen
+    anime({
+        targets: sendButton.value,
+        rotate: '2turn',
+        width: ['30px', '40px'],
+        height: ['30px', '40px'],
+        easing: 'easeInOutSine',
+        borderRadius: '15px',
+        duration: 750,
+        direction: 'alternate',
+        delay:250,
+        loop: true,
+    })
+}
+
+const endAnimation = () => {
+    anime.remove(sendButton.value);
+
+    anime({
+        targets: sendButton.value,
+        width: ['30px', '200px'],
+        height: ['30px', '40px'],
+        borderRadius: '5px',  // Puede que prefieras un borderRadius diferente al original
+        easing: 'easeOutExpo',
+        duration: 500,
+        rotate: '0deg', // Asegura que el botón esté horizontal
+        complete: () => {
+            sendButtonAnimated.value = true;
+        }
+    });
+}
 </script>
 
 
