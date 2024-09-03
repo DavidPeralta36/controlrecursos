@@ -10,6 +10,7 @@ import CargaPage from './components/CargaPage.vue';
 import NavBar from './components/auxiliares/NavBar.vue';
 import RegisterPage from './components/RegisterPage.vue';
 import { createDynamicForms } from '@asigloo/vue-dynamic-forms';
+import router from './components/router/router.js';
 
 const VueDinamicForms = createDynamicForms({
 
@@ -33,6 +34,8 @@ const app = createApp({
         'register-page': RegisterPage,
     }
 });
+
+app.use(router);
 
 app.component('v-icon', OhVueIcon);
 app.use(Popper);
