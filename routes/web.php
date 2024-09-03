@@ -20,6 +20,10 @@ Route::get('/carga', function () {
     return view('carga');
 });
 
+Route::get('/users', function () {
+    return view('newuser');
+});
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
@@ -32,3 +36,6 @@ Route::get('/report_by_period', 'HomeController@getReportByPeriod')->name('repor
 
 
 Route::post('/upload_report', 'CargaController@uploadReport')->name('upload_report');
+
+
+Route::post('/register', 'UsersController@createNewUser')->name('register');

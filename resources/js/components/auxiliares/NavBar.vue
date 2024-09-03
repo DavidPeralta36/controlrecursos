@@ -29,7 +29,7 @@
                                 {{ props.user.name }} <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Administrar usuarios</a></li>
+                                <li><a class="dropdown-item" href="/newuser">Administrar usuarios</a></li>
                                 <li>
                                     <a class="dropdown-item" href="#" @click="logout">Cerrar sesión</a>
                                 </li>
