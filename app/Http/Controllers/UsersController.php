@@ -75,4 +75,58 @@ class UsersController extends Controller
         }
     }
 
+    public function getUsers(){
+        $results = User::all();
+
+        return response()->json($results); 
+    }
+
+    public function updateUser(Request $request, $id) {
+        // Buscar el usuario por ID
+        $user = User::find($id);
+    
+        // Verificar si el usuario existe
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    
+        // Validar la solicitud
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+    
+        // Actualizar el usuario con los nuevos datos
+        $user->name = $validatedData['name'];
+        $user->email = $validatedData['email'];
+    
+        // Si se proporciona una nueva contraseña, actualizarla
+        if (!empty($validatedData['password'])) {
+            $user->password = Hash::make($validatedData['password']);
+        }
+    
+        // Guardar los cambios
+        $user->save();
+    
+        // Retornar la respuesta JSON con los datos del usuario actualizado
+        return response()->json($user);
+    }
+    
+    public function deleteUser($id) {
+        // Buscar el usuario por ID
+        $user = User::find($id);
+    
+        // Verificar si el usuario existe
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    
+        // Eliminar el usuario
+        $user->delete();
+    
+        return response()->json(['message' => "Usuario " . $user->name . " eliminado"]);
+    }
+    
+
 }

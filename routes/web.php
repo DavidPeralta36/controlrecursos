@@ -20,6 +20,12 @@ Route::get('/carga', function () {
     return view('carga');
 });
 
+// routes/web.php
+Route::get('/users/{any}', function () {
+    return view('newuser');  // Carga la misma vista para todas las subrutas de /users
+})->where('any', '.*');
+
+// También puedes mantener esta ruta específica para la base /users
 Route::get('/users', function () {
     return view('newuser');
 });
@@ -39,3 +45,6 @@ Route::post('/upload_report', 'CargaController@uploadReport')->name('upload_repo
 
 
 Route::post('/register', 'UsersController@createNewUser')->name('register');
+Route::get('/getusers', 'UsersController@getUsers')->name('users');
+Route::put('/updateuser/{id}', 'UsersController@updateUser')->name('updateuser');
+Route::delete('/deleteuser/{id}', 'UsersController@deleteUser')->name('deleteuser');

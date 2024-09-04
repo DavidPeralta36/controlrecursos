@@ -29,7 +29,7 @@
                                 {{ props.user.name }} <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/newuser">Administrar usuarios</a></li>
+                                <li><a class="dropdown-item" href="/users/add">Administrar usuarios</a></li>
                                 <li>
                                     <a class="dropdown-item" href="#" @click="logout">Cerrar sesión</a>
                                 </li>
@@ -72,5 +72,15 @@ function logout() {
 }
 .ml {
     margin-left: 100px;
+}
+
+@media (max-width: 990px) {
+    .ml {
+        margin-left: 0px;
+    }
+    
+    .mr {
+        margin-right: 0px;
+    }
 }
 </style>

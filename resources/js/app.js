@@ -4,7 +4,7 @@ import Popper from 'vue3-popper';
 import '../sass/theme.css'
 import Notifications from '@kyvg/vue3-notification'
 import { OhVueIcon, addIcons } from "oh-vue-icons";
-import { FaChartBar } from 'oh-vue-icons/icons';
+import { FaChartBar, RiEdit2Fill, MdDeleteRound } from 'oh-vue-icons/icons';
 import HomePage from './components/HomePage.vue'; 
 import CargaPage from './components/CargaPage.vue';
 import NavBar from './components/auxiliares/NavBar.vue';
@@ -24,7 +24,7 @@ if (token) {
     console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
 }
 
-addIcons(FaChartBar);
+addIcons(FaChartBar, RiEdit2Fill, MdDeleteRound);
 
 const app = createApp({
     components: {

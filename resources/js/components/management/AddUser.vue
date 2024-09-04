@@ -4,23 +4,20 @@
         <hr>
         <dynamic-form
             :form="form"
-            @submitted="props.handleSubmit"
-            @error="props-handleError"
-            @change="props.handleChange"
+            @submitted="handleSubmit"
+            @error="handleError"
+            @change="handleChange"
         />
         <hr/>
         <button submit="true" :form="form?.id" class="btn btn-secondary">Registrar usuario</button>
+        <Notifications position="bottom left" />
     </div>
 </template>
 <script setup>
 import { EmailField, PasswordField, TextField, SelectField, required, Validator, pattern, email } from '@asigloo/vue-dynamic-forms';
-import { defineProps, ref } from 'vue';
-
-const props = defineProps({
-    handleSubmit: Function,
-    handleError: Function,
-    handleChange: Function,
-});
+import { ref} from 'vue';
+import { Notifications, notify } from '@kyvg/vue3-notification';
+import axios from 'axios';
 
 const form = ref({
     id: 'register-form',
@@ -76,6 +73,50 @@ const form = ref({
         }),
     },
 });
+
+const formData = ref({})
+
+const handleSubmit = async () => {
+    try{
+        const formDt = JSON.stringify(formData);
+
+        const response = await axios.post('/register', formDt, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if(response.status === 200){
+            notify({
+                title:"Registro exitoso",
+                text: "El usuario se ha registrado correctamente",
+                type: "success",
+                duration: 5000,
+            })
+        }
+
+    }catch(e){
+        notify({
+            title:"Error",
+            text: "Se encontro un error al enviar el formulario: "+e,
+            type: "error",
+            duration: 5000,
+        })
+    }
+}
+
+const handleError = (errors) => {
+    notify({
+        title:"Error, no se ha enviado el formulario",
+        text: "No se ha validado correctamente el formulario, revise los campos",
+        type: "error",
+        duration: 5000,
+    })
+}
+
+const handleChange = (data) => {
+    formData.value = data;
+}
 </script>
 <style lang="css">
     .addUserForm{
