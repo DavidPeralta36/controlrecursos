@@ -9,7 +9,7 @@
             @change="handleChange"
         />
         <hr/>
-        <button submit="true" :form="form?.id" class="btn btn-secondary">Registrar usuario</button>
+        <button submit="true" ref="btnRef" class="btn btn-primary" style="width: 300px;" @click="handleSubmit">Registrar</button>
         <Notifications position="bottom left" />
     </div>
 </template>
@@ -18,6 +18,7 @@ import { EmailField, PasswordField, TextField, SelectField, required, Validator,
 import { ref} from 'vue';
 import { Notifications, notify } from '@kyvg/vue3-notification';
 import axios from 'axios';
+import anime from 'animejs';
 
 const form = ref({
     id: 'register-form',
@@ -74,6 +75,8 @@ const form = ref({
     },
 });
 
+const btnRef = ref(null);
+
 const formData = ref({})
 
 const handleSubmit = async () => {
@@ -87,6 +90,8 @@ const handleSubmit = async () => {
         });
 
         if(response.status === 200){
+            animateSendForm();
+
             notify({
                 title:"Registro exitoso",
                 text: "El usuario se ha registrado correctamente",
@@ -116,6 +121,22 @@ const handleError = (errors) => {
 
 const handleChange = (data) => {
     formData.value = data;
+}
+
+const animateSendForm = ( )=> {
+    anime.timeline()
+    .add({
+      targets: btnRef.value,
+      width: ['300px', '30px'],      // Anima a un círculo de 50px width
+      easing: 'easeOutExpo',
+      duration: 500,
+    })
+    .add({
+      targets: btnRef.value,
+      easing: 'easeInOutSine',
+      duration: 250,
+      opacity: [1, 0],
+    })
 }
 </script>
 <style lang="css">
