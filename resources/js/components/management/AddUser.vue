@@ -1,4 +1,4 @@
-<template lang="">
+<template lang="html">
     <div class="addUserForm">
         <p class="h3">Registro de usuarios para el acceso al sistema</p>
         <hr>
@@ -9,13 +9,17 @@
             @change="handleChange"
         />
         <hr/>
-        <button submit="true" ref="btnRef" class="btn btn-primary" style="width: 300px;" @click="handleSubmit">Registrar</button>
+        <button submit="true" ref="btnRef" class="btn btn-primary" style="width: 300px;" @click="handleSubmit" v-if="!btnAnimated">{{ animatingBtn ? ' ' : 'Registrar' }}</button>
+        <div style="height: 50px; width: 100px" class="d-flex justify-content-start align-items-start " v-else> 
+            <video src="/assets/Animation - 1725470192201.webm" style="height: 250%; width:100%; margin-top: -30px" autoplay muted  @ended="webmEnd" /> 
+        </div>
+        
         <Notifications position="bottom left" />
     </div>
 </template>
 <script setup>
 import { EmailField, PasswordField, TextField, SelectField, required, Validator, pattern, email } from '@asigloo/vue-dynamic-forms';
-import { ref} from 'vue';
+import { ref, nextTick} from 'vue';
 import { Notifications, notify } from '@kyvg/vue3-notification';
 import axios from 'axios';
 import anime from 'animejs';
@@ -76,6 +80,8 @@ const form = ref({
 });
 
 const btnRef = ref(null);
+const btnAnimated = ref(false);
+const animatingBtn = ref(false);
 
 const formData = ref({})
 
@@ -124,10 +130,12 @@ const handleChange = (data) => {
 }
 
 const animateSendForm = ( )=> {
+    animatingBtn.value = true;
     anime.timeline()
     .add({
       targets: btnRef.value,
       width: ['300px', '30px'],      // Anima a un círculo de 50px width
+      height: '40px',
       easing: 'easeOutExpo',
       duration: 500,
     })
@@ -136,6 +144,34 @@ const animateSendForm = ( )=> {
       easing: 'easeInOutSine',
       duration: 250,
       opacity: [1, 0],
+      complete: () => {
+        btnAnimated.value = true;
+      }
+    })
+}
+
+const webmEnd = async () => {
+    btnAnimated.value = false;
+    await nextTick();
+    animateEnd();
+}
+
+const animateEnd = () => {
+    anime.timeline()
+    .add({
+        targets: btnRef.value,
+        easing: 'easeInOutSine',
+        duration: 250,
+        opacity: [0, 1], 
+    })
+    .add({
+        targets: btnRef.value,
+        width: ['30px', '300px'],      // Anima a un círculo de 50px width width: 
+        easing: 'easeOutExpo',
+        duration: 500,
+        complete: () => {
+            animatingBtn.value = false;
+        }
     })
 }
 </script>
