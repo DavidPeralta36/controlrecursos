@@ -237,8 +237,7 @@ const loadASLE = () => {
     const formatFile = [
         "FECHA",
         "MES",
-        "FORMA\r\nDE PAGO",
-        "METODO DE PAGO",
+        "METODO \r\nDE PAGO",
         "RFC",
         "PROVEDOR",
         "FACTURA ",
@@ -252,7 +251,7 @@ const loadASLE = () => {
         "FOLIO FISCAL",
         "TIPO DE \r\nADJUDICACION",
         "NUMERO DE ADJUDICACION \r\nO CONTRATO",
-        "NUMERO DE SUFICIENCIA PRESUPUESTAL",
+        "NUMERO DE \r\nTECHO FINANCIERO",
         "ORDEN DE SERVICIO \r\nO COMPRA",
         "CLC",
         "POLIZA",
@@ -260,9 +259,9 @@ const loadASLE = () => {
         "REFERENCIA BANCARIA",
         "CLUE",
         "APLICA EN:",
-        "NOMBRE DE LA PARTIDA",
-        "MES DE SERVICIO"
+        "NOMBRE DE LA PARTIDA"
     ];
+
     
     reader.onload = async (event) => {
       const data = new Uint8Array(event.target.result);
@@ -277,8 +276,21 @@ const loadASLE = () => {
 
 
         const matchFileFormat = sheetJson.length > 0 && formatFile.every(column => 
-            sheetJson[2].includes(column)
+            sheetJson[5].includes(column)
         );
+
+        console.log(sheetJson);
+
+        if(!matchFileFormat){{
+            notify({
+                title: 'Error al leer el archivo',
+                text: 'El archivo no tiene el formato correcto',
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+            return;
+        }}
 
         const headerRowIndex = sheetJson.findIndex(row => 
             headerColumnsSearch.some(col => row.includes(col))
