@@ -24,12 +24,9 @@
             <div ref="uploadContainer" style="opacity: 0; " v-if="valid">
                 <p class="nunito h4">Origen de datos</p>
                 <div class="input-group mb-3" >
-                    <div class="input-group-prepend">
-                        <span class="input-group-text" id="inputGroupFileAddon01">Cargar</span>
-                    </div>
                     <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="bankFile" aria-describedby="ariaBankFile" @change="handleFileChange">
-                        <label class="custom-file-label" for="bankFile">{{ bankFile ? bankFile.name : 'Seleccionar archivo' }}</label>
+                        <input type="file" class="form-control" id="bankFile" aria-describedby="ariaBankFile" @change="handleFileChange">
+                        <label class="form-label" for="bankFile">{{ bankFile ? bankFile.name : 'Seleccionar archivo' }}</label>
                     </div>
                 </div>
             </div>
@@ -115,6 +112,35 @@ const handleFileChange = async (e) => {
 const loadE001 = () => {
     const reader = new FileReader();
 
+    const formatFile = [
+        "FECHA",
+        "MES",
+        "METODO \r\nDE PAGO",
+        "RFC",
+        "PROVEDOR",
+        "FACTURA ",
+        "PARCIAL",
+        "RETIROS",
+        "DEPOSITOS",
+        "SALDO",
+        "R",
+        "PARTIDA PRESUPUESTAL",
+        "FECHA DE FACTURA",
+        "FOLIO FISCAL",
+        "TIPO DE \r\nADJUDICACION",
+        "NUMERO DE ADJUDICACION \r\nO CONTRATO",
+        "NUMERO DE \r\nTECHO FINANCIERO",
+        "ORDEN DE SERVICIO \r\nO COMPRA",
+        "CLC",
+        "POLIZA",
+        "NUMERO DE CUENTA\r\nDEL PROVEEDOR",
+        "REFERENCIA BANCARIA",
+        "CLUE",
+        "APLICA EN:",
+        "NOMBRE DE LA PARTIDA"
+    ];
+
+
     reader.onload = async (event) => {
       const data = new Uint8Array(event.target.result);
       const woorkbook = XLSX.read(data, { type: 'array' });
@@ -125,6 +151,22 @@ const loadE001 = () => {
         const woorksheet = woorkbook.Sheets[sheetName];
 
         const sheetJson = XLSX.utils.sheet_to_json(woorksheet, { header: 1, blankrows: false });
+
+
+        const matchFileFormat = sheetJson.length > 0 && formatFile.every(column => 
+            sheetJson[6].includes(column)
+        );
+
+        if(!matchFileFormat){{
+            notify({
+                title: 'Error al leer el archivo',
+                text: 'El archivo no tiene el formato correcto',
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+            return;
+        }}
 
         const headerRowIndex = sheetJson.findIndex(row => 
             headerColumnsSearch.some(col => row.includes(col))
@@ -192,6 +234,36 @@ const loadE001 = () => {
 const loadASLE = () => {
     const reader = new FileReader();
 
+    const formatFile = [
+        "FECHA",
+        "MES",
+        "FORMA\r\nDE PAGO",
+        "METODO DE PAGO",
+        "RFC",
+        "PROVEDOR",
+        "FACTURA ",
+        "PARCIAL",
+        "DEPOSITOS",
+        "RETIROS",
+        "SALDO",
+        "R",
+        "PARTIDA PRESUPUESTAL",
+        "FECHA DE FACTURA",
+        "FOLIO FISCAL",
+        "TIPO DE \r\nADJUDICACION",
+        "NUMERO DE ADJUDICACION \r\nO CONTRATO",
+        "NUMERO DE SUFICIENCIA PRESUPUESTAL",
+        "ORDEN DE SERVICIO \r\nO COMPRA",
+        "CLC",
+        "POLIZA",
+        "NUMERO DE CUENTA\r\nDEL PROVEEDOR",
+        "REFERENCIA BANCARIA",
+        "CLUE",
+        "APLICA EN:",
+        "NOMBRE DE LA PARTIDA",
+        "MES DE SERVICIO"
+    ];
+    
     reader.onload = async (event) => {
       const data = new Uint8Array(event.target.result);
       const woorkbook = XLSX.read(data, { type: 'array' });
@@ -202,6 +274,11 @@ const loadASLE = () => {
         const woorksheet = woorkbook.Sheets[sheetName];
 
         const sheetJson = XLSX.utils.sheet_to_json(woorksheet, { header: 1, blankrows: false });
+
+
+        const matchFileFormat = sheetJson.length > 0 && formatFile.every(column => 
+            sheetJson[2].includes(column)
+        );
 
         const headerRowIndex = sheetJson.findIndex(row => 
             headerColumnsSearch.some(col => row.includes(col))
@@ -269,6 +346,37 @@ const loadASLE = () => {
 const loadU013= () => {
     const reader = new FileReader();
 
+    const formatFile = [
+        "FECHA",
+        "MES",
+        "FORMA\r\nDE PAGO",
+        "METODO DE PAGO",
+        "RFC",
+        "PROVEDOR",
+        "FACTURA ",
+        "PARCIAL",
+        "DEPOSITOS",
+        "RETIROS",
+        "SALDO",
+        "R",
+        "PARTIDA PRESUPUESTAL",
+        "FECHA DE FACTURA",
+        "FOLIO FISCAL",
+        "TIPO DE \r\nADJUDICACION",
+        "NUMERO DE ADJUDICACION \r\nO CONTRATO",
+        "NUMERO DE SUFICIENCIA PRESUPUESTAL",
+        "ORDEN DE SERVICIO \r\nO COMPRA",
+        "CLC",
+        "POLIZA",
+        "NUMERO DE CUENTA\r\nDEL PROVEEDOR",
+        "REFERENCIA BANCARIA",
+        "CLUE",
+        "APLICA EN:",
+        "NOMBRE DE LA PARTIDA",
+        "MES DE SERVICIO"
+    ];
+
+
     reader.onload = async (event) => {
       const data = new Uint8Array(event.target.result);
       const woorkbook = XLSX.read(data, { type: 'array' });
@@ -279,6 +387,22 @@ const loadU013= () => {
         const woorksheet = woorkbook.Sheets[sheetName];
 
         const sheetJson = XLSX.utils.sheet_to_json(woorksheet, { header: 1, blankrows: false });
+
+
+        const matchFileFormat = sheetJson.length > 0 && formatFile.every(column => 
+            sheetJson[2].includes(column)
+        );
+
+        if(!matchFileFormat){{
+            notify({
+                title: 'Error al leer el archivo',
+                text: 'El archivo no tiene el formato correcto',
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+            return;
+        }}
 
         const headerRowIndex = sheetJson.findIndex(row => 
             headerColumnsSearch.some(col => row.includes(col))
