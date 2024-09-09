@@ -23,7 +23,7 @@
         <div class="w-100 h-100 d-flex justify-content-end mt-1">
             <button class="btn btn-primary align-self-center" @click="props.handleGenReport">
               <v-icon name="fa-chart-bar" animation="ring" hover/>
-              Generar reporte
+              Consulta informacion del periodo
             </button>
         </div>
     </div>
@@ -38,7 +38,7 @@ import "vue-select/dist/vue-select.css"
 import { ref, defineProps, defineEmits, watch, toRef } from 'vue';
 
 const flow = ref(['year', 'month', 'day']);
-const localSelectedPeriod = ref( '2024');
+const localSelectedPeriod = ref('Periodo requerido *');
 const localRangeSearch = ref(false);
 
 const props = defineProps({

@@ -8,15 +8,15 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse flex justify-content-end" id="navbarNavDropdown">
-                <ul class="navbar-nav"  v-if="props.user">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/home">Consulta</a>
+                <ul class="navbar-nav "  v-if="props.user">
+                    <li class="nav-item hov" :class="route.path === '/home' ? 'borderItem' : ''">
+                        <a class="nav-link" :class="route.path === '/home' ? 'activeLink' : ''" aria-current="page" href="/home">Consulta</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/carga">Carga</a>
+                    <li class="nav-item hov" :class="route.path === '/carga' ? 'borderItem' : ''">
+                        <a class="nav-link" href="/carga" :class="route.path === '/carga' ? 'activeLink' : ''">Carga</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/llenado">Llenado</a>
+                    <li class="nav-item hov" :class="route.path === '/llenado' ? 'borderItem' : ''">
+                        <a class="nav-link" href="/llenado" :class="route.path === '/llenado' ? 'activeLink' : ''">Contratos</a>
                     </li>
                 </ul>
 
@@ -53,6 +53,9 @@
 
 <script setup>
 import { ref, defineProps } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const props = defineProps({
     user: Object,
@@ -82,5 +85,20 @@ function logout() {
     .mr {
         margin-right: 0px;
     }
+}
+
+.hov{
+    transition: all 0.3s ease-in-out;
+}
+.hov:hover{
+    border-bottom: 3px solid #9F2241;
+}
+
+.borderItem{
+    border-top: 2px solid #9F2241;
+    border-bottom: 2px solid #9F2241;
+}
+.activeLink{
+    color: #9F2241;
 }
 </style>

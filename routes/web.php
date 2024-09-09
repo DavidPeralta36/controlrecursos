@@ -42,7 +42,7 @@ Route::get('/report_by_period', 'HomeController@getReportByPeriod')->name('repor
 
 
 Route::post('/upload_report', 'CargaController@uploadReport')->name('upload_report');
-
+Route::post('/edit_records', 'CargaController@edit_records')->name('edit_records');
 
 Route::post('/register', 'UsersController@createNewUser')->name('register');
 Route::get('/getusers', 'UsersController@getUsers')->name('users');

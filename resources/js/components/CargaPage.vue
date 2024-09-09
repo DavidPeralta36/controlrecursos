@@ -1,36 +1,107 @@
 <template lang="html">
     <div class="container con">
         <div class="mt-3">
-            <p class="h2 nunito-bold" style="font-style: normal">Carga de banco a la base de datos</p>
-            <hr/>
-            <div style="min-height: 16vh">
-                <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>
-            </div>
-            <div class="d-flex mt-3 w-100 justify-content-between">
-                <div class="d-flex align-items-start ">
-                    <Toggle v-model="newBank" />
-                    <p class="nunito ml-2">{{ newBank ? 'Nuevo banco' : 'Banco existente' }}</p>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" :class="activeTab === 'upload' ? 'active' : ''" aria-current="page" href="#" @click="handleTabClick('upload')">Carga</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="activeTab === 'modify' ? 'active' : '' " aria-current="page" href="#" @click="handleTabClick('modify')">Edición</a>
+                </li>
+            </ul>
+            <div v-if="activeTab === 'upload'" ref="uploadMainContainer">
+                <p class="h2 nunito-bold mt-2" style="font-style: normal">Carga de banco a la base de datos</p>
+                <hr/>
+                <div style="min-height: 16vh">
+                    <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>
                 </div>
-                <div v-if="!newBank">
-                    <p class="nunito">Selecciona el ejercicio</p>
-                    <VueSelect v-model="selectedPeriod" :options="periodos" label="ejercicio" style="min-width: 11vw;" />
-                </div>
-                <div v-else>
-                    <p class="nunito">Ingresa el ejercicio</p>
-                    <input v-model="newBankYear" type="text" class="form-control" placeholder="Ejercicio" aria-label="Ejercicio" style="min-width: 11vw;" @input="handleYearChange" />
-                </div>
-            </div>
-            <hr/>
-            <div ref="uploadContainer" style="opacity: 0; " v-if="valid">
-                <p class="nunito h4">Origen de datos</p>
-                <div class="input-group mb-3" >
-                    <div class="custom-file">
-                        <input type="file" class="form-control" id="bankFile" aria-describedby="ariaBankFile" @change="handleFileChange">
-                        <label class="form-label" for="bankFile">{{ bankFile ? bankFile.name : 'Seleccionar archivo' }}</label>
+                <div class="d-flex mt-3 w-100 justify-content-between">
+                    <div class="d-flex align-items-start ">
+                        <Toggle v-model="newBank" />
+                        <p class="nunito ml-2">{{ newBank ? 'Nuevo banco' : 'Banco existente' }}</p>
+                    </div>
+                    <div v-if="!newBank">
+                        <p class="nunito">Selecciona el ejercicio</p>
+                        <VueSelect v-model="selectedPeriod" :options="periodos" label="ejercicio" style="min-width: 11vw;" />
+                    </div>
+                    <div v-else>
+                        <p class="nunito">Ingresa el ejercicio</p>
+                        <input v-model="newBankYear" type="number" class="form-control" placeholder="Ejercicio" aria-label="Ejercicio" style="min-width: 11vw;" @input="handleYearChange" />
                     </div>
                 </div>
+                <hr/>
+                <div ref="uploadContainer" style="opacity: 0; " v-if="valid">
+                    <p class="nunito h4">Origen de datos</p>
+                    <div class="input-group mb-3" >
+                        <div class="custom-file">
+                            <input type="file" class="form-control" id="bankFile" aria-describedby="ariaBankFile" @change="handleFileChange">
+                            <label class="form-label" for="bankFile">{{ bankFile ? bankFile.name : 'Seleccionar archivo' }}</label>
+                        </div>
+                    </div>
+                </div>
+                <button v-if="readyToSend" ref="sendButton" class="btn btn-primary" @click="habdleUploadFile">{{ sendButtonAnimated ? 'Subir origen de datos' : ''}}</button>
             </div>
-            <button v-if="readyToSend" ref="sendButton" class="btn btn-primary" @click="habdleUploadFile">{{ sendButtonAnimated ? 'Subir origen de datos' : ''}}</button>
+            <div v-if="activeTab === 'modify'" ref="modifyContainer">
+                <p class="h2 nunito-bold mt-2" style="font-style: normal">Modificacion de informacion del banco</p>
+                <hr/>
+                <div style="min-height: 16vh">
+                    <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>
+                </div>
+                <div class="d-flex mt-3 w-100 justify-content-between">
+                    <div>
+                        <p class="nunito h5">Selecciona un ejercicio existente</p>
+                        <VueSelect v-model="selectedPeriod" :options="periodos" label="ejercicio" style="min-width: 11vw;" />
+                    </div>
+                    <div> 
+                        <button class="btn btn-primary" @click="handleFindPeriod">
+                            <v-icon name="fa-chart-bar" animation="ring" hover/>
+                            Consulta informacion del periodo
+                        </button>
+                    </div>
+                </div>
+                <hr/>
+                <div class="mb-2" v-if="loads.loaded">
+                    <button class="btn btn-warning">
+                        <v-icon name="fa-edit" animation="spin" hover/>
+                        Cancelar edición
+                    </button>
+                    <button class="btn btn-success mx-2" @click="handleEdit">
+                        Guardar
+                    </button>
+                </div>
+                <div :class="!loads.loaded ? 'imgContainer' : 'tableContainer'">
+                    <div v-if="loads.loading" class="text-center" ref="loadingDiv">
+                      <div ref="spinner" class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p ref="loadingText">Generando reporte</p>
+                    </div>
+                    <div v-if="loads.skeleton" ref="skeletonDiv">
+                      <img src="../../../public/assets/vacio.png" alt="vacio" class="img"/>
+                      <p class="font-weight-bold nunito font-italic h5 text-center">Nada por aquí todavía...</p>
+                    </div> 
+                    <div v-if="loads.loaded" class="w-100 my-4 pb-5" ref="tableDiv" >
+                      <p class="nunito h5">Banco generado para el periodo con las fuentes de financiamiento seleccionadas:</p>
+                      <AgGridVue
+                        :rowData="registros"
+                        :columnDefs="colDefs"
+                        :pagination="agProps.pagination"
+                        :paginationPageSize="agProps.paginationPageSize"
+                        :paginationPageSizeSelector="agProps.paginationPageSizeSelector"
+                        style="height: 500px"
+                        class="ag-theme-quartz mb-5"
+                        :frameworkComponents="{ customCellRenderer }"
+                        :animateRows="true"
+                        @firstDataRendered="onFirstDataRendered"
+                        @filterChanged="onFilterChanged"
+                        @cellValueChanged="onCellValueChanged"
+                      >
+                      </AgGridVue>
+                    </div>
+                </div>
+                <hr class="my-2"/>
+                
+            </div>
         </div>
         <Notifications position="bottom left" />
     </div>
@@ -47,6 +118,14 @@ import anime from 'animejs';
 import { Notifications, notify } from '@kyvg/vue3-notification';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
+import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
+import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
+import {
+  animateSkeletonOut,
+  animateLoadingOut,
+  startAnimations,
+} from '../utils/animations.js';
 
 const props = defineProps({
     user: Object,
@@ -57,7 +136,7 @@ const props = defineProps({
 const selectedSource = ref(null);
 const uploadContainer = ref(null);
 const newBank = ref(true);
-const selectedPeriod = ref(null);
+const selectedPeriod = ref('Periodo requerido *');
 const newBankYear = ref(null);
 const valid = ref(false);
 const bankFile = ref(null);
@@ -65,6 +144,82 @@ const excelData = ref(null);
 const readyToSend = ref(false);
 const sendButton = ref(null);
 const sendButtonAnimated = ref(false);
+const activeTab = ref('modify');
+const uploadMainContainer = ref(null);
+const modifyContainer = ref(null);
+const registros = ref([]);
+const loadingText = ref(null); 
+const spinner = ref(null); 
+const skeletonDiv = ref(null);
+const loadingDiv = ref(null);
+const tableDiv = ref(null);
+const loads = ref({
+  loading: false,
+  skeleton: true,
+  loaded: false
+})
+const totales = ref({
+  registros: 0,
+  depositos: 0,
+  retiros: 0,
+  saldo: 0
+});
+const editingRecords = ref([]);
+const colDefs = ref([
+  { field: 'fechas', headerName: 'Fecha', filter: true, sortable: true, editable: true },
+  { field: 'mes', headerName: 'Mes', filter: true, sortable: true, editable: true },
+  { field: 'forma_pago', headerName: 'Forma de pago', filter: true, sortable: true, editable: true },
+  { field: 'rfc', headerName: 'RFC', filter: true, sortable: true, editable: true },
+  { field: 'proveedor', headerName: 'Proveedor', filter: true, sortable: true, editable: true  },
+  { field: 'factura', headerName: 'Factura', filter: true, sortable: true, editable: true  },
+  { field: 'parcial', headerName: 'Parcial', valueFormatter: formatCurrency, editable: true  },
+  { 
+    field: 'depositos', 
+    headerName: 'Depositos', 
+    valueFormatter: formatCurrency, 
+    cellClass: (params) => params.value ? 'deposit-cell' : '',
+    cellRenderer: 'customCellRenderer' ,
+    editable: true
+  },
+  { 
+    field: 'retiros', 
+    headerName: 'Retiros', 
+    valueFormatter: formatCurrency, 
+    cellClass: (params) => params.value ? 'withdrawal-cell' : '',
+    cellRenderer: 'customCellRenderer',
+    editable: true
+  },
+  { 
+    field: 'saldo', 
+    headerName: 'Saldo', 
+    valueFormatter: formatCurrency, 
+    cellClass: (params) => params.value ? 'balance-cell' : '',
+    cellRenderer: 'customCellRenderer' ,
+    editable: true
+  },
+  { field: 'r', headerName: 'Rubro', filter: true, sortable: true, editable: true }, 
+  { field: 'partida', headerName: 'Partida', filter: true, sortable: true, editable: true  },
+  { field: 'fecha_factura', headerName: 'Fecha de factura', filter: true, sortable: true, editable: true  },
+  { field: 'folio_fiscal', headerName: 'Folio fiscal', filter: true, sortable: true, editable: true  },
+  { field: 'tipo_adjudicacion', headerName: 'Tipo de adjudicación', filter: true, sortable: true, editable: true  },
+  { field: 'num_adj_contrato', headerName: 'Numero de adjudicación o contrato', filter: true, sortable: true, editable: true  },
+  { field: 'orden_servicio_compra', headerName: 'Orden de servicio o compra', filter: true, sortable: true, editable: true  },
+  { field: 'num_suficiencia_presupuestal', headerName: 'Numero de suficiencia presupuestal', filter: true, sortable: true, editable: true  },
+  { field: 'clc', headerName: 'CLC', filter: true, sortable: true, editable: true  },
+  { field: 'poliza', headerName: 'Poliza', filter: true, sortable: true, editable: true  },
+  { field: 'numero_cuenta_proovedor', headerName: 'Numero de cuenta de proveedor', filter: true, sortable: true, editable: true  },
+  { field: 'referencia_bancaria', headerName: 'Referencia bancaria', filter: true, sortable: true, editable: true  },
+  { field: 'nombre_clue', headerName: 'CLUE', filter: true, sortable: true, editable: true  },
+  { field: 'nombrepartida', headerName: 'Aplica en', editable: true },
+  { field: 'mes_servicio', headerName: 'Mes de servicio', editable: true },
+  { field: 'metodo_pago', headerName: 'Metodo de pago', filter: true, sortable: true, editable: true  },
+  { field: 'ejercicio', headerName: 'Ejercicio', editable: true },  
+]);
+const agProps = ref({
+  pagination: true,
+  paginationPageSize: 500,
+  paginationPageSizeSelector: [500, 1000, 5000],
+});
 
 const headerColumnsSearch = ['FECHA', 'MES'];
 
@@ -86,7 +241,11 @@ const handleYearChange = async (e) => {
             valid.value = true;
             await nextTick();
             animateUploadContainer();
+        }else{
+            valid.value = false;
         }
+    }else{
+        valid.value = false;
     }
 }
 
@@ -633,6 +792,258 @@ const endAnimation = () => {
         }
     });
 }
+
+const handleTabClick = async (tab) => {
+    //activeTab.value = tab;
+    console.log(tab);
+    if(tab === 'upload'){
+        animateExitModifyContainer(tab);
+    }else{
+        animateExitUploadMainContainer(tab);
+    }
+}
+
+const animateUploadMainContainer = () => {
+    anime({
+        targets: uploadMainContainer.value,
+        opacity: [0, 1],
+        translateY: [100, 0],
+        duration: 500,
+        easing: 'easeInOutQuad',
+    });
+}
+
+const animateExitUploadMainContainer = (tab) => {
+    anime({
+        targets: uploadMainContainer.value,
+        opacity: [1, 0],
+        translateX: [0, 110],
+        duration: 500,
+        easing: 'easeInOutQuad',
+        complete: async () => {
+            activeTab.value = tab;
+            await nextTick();
+            animateModifyContainer();
+        }
+    });
+}
+
+const animateModifyContainer = () => {
+    anime({
+        targets: modifyContainer.value,
+        opacity: [0, 1],
+        translateY: [100, 0],
+        duration: 500,
+        easing: 'easeInOutQuad',
+    });
+}
+
+const animateExitModifyContainer = (tab) => {
+    anime({
+        targets: modifyContainer.value,
+        opacity: [1, 0], 
+        translateX: [0, 100],
+        duration: 500,
+        easing: 'easeInOutQuad',
+        complete: async () => {
+            activeTab.value = tab;
+            await nextTick();
+            animateUploadMainContainer();
+        }
+    });
+}
+
+const handleFindPeriod = async () => {
+    if(selectedSource && selectedPeriod.value != "Periodo requerido *"){
+        await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
+        startAnimations(loadingText, spinner);
+        
+        const response = await axios.get('/report_by_period', {
+            params: {
+                source: selectedSource.value,
+                period: selectedPeriod.value.ejercicio
+            }
+        });
+        registros.value = response.data;
+        
+        await nextTick();
+        await animateLoadingOut(loadingDiv, tableDiv, loads);
+    }else{
+        notify({
+            title: 'Error al buscar el periodo',
+            text: 'Por favor seleccione un periodo válido',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+    }
+}
+
+function formatCurrency(params) {
+    if (!params.value) return '';
+    
+    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); 
+    if (isNaN(number)) return ''; 
+
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
+}
+
+function customCellRenderer(params) {
+  const value = params.valueFormatted ? params.valueFormatted : params.value;
+
+  if (!value) {
+    return '';
+  }
+
+  return `
+    <span class="custom-cell">
+      ${value}
+    </span>
+  `;
+}
+
+const onFirstDataRendered = (params) => {
+  calculateTotals(params); 
+  //calculateFilteredTotals(params);
+}
+
+const onFilterChanged = async (params) => {
+  calculateFilteredTotals(params);
+}
+
+const isValidNumber = (value) => {
+  return !isNaN(parseFloat(value)) && isFinite(value);
+};
+
+const calculateTotals = async (params) => {
+  let saldoTotal = 0;
+  let ingresosSum = 0;
+  let egresosSum = 0;
+  let isFirstNode = true; 
+
+  const firstNode = params.api.getDisplayedRowAtIndex(0);
+  if (firstNode) {
+    saldoTotal = isValidNumber(firstNode.data.saldo) ? parseFloat(firstNode.data.saldo) : 0;
+    ingresosSum = isValidNumber(firstNode.data.depositos) ? parseFloat(firstNode.data.depositos) : 0;
+    //egresosSum = isValidNumber(firstNode.data.retiros) ? parseFloat(firstNode.data.retiros) : 0;
+  }
+
+  params.api.forEachNode((node) => {
+    if (isFirstNode) {
+      isFirstNode = false;
+      return; 
+    }
+
+    const depositos = isValidNumber(node.data.depositos) ? parseFloat(node.data.depositos) : 0;
+    const retiros = isValidNumber(node.data.retiros) ? parseFloat(node.data.retiros) : 0;
+
+    //console.log(`Saldo actual: ${saldoTotal}, Depósitos: ${depositos}, Retiros: ${retiros}`);
+
+
+    ingresosSum += depositos;
+    egresosSum += retiros;
+
+    saldoTotal = (saldoTotal + depositos) - retiros;
+  });
+
+  await nextTick();
+  totales.value.depositos = ingresosSum;
+  totales.value.retiros = egresosSum;
+  totales.value.saldo = saldoTotal;
+};
+
+const calculateFilteredTotals = async (params) => {
+  let filteredIngresosSum = 0;
+  let filteredEgresosSum = 0;
+  let filteredSaldoTotal = 0;
+  let filteredFirstNode = true;
+
+  const firstNode = params.api.getDisplayedRowAtIndex(0);
+  if (firstNode) {
+    filteredSaldoTotal = isValidNumber(firstNode.data.saldo) ? parseFloat(firstNode.data.saldo) : 0;
+    filteredIngresosSum = isValidNumber(firstNode.data.depositos) ? parseFloat(firstNode.data.depositos) : 0;
+    //filteredEgresosSum = isValidNumber(firstNode.data.retiros) ? parseFloat(firstNode.data.retiros) : 0;
+  }
+
+  params.api.forEachNodeAfterFilter((node) => {
+    if(filteredFirstNode) {
+      filteredFirstNode = false;
+      return;
+    }
+    const depositos = isValidNumber(node.data.depositos) ? parseFloat(node.data.depositos) : 0;
+    const retiros = isValidNumber(node.data.retiros) ? parseFloat(node.data.retiros) : 0;
+
+    filteredIngresosSum += depositos;
+    filteredEgresosSum += retiros;
+
+    filteredSaldoTotal = (filteredSaldoTotal + depositos) - retiros; 
+    
+  });
+
+  await nextTick();
+  totales.value.depositos = filteredIngresosSum;
+  totales.value.retiros = filteredEgresosSum;
+  totales.value.saldo = filteredSaldoTotal;
+};
+
+const onCellValueChanged = async (params) => {
+  const updatedData = params.data;
+  editingRecords.value.push(updatedData);
+  console.log(editingRecords.value);
+};
+
+const handleEdit = async () => {
+    if(editingRecords.value.length > 0){
+       
+        try{
+            const formData = new FormData();
+            formData.append('records', JSON.stringify(editingRecords.value));
+            for (let pair of formData.entries()) {
+                console.log(`${pair[0]}, ${pair[1]}`);
+            }
+            const response = await axios.post('/edit_records', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if(response.status === 200){
+                notify({
+                    title: 'Registros editados correctamente',
+                    text: 'Los registros se han editado correctamente',
+                    type: 'success',
+                    duration: 5000,
+                    speed: 1000,
+                });
+            }else{
+                notify({
+                    title: 'Error al editar los registros',
+                    text: 'Error: ' + response.data.message,
+                    type: 'error',
+                    duration: 5000,
+                    speed: 1000,
+                });
+            }
+        }catch(e){
+            notify({
+                title: 'Error al editar los registros',
+                text: 'Error: ' + e.response.data.message,
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+        }
+    }else{
+        notify({
+            title: 'Error al editar los registros',
+            text: 'Por favor verifique los registros seleccionados',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+    }
+}
+
+
 </script>
 
 

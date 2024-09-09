@@ -239,4 +239,33 @@ class CargaController extends Controller
         return response()->json('Subido exitosamente');
     }
 
+    public function edit_records(Request $request)
+    {
+        DB::beginTransaction();
+        try
+        {
+            $records = json_decode($request->input('records'), true);
+
+            if (is_array($records)) {
+                foreach ($records as $record) {
+                    
+                    $id = $record['id'];
+                    unset($record['id']); 
+
+                    registrobancos::where('id', $id)->update($record);
+                }
+
+                DB::commit();
+                return response()->json('Registros actualizados exitosamente');
+            } else {
+                return response()->json('Error al editar los registros', 400);
+            }
+            
+        }catch(\Exception $ex)
+        {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
 }

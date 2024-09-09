@@ -158,7 +158,7 @@ const agProps = ref({
 });
 const registros = ref([]);
 const selectedSource = ref(null);
-const selectedPeriod = ref({ejercicio: "2024"});
+const selectedPeriod = ref({ejercicio: "Periodo requerido * "});
 const loadingText = ref(null); 
 const spinner = ref(null); 
 const skeletonDiv = ref(null);
@@ -235,26 +235,12 @@ const handleGenReport = async () => {
       });
     }
   } else {
-    if (selectedSource.value && selectedPeriod.value) {
+    console.log(selectedPeriod.value, selectedPeriod.value.ejercicio);
+    if (selectedPeriod.value && selectedPeriod.value.ejercicio !== 'Periodo requerido *') {
       try {
         await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
         startAnimations(loadingText, spinner);
         await getReportByPeriod();
-
-        /*totales.value.registros = registros.value.length;
-        totales.value.depositos = registros.value.reduce(
-          (total, item) => {
-            const depositValue = parseFloat(item.depositos);
-            return total + (!isNaN(depositValue) ? depositValue : 0);
-          }, 
-          0
-        ).toFixed(2);
-
-        totales.value.retiros = registros.value.reduce(
-          (total, item) => total + parseFloat(item.retiros || 0), 
-          0
-        ).toFixed(2);
-        totales.value.saldo = totales.value.depositos - totales.value.retiros;*/
       } catch (e) {
         console.log(e);
       }

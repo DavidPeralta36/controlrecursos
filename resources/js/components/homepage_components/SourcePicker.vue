@@ -47,12 +47,12 @@ onMounted(() => {
     .timeline()
     .add({
       targets: fuentesContainerRef.value,
-      width: [0, "5px"], 
-      height: [0, "5px"],
+      width: [0, "15px"], 
+      height: [0, "15px"],
+      borderRadius: "25px",
       easing: "easeOutExpo",
-      duration: 500,
+      duration: 200,
       backgroundColor: "#d3d3d3",
-      delay: 100,
     })
     .add({
       targets: fuentesContainerRef.value,
