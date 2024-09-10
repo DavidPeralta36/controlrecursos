@@ -60,14 +60,16 @@
                     </div>
                 </div>
                 <hr/>
-                <div class="mb-2" v-if="loads.loaded">
-                    <button class="btn btn-warning">
-                        <v-icon name="fa-edit" animation="spin" hover/>
-                        Cancelar edición
-                    </button>
-                    <button class="btn btn-success mx-2" @click="handleEdit">
-                        Guardar
-                    </button>
+                <div class="mb-2 btns" v-if="editingValues" ref="editButtonsContainer">
+                    <div ref="editButtons" v-if="animatedButtonsContainer">
+                        <button class="btn btn-warning" @click="animateOutEditButtonsContainer">
+                            <v-icon name="fa-edit" animation="spin" hover />
+                            Cancelar edición
+                        </button>
+                        <button class="btn btn-success mx-2" @click="handleEdit">
+                            Guardar
+                        </button>
+                    </div>
                 </div>
                 <div :class="!loads.loaded ? 'imgContainer' : 'tableContainer'">
                     <div v-if="loads.loading" class="text-center" ref="loadingDiv">
@@ -92,11 +94,9 @@
                         class="ag-theme-quartz mb-5"
                         :frameworkComponents="{ customCellRenderer }"
                         :animateRows="true"
-                        @firstDataRendered="onFirstDataRendered"
-                        @filterChanged="onFilterChanged"
                         @cellValueChanged="onCellValueChanged"
                       >
-                      </AgGridVue>
+                      </AgGridVue>  
                     </div>
                 </div>
                 <hr class="my-2"/>
@@ -132,7 +132,7 @@ const props = defineProps({
     fuentes: Array,
     periodos: Array
 });
-
+//#region Variables
 const selectedSource = ref(null);
 const uploadContainer = ref(null);
 const newBank = ref(true);
@@ -220,8 +220,12 @@ const agProps = ref({
   paginationPageSize: 500,
   paginationPageSizeSelector: [500, 1000, 5000],
 });
-
+const editButtons = ref(null);
+const editButtonsContainer = ref(null);
+const editingValues = ref(false);
+const animatedButtonsContainer = ref(false);
 const headerColumnsSearch = ['FECHA', 'MES'];
+//#endregion
 
 const handleSelect = async (source) => {
   selectedSource.value = source.id;
@@ -699,7 +703,7 @@ const habdleUploadFile = async () => {
         console.log(e);
     }
 }
-//watch selectedPeriod
+
 watch(selectedPeriod, async () => {
     if(selectedPeriod.value && selectedSource.value) {
         valid.value = true;
@@ -707,6 +711,195 @@ watch(selectedPeriod, async () => {
         animateUploadContainer();
     }
 })
+
+const handleTabClick = async (tab) => {
+    //activeTab.value = tab;
+    console.log(tab);
+    if(tab === 'upload'){
+        animateExitModifyContainer(tab);
+    }else{
+        animateExitUploadMainContainer(tab);
+    }
+}
+
+const handleFindPeriod = async () => {
+    if(selectedSource && selectedPeriod.value != "Periodo requerido *"){
+        await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
+        startAnimations(loadingText, spinner);
+        
+        const response = await axios.get('/report_by_period', {
+            params: {
+                source: selectedSource.value,
+                period: selectedPeriod.value.ejercicio
+            }
+        });
+
+        /*const registrosProcesados = response.data.map((item, index, array) => {
+            if (index === 0) {
+                // El primer registro no cambia, es el estado inicial
+                return { ...item };
+            } else {
+                // Calcular el saldo para los registros subsecuentes
+                const saldoAnterior = parseFloat(array[index - 1].saldo);
+                const ingresosActuales = parseFloat(item.depositos) || 0;
+                const egresosActuales = parseFloat(item.retiros) || 0;
+
+                console.log(saldoAnterior, ingresosActuales, egresosActuales);
+
+                const nuevoSaldo = saldoAnterior + ingresosActuales - egresosActuales;
+
+                return {
+                    ...item, // Copia todas las propiedades del objeto original
+                    saldo: nuevoSaldo.toFixed(2).toString() // Modifica solo el saldo
+                };
+            }
+        });*/
+
+        //registros.value = registrosProcesados;
+
+        registros.value = response.data;
+        
+        await nextTick();
+        await animateLoadingOut(loadingDiv, tableDiv, loads);
+    }else{
+        notify({
+            title: 'Error al buscar el periodo',
+            text: 'Por favor seleccione un periodo válido',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+    }
+}
+
+function formatCurrency(params) {
+    if (!params.value) return '';
+    
+    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); 
+    if (isNaN(number)) return ''; 
+
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
+}
+
+function customCellRenderer(params) {
+  const value = params.valueFormatted ? params.valueFormatted : params.value;
+
+  if (!value) {
+    return '';
+  }
+
+  return `
+    <span class="custom-cell">
+      ${value}
+    </span>
+  `;
+}
+
+const onCellValueChanged = async (params) => {
+  const updatedData = params.data;
+  editingRecords.value.push(updatedData);
+  if(editingRecords.value.length > 0){
+    editingValues.value = true;
+    await nextTick();
+    animateInEditButtonsContainer();
+  }
+};
+
+const handleEdit = async () => {
+    if(editingRecords.value.length > 0){
+       
+        try{
+            const formData = new FormData();
+            formData.append('records', JSON.stringify(editingRecords.value));
+            for (let pair of formData.entries()) {
+                console.log(`${pair[0]}, ${pair[1]}`);
+            }
+            const response = await axios.post('/edit_records', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if(response.status === 200){
+                notify({
+                    title: 'Registros editados correctamente',
+                    text: 'Los registros se han editado correctamente',
+                    type: 'success',
+                    duration: 5000,
+                    speed: 1000,
+                });
+            }else{
+                notify({
+                    title: 'Error al editar los registros',
+                    text: 'Error: ' + response.data.message,
+                    type: 'error',
+                    duration: 5000,
+                    speed: 1000,
+                });
+            }
+        }catch(e){
+            notify({
+                title: 'Error al editar los registros',
+                text: 'Error: ' + e.response.data.message,
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+        }
+    }else{
+        notify({
+            title: 'Error al editar los registros',
+            text: 'Por favor verifique los registros seleccionados',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+    }
+}
+
+//#region Animaciones
+const animateInEditButtonsContainer = () => {
+    anime({
+        targets: editButtonsContainer.value,
+        height: ['0px', '60px'],
+        duration: 500,
+        easing: 'easeInOutQuad',
+        complete: async () => {
+            animatedButtonsContainer.value = true;
+            await nextTick();
+            anime({
+                targets: editButtons.value,
+                opacity: [0, 1],
+                translateX: [100, 0],
+                duration: 500,
+                easing: 'easeInOutQuad',
+            })
+        }
+    });
+}
+
+const animateOutEditButtonsContainer = () => {
+    editingRecords.value = [];
+    anime({
+        targets: editButtons.value,
+        opacity: [1, 0],
+        translateY: [0, 100],
+        duration: 500,
+        easing: 'easeInOutQuad',
+        complete: async () => {
+            animatedButtonsContainer.value = false;
+            await nextTick();
+            anime({
+                targets: editButtonsContainer.value,
+                height: ['60px', '0px'],
+                duration: 500,
+                easing: 'easeInOutQuad',
+                complete: async () => {
+                    animatedButtonsContainer.value = false;
+                }
+            })
+        }
+    });
+}
 
 const animateUploadContainer = () => {
     anime({
@@ -783,24 +976,14 @@ const endAnimation = () => {
         targets: sendButton.value,
         width: ['30px', '200px'],
         height: ['30px', '40px'],
-        borderRadius: '5px',  // Puede que prefieras un borderRadius diferente al original
+        borderRadius: '5px',  
         easing: 'easeOutExpo',
         duration: 500,
-        rotate: '0deg', // Asegura que el botón esté horizontal
+        rotate: '0deg', 
         complete: () => {
             sendButtonAnimated.value = true;
         }
     });
-}
-
-const handleTabClick = async (tab) => {
-    //activeTab.value = tab;
-    console.log(tab);
-    if(tab === 'upload'){
-        animateExitModifyContainer(tab);
-    }else{
-        animateExitUploadMainContainer(tab);
-    }
 }
 
 const animateUploadMainContainer = () => {
@@ -852,202 +1035,12 @@ const animateExitModifyContainer = (tab) => {
         }
     });
 }
-
-const handleFindPeriod = async () => {
-    if(selectedSource && selectedPeriod.value != "Periodo requerido *"){
-        await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
-        startAnimations(loadingText, spinner);
-        
-        const response = await axios.get('/report_by_period', {
-            params: {
-                source: selectedSource.value,
-                period: selectedPeriod.value.ejercicio
-            }
-        });
-        registros.value = response.data;
-        
-        await nextTick();
-        await animateLoadingOut(loadingDiv, tableDiv, loads);
-    }else{
-        notify({
-            title: 'Error al buscar el periodo',
-            text: 'Por favor seleccione un periodo válido',
-            type: 'error',
-            duration: 5000,
-            speed: 1000,
-        });
-    }
-}
-
-function formatCurrency(params) {
-    if (!params.value) return '';
-    
-    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); 
-    if (isNaN(number)) return ''; 
-
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
-}
-
-function customCellRenderer(params) {
-  const value = params.valueFormatted ? params.valueFormatted : params.value;
-
-  if (!value) {
-    return '';
-  }
-
-  return `
-    <span class="custom-cell">
-      ${value}
-    </span>
-  `;
-}
-
-const onFirstDataRendered = (params) => {
-  calculateTotals(params); 
-  //calculateFilteredTotals(params);
-}
-
-const onFilterChanged = async (params) => {
-  calculateFilteredTotals(params);
-}
-
-const isValidNumber = (value) => {
-  return !isNaN(parseFloat(value)) && isFinite(value);
-};
-
-const calculateTotals = async (params) => {
-  let saldoTotal = 0;
-  let ingresosSum = 0;
-  let egresosSum = 0;
-  let isFirstNode = true; 
-
-  const firstNode = params.api.getDisplayedRowAtIndex(0);
-  if (firstNode) {
-    saldoTotal = isValidNumber(firstNode.data.saldo) ? parseFloat(firstNode.data.saldo) : 0;
-    ingresosSum = isValidNumber(firstNode.data.depositos) ? parseFloat(firstNode.data.depositos) : 0;
-    //egresosSum = isValidNumber(firstNode.data.retiros) ? parseFloat(firstNode.data.retiros) : 0;
-  }
-
-  params.api.forEachNode((node) => {
-    if (isFirstNode) {
-      isFirstNode = false;
-      return; 
-    }
-
-    const depositos = isValidNumber(node.data.depositos) ? parseFloat(node.data.depositos) : 0;
-    const retiros = isValidNumber(node.data.retiros) ? parseFloat(node.data.retiros) : 0;
-
-    //console.log(`Saldo actual: ${saldoTotal}, Depósitos: ${depositos}, Retiros: ${retiros}`);
-
-
-    ingresosSum += depositos;
-    egresosSum += retiros;
-
-    saldoTotal = (saldoTotal + depositos) - retiros;
-  });
-
-  await nextTick();
-  totales.value.depositos = ingresosSum;
-  totales.value.retiros = egresosSum;
-  totales.value.saldo = saldoTotal;
-};
-
-const calculateFilteredTotals = async (params) => {
-  let filteredIngresosSum = 0;
-  let filteredEgresosSum = 0;
-  let filteredSaldoTotal = 0;
-  let filteredFirstNode = true;
-
-  const firstNode = params.api.getDisplayedRowAtIndex(0);
-  if (firstNode) {
-    filteredSaldoTotal = isValidNumber(firstNode.data.saldo) ? parseFloat(firstNode.data.saldo) : 0;
-    filteredIngresosSum = isValidNumber(firstNode.data.depositos) ? parseFloat(firstNode.data.depositos) : 0;
-    //filteredEgresosSum = isValidNumber(firstNode.data.retiros) ? parseFloat(firstNode.data.retiros) : 0;
-  }
-
-  params.api.forEachNodeAfterFilter((node) => {
-    if(filteredFirstNode) {
-      filteredFirstNode = false;
-      return;
-    }
-    const depositos = isValidNumber(node.data.depositos) ? parseFloat(node.data.depositos) : 0;
-    const retiros = isValidNumber(node.data.retiros) ? parseFloat(node.data.retiros) : 0;
-
-    filteredIngresosSum += depositos;
-    filteredEgresosSum += retiros;
-
-    filteredSaldoTotal = (filteredSaldoTotal + depositos) - retiros; 
-    
-  });
-
-  await nextTick();
-  totales.value.depositos = filteredIngresosSum;
-  totales.value.retiros = filteredEgresosSum;
-  totales.value.saldo = filteredSaldoTotal;
-};
-
-const onCellValueChanged = async (params) => {
-  const updatedData = params.data;
-  editingRecords.value.push(updatedData);
-  console.log(editingRecords.value);
-};
-
-const handleEdit = async () => {
-    if(editingRecords.value.length > 0){
-       
-        try{
-            const formData = new FormData();
-            formData.append('records', JSON.stringify(editingRecords.value));
-            for (let pair of formData.entries()) {
-                console.log(`${pair[0]}, ${pair[1]}`);
-            }
-            const response = await axios.post('/edit_records', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            if(response.status === 200){
-                notify({
-                    title: 'Registros editados correctamente',
-                    text: 'Los registros se han editado correctamente',
-                    type: 'success',
-                    duration: 5000,
-                    speed: 1000,
-                });
-            }else{
-                notify({
-                    title: 'Error al editar los registros',
-                    text: 'Error: ' + response.data.message,
-                    type: 'error',
-                    duration: 5000,
-                    speed: 1000,
-                });
-            }
-        }catch(e){
-            notify({
-                title: 'Error al editar los registros',
-                text: 'Error: ' + e.response.data.message,
-                type: 'error',
-                duration: 5000,
-                speed: 1000,
-            });
-        }
-    }else{
-        notify({
-            title: 'Error al editar los registros',
-            text: 'Por favor verifique los registros seleccionados',
-            type: 'error',
-            duration: 5000,
-            speed: 1000,
-        });
-    }
-}
-
-
+//#endregion
 </script>
 
 
 <style >
+
 .con{
     margin-top: 10vh;
 }
@@ -1059,4 +1052,17 @@ const handleEdit = async () => {
     background-color: rgb(240, 240, 240);
     border-radius: 10px;
 }
+.btns{
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(226, 226, 226);
+    border-radius: 10px;
+}
+
+.custom-cell {
+    display: flex;
+    align-items: center;
+  }
 </style>

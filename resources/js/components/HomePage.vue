@@ -205,7 +205,29 @@ const getReportByPeriod = async () => {
       period: selectedPeriod.value.ejercicio
     }
   });
-  registros.value = response.data;
+
+  const registrosProcesados = response.data.map((item, index, array) => {
+    if (index === 0) {
+      // El primer registro no cambia, es el estado inicial
+      return { ...item };
+    } else {
+      // Calcular el saldo para los registros subsecuentes
+      const saldoAnterior = parseFloat(array[index - 1].saldo);
+      const ingresosActuales = parseFloat(item.depositos) || 0;
+      const egresosActuales = parseFloat(item.retiros) || 0;
+
+      console.log(saldoAnterior, ingresosActuales, egresosActuales);
+
+      const nuevoSaldo = saldoAnterior + ingresosActuales - egresosActuales;
+
+      return {
+          ...item, // Copia todas las propiedades del objeto original
+          saldo: nuevoSaldo.toFixed(2).toString() // Modifica solo el saldo
+      };
+    }
+  });
+
+  registros.value = registrosProcesados;
   await nextTick();
   await animateLoadingOut(loadingDiv, tableDiv, loads);
 }
