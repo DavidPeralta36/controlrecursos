@@ -41,6 +41,7 @@ class registrobancos extends Model
         'mes_servicio',
         'metodo_pago',
         'idfuente',
-        'ejercicio'
+        'ejercicio',
+        'num_techo_financiero'
     ];
 }

@@ -211,6 +211,7 @@ const colDefs = ref([
   { field: 'folio_fiscal', headerName: 'Folio fiscal', filter: true, sortable: true, editable: true  },
   { field: 'tipo_adjudicacion', headerName: 'Tipo de adjudicación', filter: true, sortable: true, editable: true  },
   { field: 'num_adj_contrato', headerName: 'Numero de adjudicación o contrato', filter: true, sortable: true, editable: true  },
+  { field: 'num_techo_financiero', headerName: 'Numero de techo financiero', filter: true, sortable: true, editable: true  },
   { field: 'orden_servicio_compra', headerName: 'Orden de servicio o compra', filter: true, sortable: true, editable: true  },
   { field: 'num_suficiencia_presupuestal', headerName: 'Numero de suficiencia presupuestal', filter: true, sortable: true, editable: true  },
   { field: 'clc', headerName: 'CLC', filter: true, sortable: true, editable: true  },

@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, nextTick } from 'vue';
+import { ref, defineProps, nextTick, watch } from 'vue';
 import '../../sass/app.scss';
 import SourcePicker from './homepage_components/SourcePicker.vue';
 import ControlsGeneralReport from './homepage_components/ControlsGeneralReport.vue';
@@ -79,6 +79,7 @@ import {
   animateLoadingOut,
   startAnimations,
 } from '../utils/animations.js';
+import { U013, ALE, E001 } from '../lib/Headers.js';
 
 
 const props = defineProps({
@@ -104,59 +105,7 @@ const totales = ref({
   retiros: 0,
   saldo: 0
 });
-const colDefs = ref([
-  { field: 'fechas', headerName: 'Fecha', filter: true, sortable: true },
-  { field: 'mes', headerName: 'Mes', filter: true, sortable: true },
-  { field: 'forma_pago', headerName: 'Forma de pago', filter: true, sortable: true },
-  { field: 'rfc', headerName: 'RFC', filter: true, sortable: true },
-  { field: 'proveedor', headerName: 'Proveedor', filter: true, sortable: true  },
-  { field: 'factura', headerName: 'Factura', filter: true, sortable: true  },
-  { 
-    field: 'parcial', 
-    headerName: 'Parcial', 
-    valueFormatter: formatCurrency , 
-    cellClass: (params) => params.value ? 'partial-cell' : '',
-    cellRenderer: 'customCellRenderer' 
-  },
-  { 
-    field: 'depositos', 
-    headerName: 'Depositos', 
-    valueFormatter: formatCurrency, 
-    cellClass: (params) => params.value ? 'deposit-cell' : '',
-    cellRenderer: 'customCellRenderer' 
-  },
-  { 
-    field: 'retiros', 
-    headerName: 'Retiros', 
-    valueFormatter: formatCurrency, 
-    cellClass: (params) => params.value ? 'withdrawal-cell' : '',
-    cellRenderer: 'customCellRenderer'
-  },
-  { 
-    field: 'saldo', 
-    headerName: 'Saldo', 
-    valueFormatter: formatCurrency, 
-    cellClass: (params) => params.value ? 'balance-cell' : '',
-    cellRenderer: 'customCellRenderer' 
-  },
-  { field: 'r', headerName: 'Rubro', filter: true, sortable: true }, 
-  { field: 'partida', headerName: 'Partida', filter: true, sortable: true  },
-  { field: 'fecha_factura', headerName: 'Fecha de factura', filter: true, sortable: true  },
-  { field: 'folio_fiscal', headerName: 'Folio fiscal', filter: true, sortable: true  },
-  { field: 'tipo_adjudicacion', headerName: 'Tipo de adjudicación', filter: true, sortable: true  },
-  { field: 'num_adj_contrato', headerName: 'Numero de adjudicación o contrato', filter: true, sortable: true  },
-  { field: 'orden_servicio_compra', headerName: 'Orden de servicio o compra', filter: true, sortable: true  },
-  { field: 'num_suficiencia_presupuestal', headerName: 'Numero de suficiencia presupuestal', filter: true, sortable: true  },
-  { field: 'clc', headerName: 'CLC', filter: true, sortable: true  },
-  { field: 'poliza', headerName: 'Poliza', filter: true, sortable: true  },
-  { field: 'numero_cuenta_proovedor', headerName: 'Numero de cuenta de proveedor', filter: true, sortable: true  },
-  { field: 'referencia_bancaria', headerName: 'Referencia bancaria', filter: true, sortable: true  },
-  { field: 'nombre_clue', headerName: 'CLUE', filter: true, sortable: true  },
-  { field: 'nombrepartida', headerName: 'Aplica en' },
-  { field: 'mes_servicio', headerName: 'Mes de servicio' },
-  { field: 'metodo_pago', headerName: 'Metodo de pago', filter: true, sortable: true  },
-  { field: 'ejercicio', headerName: 'Ejercicio' },
-]);
+const colDefs = ref();
 const agProps = ref({
   pagination: true,
   paginationPageSize: 500,
@@ -173,6 +122,22 @@ const tableDiv = ref(null);
 const filteredIngresos = ref(0);
 const filteredEgresos = ref(0);
 const filteredBalance = ref(0);
+
+watch(selectedSource, () => {
+  switch (selectedSource.value) {
+    case 1:
+      colDefs.value = U013;
+      break;
+    case 4:
+      colDefs.value = ALE;
+      break;
+    case 5:
+      colDefs.value = E001;
+      break;
+    default:
+      colDefs.value = [];
+  }
+});
 
 const handleSelect = (source) => {
   selectedSource.value = source.id;
@@ -222,8 +187,6 @@ const getReportByPeriod = async () => {
       const ingresosActuales = parseFloat(item.depositos) || 0;
       const egresosActuales = parseFloat(item.retiros) || 0;
 
-      console.log(saldoAnterior, ingresosActuales, egresosActuales);
-
       const nuevoSaldo = saldoAnterior + ingresosActuales - egresosActuales;
 
       return {
@@ -263,7 +226,6 @@ const handleGenReport = async () => {
       });
     }
   } else {
-    console.log(selectedPeriod.value, selectedPeriod.value.ejercicio);
     if (selectedPeriod.value && selectedPeriod.value.ejercicio !== 'Periodo requerido *') {
       try {
         await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
@@ -360,8 +322,6 @@ const calculateTotals = async (params) => {
 
     const depositos = isValidNumber(node.data.depositos) ? parseFloat(node.data.depositos) : 0;
     const retiros = isValidNumber(node.data.retiros) ? parseFloat(node.data.retiros) : 0;
-
-    //console.log(`Saldo actual: ${saldoTotal}, Depósitos: ${depositos}, Retiros: ${retiros}`);
 
 
     ingresosSum += depositos;
