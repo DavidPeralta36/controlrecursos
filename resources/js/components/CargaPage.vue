@@ -40,6 +40,7 @@
                     </div>
                 </div>
                 <button v-if="readyToSend" ref="sendButton" class="btn btn-primary" @click="habdleUploadFile">{{ sendButtonAnimated ? 'Subir origen de datos' : ''}}</button>
+                <ModalPreliminarData v-if="showPreliminarData" ref="modalPreliminarData" :preliminarData="datosPreliminares" @cancelData="handleCancelData" :selectedSource="selectedSource"/>
             </div>
             <div v-if="activeTab === 'modify'" ref="modifyContainer">
                 <p class="h2 nunito-bold mt-2" style="font-style: normal">Modificacion de informacion del banco</p>
@@ -100,7 +101,6 @@
                     </div>
                 </div>
                 <hr class="my-2"/>
-                
             </div>
         </div>
         <Notifications position="bottom left" />
@@ -126,6 +126,7 @@ import {
   animateLoadingOut,
   startAnimations,
 } from '../utils/animations.js';
+import ModalPreliminarData from './auxiliares/ModalPreliminarData.vue';
 
 const props = defineProps({
     user: Object,
@@ -144,7 +145,7 @@ const excelData = ref(null);
 const readyToSend = ref(false);
 const sendButton = ref(null);
 const sendButtonAnimated = ref(false);
-const activeTab = ref('modify');
+const activeTab = ref('upload');
 const uploadMainContainer = ref(null);
 const modifyContainer = ref(null);
 const registros = ref([]);
@@ -172,7 +173,14 @@ const colDefs = ref([
   { field: 'rfc', headerName: 'RFC', filter: true, sortable: true, editable: true },
   { field: 'proveedor', headerName: 'Proveedor', filter: true, sortable: true, editable: true  },
   { field: 'factura', headerName: 'Factura', filter: true, sortable: true, editable: true  },
-  { field: 'parcial', headerName: 'Parcial', valueFormatter: formatCurrency, editable: true  },
+  { 
+    field: 'parcial', 
+    headerName: 'Parcial', 
+    valueFormatter: formatCurrency , 
+    cellClass: (params) => params.value ? 'partial-cell' : '',
+    cellRenderer: 'customCellRenderer',
+    editable: true
+  },
   { 
     field: 'depositos', 
     headerName: 'Depositos', 
@@ -225,11 +233,14 @@ const editButtonsContainer = ref(null);
 const editingValues = ref(false);
 const animatedButtonsContainer = ref(false);
 const headerColumnsSearch = ['FECHA', 'MES'];
+const datosPreliminares = ref([]);
+const showPreliminarData = ref(false);
+const modalPreliminarData = ref(null);
 //#endregion
 
 const handleSelect = async (source) => {
   selectedSource.value = source.id;
-  if((selectedSource.value && selectedPeriod.value) || (selectedSource.value && newBankYear.value)) {
+  if((selectedSource.value && selectedPeriod.value !== "Periodo requerido *") || (selectedSource.value && newBankYear.value)) {
     valid.value = true;
 
     await nextTick();
@@ -267,12 +278,29 @@ const handleFileChange = async (e) => {
     }
 
     if(selectedSource && selectedSource.value == 5){
-        loadE001();
+        await loadE001();
     }
+    
   }
 }
 
-const loadE001 = () => {
+const handleCancelData = () => {
+    alert("Datos cancelados");
+    registros.value = [];
+    datosPreliminares.value = [];
+    valid.value = false;
+    newBankYear.value = null;
+    selectedPeriod.value = null;
+    selectedSource.value = null;
+    readyToSend.value = false;
+}
+
+const openModal = () => {
+    modalPreliminarData.value.openModal();
+};
+
+
+const loadE001 = async () => {
     const reader = new FileReader();
 
     const formatFile = [
@@ -365,6 +393,15 @@ const loadE001 = () => {
             });
 
             excelData.value = formattedDataRows;
+
+            if(!newBank.value){
+                if (excelData.value && excelData.value.length > 0) {
+                    datosPreliminares.value = formattedDataRows;;
+                    showPreliminarData.value = true;
+                    await nextTick();
+                    openModal();
+                }
+            }
         }
 
         notify({
@@ -442,8 +479,6 @@ const loadASLE = () => {
             sheetJson[5].includes(column)
         );
 
-        console.log(sheetJson);
-
         if(!matchFileFormat){{
             notify({
                 title: 'Error al leer el archivo',
@@ -489,6 +524,15 @@ const loadASLE = () => {
             });
 
             excelData.value = formattedDataRows;
+
+            if(!newBank.value){
+                if (excelData.value && excelData.value.length > 0) {
+                    datosPreliminares.value = formattedDataRows;;
+                    showPreliminarData.value = true;
+                    await nextTick();
+                    openModal();
+                }
+            }
         }
 
         notify({
@@ -518,7 +562,7 @@ const loadASLE = () => {
     reader.readAsArrayBuffer(bankFile.value);
 }
 
-const loadU013= () => {
+const loadU013= () => { 
     const reader = new FileReader();
 
     const formatFile = [
@@ -625,6 +669,15 @@ const loadU013= () => {
             });
 
             excelData.value = formattedDataRows;
+
+            if(!newBank.value){
+                if (excelData.value && excelData.value.length > 0) {
+                    datosPreliminares.value = formattedDataRows;;
+                    showPreliminarData.value = true;
+                    await nextTick();
+                    openModal();
+                }
+            }
         }
 
         notify({
@@ -713,8 +766,6 @@ watch(selectedPeriod, async () => {
 })
 
 const handleTabClick = async (tab) => {
-    //activeTab.value = tab;
-    console.log(tab);
     if(tab === 'upload'){
         animateExitModifyContainer(tab);
     }else{
@@ -856,7 +907,7 @@ const handleEdit = async () => {
     }
 }
 
-//#region Animaciones
+//#region animations
 const animateInEditButtonsContainer = () => {
     anime({
         targets: editButtonsContainer.value,

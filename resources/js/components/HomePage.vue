@@ -111,7 +111,13 @@ const colDefs = ref([
   { field: 'rfc', headerName: 'RFC', filter: true, sortable: true },
   { field: 'proveedor', headerName: 'Proveedor', filter: true, sortable: true  },
   { field: 'factura', headerName: 'Factura', filter: true, sortable: true  },
-  { field: 'parcial', headerName: 'Parcial', valueFormatter: formatCurrency  },
+  { 
+    field: 'parcial', 
+    headerName: 'Parcial', 
+    valueFormatter: formatCurrency , 
+    cellClass: (params) => params.value ? 'partial-cell' : '',
+    cellRenderer: 'customCellRenderer' 
+  },
   { 
     field: 'depositos', 
     headerName: 'Depositos', 
@@ -452,6 +458,12 @@ const calculateFilteredTotals = async (params) => {
 .balance-cell {
   background-color: #e3f2fd; /* Fondo azul claro */
   color: #1565c0; /* Texto azul */  font-weight: bold;
+}
+
+.partial-cell{
+  background-color: #fdf28f;
+  color: #a17600;
+  font-weight: bold;
 }
 
 .custom-cell {
