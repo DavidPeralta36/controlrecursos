@@ -12,6 +12,7 @@ import RegisterPage from './components/RegisterPage.vue';
 import { createDynamicForms } from '@asigloo/vue-dynamic-forms';
 import router from './components/router/router.js';
 import ContratosPage from './components/ContratosPage.vue';
+import ProgramacionPage from './components/ProgramacionPage.vue';
 
 const VueDinamicForms = createDynamicForms({
 
@@ -34,6 +35,7 @@ const app = createApp({
         'navbar': NavBar, 
         'register-page': RegisterPage,
         'contratos-page': ContratosPage,
+        'programacion-page': ProgramacionPage,
     }
 });
 

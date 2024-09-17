@@ -29,6 +29,7 @@
                                 {{ props.user.name }} <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
+                                <li v-if="props.user.role === 'proyectos'"><a class="dropdown-item" href="/programacion">Programacion de recursos</a></li>
                                 <li v-if="props.user.role === 'proyectos'"><a class="dropdown-item" href="/users/add">Administrar usuarios</a></li>
                                 <li>
                                     <a class="dropdown-item" href="#" @click="logout">Cerrar sesión</a>
@@ -71,10 +72,10 @@ function logout() {
 
 <style lang="css" scoped>
 .mr {
-    margin-right: 100px;
+    margin-right: 150px;
 }
 .ml {
-    margin-left: 100px;
+    margin-left: 150px;
 }
 
 @media (max-width: 990px) {

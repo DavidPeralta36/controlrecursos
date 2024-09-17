@@ -93,7 +93,6 @@
                         :paginationPageSizeSelector="agProps.paginationPageSizeSelector"
                         style="height: 500px"
                         class="ag-theme-quartz mb-5"
-                        :frameworkComponents="{ customCellRenderer }"
                         :animateRows="true"
                         @cellValueChanged="onCellValueChanged"
                       >
@@ -750,29 +749,6 @@ const handleFindPeriod = async () => {
             }
         });
 
-        /*const registrosProcesados = response.data.map((item, index, array) => {
-            if (index === 0) {
-                // El primer registro no cambia, es el estado inicial
-                return { ...item };
-            } else {
-                // Calcular el saldo para los registros subsecuentes
-                const saldoAnterior = parseFloat(array[index - 1].saldo);
-                const ingresosActuales = parseFloat(item.depositos) || 0;
-                const egresosActuales = parseFloat(item.retiros) || 0;
-
-                console.log(saldoAnterior, ingresosActuales, egresosActuales);
-
-                const nuevoSaldo = saldoAnterior + ingresosActuales - egresosActuales;
-
-                return {
-                    ...item, // Copia todas las propiedades del objeto original
-                    saldo: nuevoSaldo.toFixed(2).toString() // Modifica solo el saldo
-                };
-            }
-        });*/
-
-        //registros.value = registrosProcesados;
-
         registros.value = response.data;
         
         await nextTick();
@@ -786,29 +762,6 @@ const handleFindPeriod = async () => {
             speed: 1000,
         });
     }
-}
-
-function formatCurrency(params) {
-    if (!params.value) return '';
-    
-    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); 
-    if (isNaN(number)) return ''; 
-
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
-}
-
-function customCellRenderer(params) {
-  const value = params.valueFormatted ? params.valueFormatted : params.value;
-
-  if (!value) {
-    return '';
-  }
-
-  return `
-    <span class="custom-cell">
-      ${value}
-    </span>
-  `;
 }
 
 const onCellValueChanged = async (params) => {
