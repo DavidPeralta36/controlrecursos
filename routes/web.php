@@ -12,20 +12,27 @@ use App\Http\Controllers\HomeController;
 |
 */
 
+//Eliminar
 Route::get('/', function () {
     return view('welcome');
 });
 
+//Carga page
 Route::get('/carga', function () {
     return view('carga');
 });
 
-// routes/web.php
+//Contratos
+Route::get('/contratos', function () {
+    return view('contratos');
+});
+
+
 Route::get('/users/{any}', function () {
     return view('newuser');  // Carga la misma vista para todas las subrutas de /users
 })->where('any', '.*');
 
-// También puedes mantener esta ruta específica para la base /users
+
 Route::get('/users', function () {
     return view('newuser');
 });
@@ -34,6 +41,7 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/carga', 'CargaController@index')->name('carga');
+Route::get('/contratos', 'ContratosController@index')->name('contratos');
 
 //Route::get('/users', [HomeController::class,'getUsers']);
 

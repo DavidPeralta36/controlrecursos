@@ -38,7 +38,6 @@
                   :paginationPageSizeSelector="agProps.paginationPageSizeSelector"
                   style="height: 500px"
                   class="ag-theme-quartz mb-5"
-                  :frameworkComponents="{ customCellRenderer }"
                   :animateRows="true"
                   @firstDataRendered="onFirstDataRendered"
                   @filterChanged="onFilterChanged"
@@ -113,15 +112,12 @@ const agProps = ref({
 });
 const registros = ref([]);
 const selectedSource = ref(null);
-const selectedPeriod = ref({ejercicio: "Periodo requerido * "});
+const selectedPeriod = ref({ejercicio: "Periodo requerido *"});
 const loadingText = ref(null); 
 const spinner = ref(null); 
 const skeletonDiv = ref(null);
 const loadingDiv = ref(null);
 const tableDiv = ref(null);
-const filteredIngresos = ref(0);
-const filteredEgresos = ref(0);
-const filteredBalance = ref(0);
 
 watch(selectedSource, () => {
   switch (selectedSource.value) {
@@ -177,17 +173,18 @@ const getReportByPeriod = async () => {
     }
   });
 
+  var saldoIterado = 0
   const registrosProcesados = response.data.map((item, index, array) => {
     if (index === 0) {
-      // El primer registro no cambia, es el estado inicial
+      saldoIterado = parseFloat(item.saldo);
       return { ...item };
     } else {
-      // Calcular el saldo para los registros subsecuentes
-      const saldoAnterior = parseFloat(array[index - 1].saldo);
+      const saldoAnterior = saldoIterado;
       const ingresosActuales = parseFloat(item.depositos) || 0;
       const egresosActuales = parseFloat(item.retiros) || 0;
-
+      
       const nuevoSaldo = saldoAnterior + ingresosActuales - egresosActuales;
+      saldoIterado = parseFloat(nuevoSaldo);
 
       return {
           ...item, // Copia todas las propiedades del objeto original
@@ -226,7 +223,7 @@ const handleGenReport = async () => {
       });
     }
   } else {
-    if (selectedPeriod.value && selectedPeriod.value.ejercicio !== 'Periodo requerido *') {
+    if (selectedSource.value && selectedPeriod.value.ejercicio !== 'Periodo requerido *') {
       try {
         await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
         startAnimations(loadingText, spinner);
@@ -252,29 +249,6 @@ const toggleSetRangeSearch = () => {
 
 const handleSelectPeriod = (period) => {
   selectedPeriod.value = period;
-}
-
-function formatCurrency(params) {
-    if (!params.value) return '';
-    
-    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); 
-    if (isNaN(number)) return ''; 
-
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
-}
-
-function customCellRenderer(params) {
-  const value = params.valueFormatted ? params.valueFormatted : params.value;
-
-  if (!value) {
-    return '';
-  }
-
-  return `
-    <span class="custom-cell">
-      ${value}
-    </span>
-  `;
 }
 
 const formatearCantidad = (value) => {

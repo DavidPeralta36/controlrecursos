@@ -9,14 +9,14 @@
             </button>
             <div class="collapse navbar-collapse flex justify-content-end" id="navbarNavDropdown">
                 <ul class="navbar-nav "  v-if="props.user">
-                    <li class="nav-item hov" :class="route.path === '/home' ? 'borderItem' : ''">
+                    <li class="nav-item hov" :class="route.path === '/home' ? 'borderItem' : ''" v-if="props.user.role !== 'almacen' && props.user.role !== 'obras'">
                         <a class="nav-link" :class="route.path === '/home' ? 'activeLink' : ''" aria-current="page" href="/home">Consulta</a>
                     </li>
-                    <li class="nav-item hov" :class="route.path === '/carga' ? 'borderItem' : ''">
+                    <li class="nav-item hov" :class="route.path === '/carga' ? 'borderItem' : ''" v-if="props.user.role === 'proyectos'">
                         <a class="nav-link" href="/carga" :class="route.path === '/carga' ? 'activeLink' : ''">Carga</a>
                     </li>
-                    <li class="nav-item hov" :class="route.path === '/llenado' ? 'borderItem' : ''">
-                        <a class="nav-link" href="/llenado" :class="route.path === '/llenado' ? 'activeLink' : ''">Contratos</a>
+                    <li class="nav-item hov" :class="route.path === '/contratos' ? 'borderItem' : '' " v-if="props.user.role === 'almacen' || props.user.role === 'obras' || props.user.role === 'proyectos'">
+                        <a class="nav-link" href="/contratos" :class="route.path === '/llenado' ? 'activeLink' : ''">Contratos</a>
                     </li>
                 </ul>
 
@@ -29,7 +29,7 @@
                                 {{ props.user.name }} <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/users/add">Administrar usuarios</a></li>
+                                <li v-if="props.user.role === 'proyectos'"><a class="dropdown-item" href="/users/add">Administrar usuarios</a></li>
                                 <li>
                                     <a class="dropdown-item" href="#" @click="logout">Cerrar sesión</a>
                                 </li>

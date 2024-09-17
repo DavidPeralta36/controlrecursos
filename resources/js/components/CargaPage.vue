@@ -134,6 +134,7 @@ const props = defineProps({
     fuentes: Array,
     periodos: Array
 });
+
 //#region Variables
 const selectedSource = ref(null);
 const uploadContainer = ref(null);
@@ -259,7 +260,6 @@ const handleCancelData = () => {
 const openModal = () => {
     modalPreliminarData.value.openModal();
 };
-
 
 const loadE001 = async () => {
     const reader = new FileReader();
@@ -677,7 +677,11 @@ const habdleUploadFile = async () => {
     const jsonBlob = new Blob([JSON.stringify(excelData.value)], { type: 'application/json' });
     formData.append('archivo', jsonBlob, 'data.json');
     formData.append('source', selectedSource.value);
-    formData.append('periodo', newBankYear.value);
+    if(newBank.value){
+        formData.append('periodo', newBankYear.value);
+    }else{
+        formData.append('periodo', selectedPeriod.value.ejercicio);
+    }
     try {
         notify({
                 title: 'Subiendo archivo',

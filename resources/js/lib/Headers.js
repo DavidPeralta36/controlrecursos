@@ -11,28 +11,24 @@ export const U013=[
         headerName: 'Parcial', 
         valueFormatter: formatCurrency , 
         cellClass: (params) => params.value ? 'partial-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { 
         field: 'depositos', 
         headerName: 'Depositos', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'deposit-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { 
         field: 'retiros', 
         headerName: 'Retiros', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'withdrawal-cell' : '',
-        cellRenderer: 'customCellRenderer'
     },
     { 
         field: 'saldo', 
         headerName: 'Saldo', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'balance-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { field: 'r', headerName: 'Rubro', filter: true, sortable: true }, 
     { field: 'partida', headerName: 'Partida', filter: true, sortable: true  },
@@ -65,28 +61,24 @@ export const ALE=[
         headerName: 'Parcial', 
         valueFormatter: formatCurrency , 
         cellClass: (params) => params.value ? 'partial-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { 
         field: 'depositos', 
         headerName: 'Depositos', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'deposit-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { 
         field: 'retiros', 
         headerName: 'Retiros', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'withdrawal-cell' : '',
-        cellRenderer: 'customCellRenderer'
     },
     { 
         field: 'saldo', 
         headerName: 'Saldo', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'balance-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { field: 'r', headerName: 'Rubro', filter: true, sortable: true }, 
     { field: 'partida', headerName: 'Partida', filter: true, sortable: true  },
@@ -119,28 +111,24 @@ export const E001=[
         headerName: 'Parcial', 
         valueFormatter: formatCurrency , 
         cellClass: (params) => params.value ? 'partial-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { 
         field: 'retiros', 
         headerName: 'Retiros', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'withdrawal-cell' : '',
-        cellRenderer: 'customCellRenderer'
     },
     { 
         field: 'depositos', 
         headerName: 'Depositos', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'deposit-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { 
         field: 'saldo', 
         headerName: 'Saldo', 
         valueFormatter: formatCurrency, 
         cellClass: (params) => params.value ? 'balance-cell' : '',
-        cellRenderer: 'customCellRenderer' 
     },
     { field: 'r', headerName: 'Rubro', filter: true, sortable: true }, 
     { field: 'partida', headerName: 'Partida', filter: true, sortable: true  },
@@ -169,18 +157,4 @@ function formatCurrency(params) {
     if (isNaN(number)) return ''; 
 
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
-}
-
-function customCellRenderer(params) {
-  const value = params.valueFormatted ? params.valueFormatted : params.value;
-
-  if (!value) {
-    return '';
-  }
-
-  return `
-    <span class="custom-cell">
-      ${value}
-    </span>
-  `;
 }
