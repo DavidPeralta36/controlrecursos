@@ -49,3 +49,6 @@ Route::post('/register', 'UsersController@createNewUser')->name('register');
 Route::get('/getusers', 'UsersController@getUsers')->name('users');
 Route::put('/updateuser/{id}', 'UsersController@updateUser')->name('updateuser');
 Route::delete('/deleteuser/{id}', 'UsersController@deleteUser')->name('deleteuser');
+
+//Programacion
+Route::post('/save_programacion_partidas', 'ProgramacionController@saveProgramacionPartidas')->name('save_programacion_partidas');

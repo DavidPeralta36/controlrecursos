@@ -1,0 +1,36 @@
+[2024-09-18 02:19:21] local.INFO: array (
+  'idfuente' => 1,
+  'ejercicio' => '2023',
+  'idpartida' => 1,
+  'descripcion' => 'Sueldos base',
+  'idcapitulo' => 1,
+  'monto_programado' => 2000,
+)  
+[2024-09-18 02:19:21] local.INFO:   
+[2024-09-18 02:19:21] local.INFO: array (
+  'idfuente' => 1,
+  'ejercicio' => '2023',
+  'idpartida' => 1,
+  'descripcion' => 'Sueldos base',
+  'idcapitulo' => 1,
+  'monto_programado' => 2000,
+  'idrubro' => 1,
+)  
+[2024-09-18 02:19:21] local.INFO: array (
+  'idfuente' => 1,
+  'ejercicio' => '2023',
+  'idpartida' => 2,
+  'descripcion' => 'Honorarios',
+  'idcapitulo' => 1,
+  'monto_programado' => 20000,
+)  
+[2024-09-18 02:19:21] local.INFO:   
+[2024-09-18 02:19:21] local.INFO: array (
+  'idfuente' => 1,
+  'ejercicio' => '2023',
+  'idpartida' => 2,
+  'descripcion' => 'Honorarios',
+  'idcapitulo' => 1,
+  'monto_programado' => 20000,
+  'idrubro' => 1,
+)  
