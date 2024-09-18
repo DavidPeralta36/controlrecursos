@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\models\capitulos;
 use App\models\partidas;
 use App\models\rubros;
 use Illuminate\Http\Request;
@@ -77,5 +78,27 @@ class ProgramacionController extends Controller
             DB::rollBack();
             return response()->json(['error' => $ex->getMessage()], 400);
         }
+    }
+
+    public function getPartidasProgramadas(Request $request)
+    {
+        $ejercicio = $request->input('ejercicio');
+        $source = $request->input('source');
+
+        //find partidas programadas for the given source and ejercicio
+        $partidasProgramadas = programacionpartidas::where('ejercicio', $ejercicio)
+            ->where('idfuente', $source)
+            ->get();
+
+        //get description for idpartida, idcapitulo from partidasProgramadas
+        foreach ($partidasProgramadas as $partidaProgramada) {
+            $partida = partidas::where('id', $partidaProgramada->idpartida)->first();
+            $partidaProgramada->descripcion = $partida->descripcion;
+            $capitulo = capitulos::where('id', $partidaProgramada->idcapitulo)->first();
+            $partidaProgramada->nombre_capitulo = $capitulo->descripcion;
+            Log::info($partidaProgramada);
+        }
+
+        return response()->json($partidasProgramadas);
     }
 }

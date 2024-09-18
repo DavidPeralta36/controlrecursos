@@ -12,7 +12,7 @@
                 <a class="nav-link" :class="activeTab === 'modify' ? 'active' : '' " aria-current="page" href="#" @click="handleTabClick('modify')">Modificar</a>
             </li>
         </ul>
-        <main>
+        <main class="mb-5">
             <div class="container" v-if="activeTab === 'new'">
                 <source-picker :fuentes="fuentes" :handleSelect="handleSelect"/>
                 <section class="mt-2">
@@ -39,6 +39,24 @@
                     </div>
                 </section>
             </div>
+
+            <div v-if="activeTab === 'modify'" >
+                <p class="h5 ">Seleccione el ejercicio</p>
+                <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>
+                <section class="mt-2">
+                    <p class="h5 ">Ingrese el ejercicio</p>
+                    <input type="text" class="form-control" placeholder="Ejercicio" aria-label="Ejercicio" v-model="ejercicio" required>
+                </section>
+                <button class="btn btn-primary mt-2" @click="handleGetPartidasProgramadas">Obtener partidas programadas</button>
+                <hr/>
+                <AgGridVue
+                    :rowData="partidasProgramadasDb"
+                    :columnDefs="colDefs"
+                    style="height: 500px"
+                    class="ag-theme-quartz mb-5"
+                    :frameworkComponents="{ actionRenderer }"
+                />
+            </div>
             
             <hr/>
             <p>Total programado: {{ partidasProgramadas.reduce((total, partida) => total + partida.monto_programado, 0) }}</p>
@@ -50,11 +68,14 @@
 
 <script setup>
 import SourcePicker from './homepage_components/SourcePicker.vue';
-import { ref, defineProps, nextTick, watch, onBeforeMount } from 'vue';
+import { ref, defineProps, watch, onBeforeMount, defineComponent } from 'vue';
 import { Notifications, notify } from '@kyvg/vue3-notification';
 import axios from 'axios';
 import VueSelect from 'vue-select';
 import "vue-select/dist/vue-select.css"
+import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
+import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
+import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
 
 const props = defineProps({
     user: Object,
@@ -71,6 +92,39 @@ onBeforeMount(() => {
     }));
 })
 
+const colDefs = ref([
+    {
+        field: 'descripcion',
+        headerName: 'Partida',
+        filter: true,
+        sortable: true,
+        flex: 1,
+    },
+    {
+        field: 'monto_programado',
+        headerName: 'Monto programado',
+        filter: true,
+        sortable: true,
+        editable: true,
+        flex: 1,
+    },
+    {
+        field: 'nombre_capitulo',
+        headerName: 'Capitulo',
+        filter: true,
+        sortable: true,
+        flex: 1,
+    },
+    {
+        field: 'ejercicio',
+        headerName: 'Ejercicio',
+        filter: true,
+        sortable: true,
+                flex: 1, 
+    },
+    { field: 'actions', headerName: 'Acciones', cellRenderer: actionRenderer, flex: 1 },
+]);
+
 const ejercicio = ref(null);
 const partidasFormateadas = ref([]);
 const partidaSeleccionada = ref(null);
@@ -78,6 +132,7 @@ const selectedSource = ref(null);
 const partidasProgramadas = ref([]);
 const monto = ref(null);
 const activeTab = ref('new');
+const partidasProgramadasDb = ref([]);
 
 watch(partidaSeleccionada, () => {
     console.log(partidaSeleccionada.value);
@@ -122,6 +177,53 @@ const handleSave = async () => {
     } catch (e) {
         notify({
             title: 'Error al guardar programacion',
+            text: 'Error: ' + e.response.data.message,
+            type: 'error',
+            duration: 5000,
+        })
+    }
+}
+const actionRenderer = defineComponent({
+  template: `
+    <div>
+      <button @click="editUser" class="btn btn-warning btn-sm mx-2">Editar</button>
+      <button @click="deleteUser" class="btn btn-danger btn-sm">Eliminar</button>
+    </div>
+  `,
+  props: ['params'],
+  setup(props) {
+    const editUser = () => {
+      console.log("Editar:", props.params.data);
+    };
+    
+    const deleteUser = () => {
+      console.log("Eliminar:", props.params.data);
+    };
+
+    return {
+      editUser,
+      deleteUser,
+    };
+  }
+});
+
+const handleGetPartidasProgramadas = async () => {
+    await getPartidasProgramadas();
+}
+
+const getPartidasProgramadas = async () => {
+    try {
+        const response = await axios.get('/get_partidas_programadas', {
+            params: {
+                ejercicio: ejercicio.value,
+                source: selectedSource.value
+            }
+        });
+        partidasProgramadasDb.value = response.data;
+        console.log(response.data);
+    } catch (e) {
+        notify({
+            title: 'Error al obtener partidas programadas',
             text: 'Error: ' + e.response.data.message,
             type: 'error',
             duration: 5000,

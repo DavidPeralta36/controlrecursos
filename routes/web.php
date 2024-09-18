@@ -52,3 +52,4 @@ Route::delete('/deleteuser/{id}', 'UsersController@deleteUser')->name('deleteuse
 
 //Programacion
 Route::post('/save_programacion_partidas', 'ProgramacionController@saveProgramacionPartidas')->name('save_programacion_partidas');
+Route::get('/get_partidas_programadas', 'ProgramacionController@getPartidasProgramadas')->name('get_partidas_programadas');
