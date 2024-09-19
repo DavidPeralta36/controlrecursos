@@ -87,9 +87,9 @@ import { Notifications, notify } from '@kyvg/vue3-notification';
 import axios from 'axios';
 import VueSelect from 'vue-select';
 import "vue-select/dist/vue-select.css"
-import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
-import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
-import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
+import { AgGridVue } from "ag-grid-vue3";
 import ActionRenderer from '../components/auxiliares/ActionRenderer.vue';
 import { computed } from 'vue';
 
@@ -101,7 +101,6 @@ const props = defineProps({
 });
 
 onBeforeMount(() => {
-    // concatenate partida - descripcion from partidas
     partidasFormateadas.value = props.partidas.map(partida => ({
         ...partida,
         label: `${partida.partida} - ${partida.descripcion}`
@@ -125,7 +124,7 @@ const colDefs = ref([
         editable: true,
         flex: 1,
         cellClass: (params) => params.value ? 'partial-cell' : 'invalidClass',
-        valueFormatter: formatCurrency , 
+        valueFormatter: formatCurrency,
     },
     {
         field: 'nombre_capitulo',
@@ -167,28 +166,28 @@ const partidasProgramadasDb = ref([]);
 const editedRecords = ref([]);
 
 const computedTotalProgramado = computed(() => {
-    //parse monto_programado to number and return the formatted sum in MXN with 2 decimals
     return partidasProgramadas.value.reduce((total, partida) => total + parseFloat(partida.monto_programado), 0).toLocaleString('es-MX', {
         style: 'currency',
         currency: 'MXN',
-        minimumFractionDigits: 2, // Asegurar dos decimales
+        minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     });
 });
 
-const computedTotalProgramadoDb = computed(() => {
-    //parse monto_programado to number and return the formatted sum in MXN with 2 decimals
+const computedTotalProgramadoDb = ref(calculateTotalProgramadoDb());
+
+watch(editedRecords, () => {
+    computedTotalProgramadoDb.value = calculateTotalProgramadoDb();
+});
+
+function calculateTotalProgramadoDb() {
     return partidasProgramadasDb.value.reduce((total, partida) => total + parseFloat(partida.monto_programado), 0).toLocaleString('es-MX', {
         style: 'currency',
         currency: 'MXN',
-        minimumFractionDigits: 2, // Asegurar dos decimales
+        minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     });
-});
-
-watch(partidaSeleccionada, () => {
-    console.log(partidaSeleccionada.value);
-});
+}
 
 const handleSelect = async (source) => {
   selectedSource.value = source.id;
@@ -199,7 +198,6 @@ const handleTabClick = async (tab) => {
 }
 
 const handleProgramar = async () => {
-    //validate the data before adding it to the array
     if(monto.value <= 0){
         notify({
             title: 'Error al programar recursos',
@@ -288,6 +286,7 @@ const getPartidasProgramadas = async () => {
                 }
             });
             partidasProgramadasDb.value = response.data;
+            computedTotalProgramadoDb.value = calculateTotalProgramadoDb();
             console.log(response.data);
         } catch (e) {
             notify({
@@ -306,30 +305,12 @@ const getPartidasProgramadas = async () => {
         })
           return;  
     }
-    
-    try {
-        const response = await axios.get('/get_partidas_programadas', {
-            params: {
-                ejercicio: ejercicio.value,
-                source: selectedSource.value
-            }
-        });
-        partidasProgramadasDb.value = response.data;
-        console.log(response.data);
-    } catch (e) {
-        notify({
-            title: 'Error al obtener partidas programadas',
-            text: 'Error: ' + e.response.data.message,
-            type: 'error',
-            duration: 5000,
-        })
-    }
 }
 
 const onCellValueChanged = async (params) => {
   const updatedData = params.data;
   editedRecords.value.push(updatedData);
-  console.log(editedRecords.value);
+  computedTotalProgramadoDb.value = calculateTotalProgramadoDb();
 };
 
 const handleEdit = async () => {
