@@ -65,7 +65,8 @@
                     :frameworkComponents="{ ActionRenderer }"
                     :animateRows="true"
                     :rowHeight="48"
-                     @cellValueChanged="onCellValueChanged"
+                    @cellValueChanged="onCellValueChanged"
+                    @record-deleted="handleRecordDeleted"
                 />
 
                 <button v-if="editedRecords.length > 0" class="btn rojo mt-2" @click="handleEdit">Guardar registros editados</button>
@@ -75,6 +76,7 @@
             <p v-if="activeTab === 'modify'">Total programado: {{ computedTotalProgramadoDb }} MXN</p>
             <p v-if="activeTab === 'new'">Total programado: {{ computedTotalProgramado }} MXN</p>
             <button v-if="activeTab === 'new'" class="btn rojo mt-2" @click="handleSave">Guardar programacion del ejercicio</button>
+            <button v-if="activeTab === 'modify'" class="btn rojo mt-2" @click="generateProgramacionRubros">Generar programación por rubro</button>
             <Notifications position="bottom left" />
         </main>
     </div>
@@ -179,6 +181,11 @@ const computedTotalProgramadoDb = ref(calculateTotalProgramadoDb());
 watch(editedRecords, () => {
     computedTotalProgramadoDb.value = calculateTotalProgramadoDb();
 });
+
+const handleRecordDeleted = async () => {
+    alert("Se ha eliminado la partida programada");
+  await getPartidasProgramadas();
+};
 
 function calculateTotalProgramadoDb() {
     return partidasProgramadasDb.value.reduce((total, partida) => total + parseFloat(partida.monto_programado), 0).toLocaleString('es-MX', {
@@ -350,6 +357,21 @@ const handleEdit = async () => {
         });
     }
 };
+
+const generateProgramacionRubros = () => {
+    //agrupa las partidas_programadas por idcapitulo
+    const partidasProgramadasByCapitulo = partidasProgramadasDb.value.reduce((acc, partida) => {
+        const cap = partida.idcapitulo;
+        if (acc[cap]) {
+            acc[cap].push(partida);
+        } else {
+            acc[cap] = [partida];
+        }
+        return acc;
+    }, {});
+
+    console.log(partidasProgramadasByCapitulo);
+}
 
 </script>
 

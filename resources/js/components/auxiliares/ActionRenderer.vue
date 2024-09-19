@@ -5,11 +5,12 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 import axios from 'axios';
 import { notify } from '@kyvg/vue3-notification';
 
 const props = defineProps(['params']);
+const emit = defineEmits(['record-deleted']);
 
 const deleteRecord = async () => {
   try {
@@ -28,6 +29,7 @@ const deleteRecord = async () => {
         type: 'success',
         duration: 5000,
       });
+      emit('record-deleted'); // Emitir evento después de la eliminación
     }
   } catch (e) {
     notify({
