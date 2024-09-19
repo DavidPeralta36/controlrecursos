@@ -96,9 +96,36 @@ class ProgramacionController extends Controller
             $partidaProgramada->descripcion = $partida->descripcion;
             $capitulo = capitulos::where('id', $partidaProgramada->idcapitulo)->first();
             $partidaProgramada->nombre_capitulo = $capitulo->descripcion;
-            Log::info($partidaProgramada);
         }
 
         return response()->json($partidasProgramadas);
+    }
+
+    public function deletePartidaProgramada(Request $request)
+    {
+        programacionpartidas::where('id', $request->input('id'))->delete();
+
+        return response()->json('Partida programada eliminada exitosamente');
+    }
+
+    public function editPartidaProgramada(Request $request)
+    {
+        //begin a transaction
+        DB::beginTransaction();
+
+        $editedRecords = json_decode($request->input('records'), true);
+
+        if (is_array($editedRecords)) {
+            foreach ($editedRecords as $record) {
+                $partidaProgramada = programacionpartidas::where('id', $record['id'])->first();
+                $partidaProgramada->monto_programado = $record['monto_programado'];
+                $partidaProgramada->save();
+            }
+
+            DB::commit();
+            return response()->json('Partida programada actualizada exitosamente');
+        } else {
+            return response()->json('Error al editar la partida programada', 400);
+        }
     }
 }
