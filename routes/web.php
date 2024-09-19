@@ -55,3 +55,5 @@ Route::post('/save_programacion_partidas', 'ProgramacionController@saveProgramac
 Route::get('/get_partidas_programadas', 'ProgramacionController@getPartidasProgramadas')->name('get_partidas_programadas');
 Route::delete('/delete_partida_programada/{id}', 'ProgramacionController@deletePartidaProgramada')->name('delete_partida_programada');
 Route::post('/edit_partida_programada', 'ProgramacionController@editPartidaProgramada')->name('edit_partida_programada');
+Route::post('/generate_programacion_rubros', 'ProgramacionController@generateProgramacionRubros')->name('generate_programacion_rubros');
+Route::get('/get_rubros', 'ProgramacionController@getRubros')->name('get_rubros');

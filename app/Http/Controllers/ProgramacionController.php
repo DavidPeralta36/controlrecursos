@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\models\capitulos;
 use App\models\partidas;
+use App\models\programacionrubros;
 use App\models\rubros;
+use Arr;
 use Illuminate\Http\Request;
 use App\models\fuentefinan;
 use App\models\registrobancos;
@@ -126,6 +128,57 @@ class ProgramacionController extends Controller
             return response()->json('Partida programada actualizada exitosamente');
         } else {
             return response()->json('Error al editar la partida programada', 400);
+        }
+    }
+
+    public function getRubros(){
+        $rubros = rubros::all();
+        return response()->json($rubros);
+    }
+
+    public function generateProgramacionRubros(Request $request)
+    {
+        $rubrosProgramados = $request->input('rubros');
+
+        // Begin a transaction
+        DB::beginTransaction();
+
+        try
+        {
+            foreach ($rubrosProgramados as $rubroProgramado) {
+                Log::info("-------------------------------------------------------------------------------------------------------------");
+            
+                // Get idrubro instead of id
+                $idrubro = rubros::where('descripcion', $rubroProgramado['descripcion'])->first()->id;
+                
+
+                // Remove the 'id' key to avoid conflict
+                $rubroProgramado = Arr::except($rubroProgramado, ['id']);
+
+                // Add the idrubro key
+                $rubroProgramado['idrubro'] = $idrubro;
+                
+                // Search for rubro where idfuente and ejercicio and idrubro match
+                $rubro = programacionrubros::where('idrubro', $idrubro)
+                    ->where('ejercicio', $rubroProgramado['ejercicio'])
+                    ->where('idfuente', $rubroProgramado['idfuente'])
+                    ->first();
+                
+                Log::info($rubroProgramado['ejercicio']);
+
+                if ($rubro) {
+                    $rubro->monto_programado = $rubroProgramado['monto_programado'];
+                    $rubro->save();
+                } else {
+                    programacionrubros::create($rubroProgramado);
+                }
+            }
+            DB::commit();
+            return response()->json('Programación generada exitosamente');
+        } catch (\Exception $ex) {
+            Log::info($ex->getMessage());
+            DB::rollBack();
+            return response()->json(['error' => $ex->getMessage()], 400);
         }
     }
 }

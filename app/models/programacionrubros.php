@@ -15,7 +15,7 @@ class programacionrubros extends Model
     protected $fillable = [
         'id',
         'idrubro',
-        'ejericio',
+        'ejercicio',
         'monto_programado',
         'idfuente',
     ];

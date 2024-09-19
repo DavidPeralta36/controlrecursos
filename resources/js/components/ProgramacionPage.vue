@@ -102,11 +102,19 @@ const props = defineProps({
     partidas: Array
 });
 
-onBeforeMount(() => {
+onBeforeMount( async () => {
     partidasFormateadas.value = props.partidas.map(partida => ({
         ...partida,
         label: `${partida.partida} - ${partida.descripcion}`
     }));
+
+    try{
+        const response = await axios.get('/get_rubros');
+        rubros.value = response.data;
+        console.log(rubros.value);
+    }catch(e){
+        console.log(e);
+    }
 })
 
 const colDefs = ref([
@@ -166,6 +174,7 @@ const monto = ref(null);
 const activeTab = ref('new');
 const partidasProgramadasDb = ref([]);
 const editedRecords = ref([]);
+const rubros = ref([]);
 
 const computedTotalProgramado = computed(() => {
     return partidasProgramadas.value.reduce((total, partida) => total + parseFloat(partida.monto_programado), 0).toLocaleString('es-MX', {
@@ -358,7 +367,7 @@ const handleEdit = async () => {
     }
 };
 
-const generateProgramacionRubros = () => {
+const generateProgramacionRubros = async () => {
     //agrupa las partidas_programadas por idcapitulo
     const partidasProgramadasByCapitulo = partidasProgramadasDb.value.reduce((acc, partida) => {
         const cap = partida.idcapitulo;
@@ -370,7 +379,54 @@ const generateProgramacionRubros = () => {
         return acc;
     }, {});
 
-    console.log(partidasProgramadasByCapitulo);
+    const rubrosProgramados = rubros.value.map(rubro => {
+        const rubroProgramado = partidasProgramadasByCapitulo[rubro.id];
+        if (rubroProgramado) {
+            return {
+                ...rubro,
+                ejercicio: ejercicio.value,
+                idfuente: selectedSource.value,
+                monto_programado: rubroProgramado.reduce((total, partida) => total + parseFloat(partida.monto_programado), 0),
+            };
+        } else {
+            return {
+                ...rubro,
+                ejercicio: ejercicio.value,
+                idfuente: selectedSource.value,
+                monto_programado: 0,
+            };
+        }
+    });
+
+
+    try{
+        const response = await axios.post('/generate_programacion_rubros', {
+            rubros: rubrosProgramados,
+        });
+        
+        if(response.status === 200){
+            notify({
+                title: 'Programación generada exitosamente',
+                text: 'La programación se ha generado correctamente',
+                type: 'success',
+                duration: 5000,
+            })
+        }else{
+            notify({
+                title: 'Error al generar programación',
+                text: 'Error: ' + response.data.message,
+                type: 'error',
+                duration: 5000,
+            })
+        }
+    }catch(e){
+        notify({
+            title: 'Error al generar programación',
+            text: 'Error: ' + e.response.data.message,
+            type: 'error',
+            duration: 5000,
+        })
+    }
 }
 
 </script>
