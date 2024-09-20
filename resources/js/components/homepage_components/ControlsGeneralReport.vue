@@ -20,6 +20,10 @@
             <p>Seleccione el periodo requerido:</p> 
             <VueSelect v-model="localSelectedPeriod" :options="periodos" label="ejercicio" class="mt-1"/>
         </div>
+        <div>
+          <label for="mes" class="ml-1">Selecciona el mes del reporte</label>
+          <VueSelect v-model="localSelectedMOnth" :options="months" label="label" class="mt-1" id="mes"/>
+        </div>
         <div class="w-100 h-100 d-flex justify-content-end mt-1">
             <button class="btn btn-primary align-self-center" @click="props.handleGenReport">
               <v-icon name="fa-chart-bar" animation="ring" hover/>
@@ -40,6 +44,22 @@ import { ref, defineProps, defineEmits, watch, toRef } from 'vue';
 const flow = ref(['year', 'month', 'day']);
 const localSelectedPeriod = ref('Periodo requerido *');
 const localRangeSearch = ref(false);
+const localSelectedMOnth = ref(null);
+
+const months = ref([
+    { value: 1, label: 'Enero' },
+    { value: 2, label: 'Febrero' },
+    { value: 3, label: 'Marzo' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Mayo' },
+    { value: 6, label: 'Junio' },
+    { value: 7, label: 'Julio' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Septiembre' },
+    { value: 10, label: 'Octubre' },
+    { value: 11, label: 'Noviembre' },
+    { value: 12, label: 'Diciembre' },
+]);
 
 const props = defineProps({
   dates: Object,
@@ -49,10 +69,10 @@ const props = defineProps({
   handleDateChange: Function,
   handleGenReport: Function,
   toggleSetRangeSearch: Function,
-  handleSelectPeriod: Function
+  handleSelectPeriod: Function,
 })
 
-const emit = defineEmits(['update:selectedPeriod', 'update:rangeSearch']);
+const emit = defineEmits(['update:selectedPeriod', 'update:rangeSearch', 'update:selectedMonth']);
 
 function syncPropsWithEmit(propName, localRef, emit) {
   // Watch for local changes and emit them
@@ -69,12 +89,14 @@ function syncPropsWithEmit(propName, localRef, emit) {
 // Eliminar duplicidad y sobrecarga del watch
 syncPropsWithEmit('selectedPeriod', localSelectedPeriod, emit);
 syncPropsWithEmit('rangeSearch', localRangeSearch, emit);
+syncPropsWithEmit('selectedMonth', localSelectedMOnth, emit);
 
 </script>
 <style scoped>
 .controlsContainer {
     display: flex;
     justify-content: space-between;
+    flex-direction: column;
     align-items: end;
     width: 100%;
     margin-top: 1vh;

@@ -181,4 +181,32 @@ class ProgramacionController extends Controller
             return response()->json(['error' => $ex->getMessage()], 400);
         }
     }
+
+    public function getProgramacionRubros(Request $request)
+    {
+        $ejercicio = $request->input('ejercicio');
+        $source = $request->input('source');
+
+        $rubrosProgramados = programacionrubros::where('ejercicio', $ejercicio)
+            ->where('idfuente', $source)
+            ->get();
+
+        foreach( $rubrosProgramados as $rubroprogramado){
+            $rubro = rubros::where('id', $rubroprogramado->idrubro)->first();
+            $fuente = fuentefinan::where('id', $rubroprogramado->idfuente)->first();
+
+            //add rubro.descripcion to rubroProgramado
+            $rubroprogramado->descripcion = $rubro->descripcion;
+            $rubroprogramado->nombre_fuente = $fuente->nombre_fuente;
+        }
+        
+        return response()->json($rubrosProgramados);
+    }
+
+    public function deleteProgramacionRubro(Request $request)
+    {
+        programacionrubros::where('id', $request->input('id'))->delete();
+
+        return response()->json('Programación por rubro eliminada exitosamente');
+    }
 }

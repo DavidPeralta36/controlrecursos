@@ -15,7 +15,8 @@
               :handleGenReport="handleGenReport"
               :handleSelectPeriod="handleSelectPeriod"
               @update:rangeSearch="toggleSetRangeSearch"
-              @update:selectedPeriod="handleSelectPeriod"/>
+              @update:selectedPeriod="handleSelectPeriod"
+              @update:selectedMonth="handleSelectMonth"/>
             <hr class="mt-2"/>
             <div :class="!loads.loaded ? 'imgContainer' : 'tableContainer'">
               <div v-if="loads.loading" class="text-center" ref="loadingDiv">
@@ -118,6 +119,7 @@ const spinner = ref(null);
 const skeletonDiv = ref(null);
 const loadingDiv = ref(null);
 const tableDiv = ref(null);
+const selectedMonth = ref(null);
 
 watch(selectedSource, () => {
   switch (selectedSource.value) {
@@ -134,6 +136,11 @@ watch(selectedSource, () => {
       colDefs.value = [];
   }
 });
+
+const handleSelectMonth = (month) => {
+  selectedMonth.value = month.label;
+  console.log(selectedMonth.value);
+}
 
 const handleSelect = (source) => {
   selectedSource.value = source.id;

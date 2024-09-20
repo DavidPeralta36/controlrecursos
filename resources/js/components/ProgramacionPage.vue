@@ -77,6 +77,17 @@
             <p v-if="activeTab === 'new'">Total programado: {{ computedTotalProgramado }} MXN</p>
             <button v-if="activeTab === 'new'" class="btn rojo mt-2" @click="handleSave">Guardar programacion del ejercicio</button>
             <button v-if="activeTab === 'modify'" class="btn rojo mt-2" @click="generateProgramacionRubros">Generar programación por rubro</button>
+            <hr/>
+            <p v-if="activeTab === 'modify'">Programación por rubro</p>
+            <AgGridVue
+                v-if="activeTab === 'modify'"
+                :rowData="rubrosProgramados"
+                :columnDefs="colDefsRubros"
+                style="height: 340px; width: 100%;"
+                class="ag-theme-quartz mb-5"
+                :frameworkComponents="{ DeleteCell }"
+            />
+
             <Notifications position="bottom left" />
         </main>
     </div>
@@ -93,6 +104,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { AgGridVue } from "ag-grid-vue3";
 import ActionRenderer from '../components/auxiliares/ActionRenderer.vue';
+import DeleteCell from '../components/auxiliares/DeleteCell.vue';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -155,6 +167,46 @@ const colDefs = ref([
     { field: 'actions', headerName: 'Acciones', cellRenderer: ActionRenderer, flex: 1 },
 ]);
 
+const colDefsRubros = ref([
+    {
+        field: 'descripcion',
+        headerName: 'Rubro',
+        filter: true,
+        sortable: true,
+        flex: 1,
+    },
+    {
+        field: 'monto_programado',
+        headerName: 'Monto programado (MXN)',
+        filter: true,
+        sortable: true,
+        editable: true,
+        flex: 1,
+        valueFormatter: formatCurrency,
+        cellClass: (params) => params.value !== 0 ? 'partial-cell' : 'invalidClass',
+    },
+    {
+        field: 'ejercicio',
+        headerName: 'Ejercicio programado',
+        filter: true,
+        sortable: true,
+        flex: 1,
+    },
+    {
+        field: 'nombre_fuente',
+        headerName: 'Fuente de financiamiento',
+        filter: true,
+        sortable: true,
+        flex: 1,
+    },
+    {
+        field: 'actions',
+        headerName: 'Acciones',
+        cellRenderer: DeleteCell,
+        flex: 1,
+    }
+]);
+
 function formatCurrency(params) {
     if (!params.value) return '';
 
@@ -175,6 +227,7 @@ const activeTab = ref('new');
 const partidasProgramadasDb = ref([]);
 const editedRecords = ref([]);
 const rubros = ref([]);
+const rubrosProgramados = ref([]);
 
 const computedTotalProgramado = computed(() => {
     return partidasProgramadas.value.reduce((total, partida) => total + parseFloat(partida.monto_programado), 0).toLocaleString('es-MX', {
@@ -304,6 +357,8 @@ const getPartidasProgramadas = async () => {
             partidasProgramadasDb.value = response.data;
             computedTotalProgramadoDb.value = calculateTotalProgramadoDb();
             console.log(response.data);
+
+            await getProgramacionRubros();
         } catch (e) {
             notify({
                 title: 'Error al obtener partidas programadas',
@@ -368,6 +423,17 @@ const handleEdit = async () => {
 };
 
 const generateProgramacionRubros = async () => {
+    if(partidasProgramadasDb.value.length <= 0){
+        notify({
+            title: 'Error al generar programación',
+            text: 'Se deben tener almenos una partida programada registrada en el sistema',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+        return;
+    }
+
     //agrupa las partidas_programadas por idcapitulo
     const partidasProgramadasByCapitulo = partidasProgramadasDb.value.reduce((acc, partida) => {
         const cap = partida.idcapitulo;
@@ -411,6 +477,8 @@ const generateProgramacionRubros = async () => {
                 type: 'success',
                 duration: 5000,
             })
+
+            await getProgramacionRubros();
         }else{
             notify({
                 title: 'Error al generar programación',
@@ -422,6 +490,26 @@ const generateProgramacionRubros = async () => {
     }catch(e){
         notify({
             title: 'Error al generar programación',
+            text: 'Error: ' + e.response.data.message,
+            type: 'error',
+            duration: 5000,
+        })
+    }
+}
+
+const getProgramacionRubros = async () => {
+    try {
+        const response = await axios.get('/get_programacion_rubros', {
+            params: {
+                ejercicio: ejercicio.value,
+                source: selectedSource.value
+            }
+        });
+        rubrosProgramados.value = response.data;
+        console.log(rubrosProgramados.value);
+    } catch (e) {
+        notify({
+            title: 'Error al obtener programación por rubro',
             text: 'Error: ' + e.response.data.message,
             type: 'error',
             duration: 5000,
