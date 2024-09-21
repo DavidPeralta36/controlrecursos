@@ -11,12 +11,15 @@
               :rangeSearch="rangeSearch" 
               :selectedPeriod="selectedPeriod" 
               :periodos="periodos" 
+              :registros="registros"
               :handleDateChange="handleDateChange" 
               :handleGenReport="handleGenReport"
               :handleSelectPeriod="handleSelectPeriod"
+              :handleFilterReport="handleFilterReport"
               @update:rangeSearch="toggleSetRangeSearch"
               @update:selectedPeriod="handleSelectPeriod"
-              @update:selectedMonth="handleSelectMonth"/>
+              @update:selectedMonth="handleSelectMonth"
+              @update:selectedYear="handleSelectYear"/>
             <hr class="mt-2"/>
             <div :class="!loads.loaded ? 'imgContainer' : 'tableContainer'">
               <div v-if="loads.loading" class="text-center" ref="loadingDiv">
@@ -32,7 +35,7 @@
               <div v-if="loads.loaded" class="w-100 my-4 pb-5" ref="tableDiv" >
                 <p class="nunito h5">Banco generado para el periodo con las fuentes de financiamiento seleccionadas:</p>
                 <AgGridVue
-                  :rowData="registros"
+                  :rowData="report"
                   :columnDefs="colDefs"
                   :pagination="agProps.pagination"
                   :paginationPageSize="agProps.paginationPageSize"
@@ -120,6 +123,8 @@ const skeletonDiv = ref(null);
 const loadingDiv = ref(null);
 const tableDiv = ref(null);
 const selectedMonth = ref(null);
+const selectedYear = ref(null);
+const report = ref(null);
 
 watch(selectedSource, () => {
   switch (selectedSource.value) {
@@ -137,6 +142,13 @@ watch(selectedSource, () => {
   }
 });
 
+const handleSelectYear = (year) => {
+  selectedYear.value = year.label;
+  console.log(selectedYear.value);
+
+
+}
+
 const handleSelectMonth = (month) => {
   selectedMonth.value = month.label;
   console.log(selectedMonth.value);
@@ -144,6 +156,10 @@ const handleSelectMonth = (month) => {
 
 const handleSelect = (source) => {
   selectedSource.value = source.id;
+
+  if(selectedSource.value && selectedPeriod.value !== "Periodo requerido *"){
+    handleGenReport();
+  }
 }
 
 const handleDateChange = (modelData, field) => {
@@ -156,27 +172,11 @@ const handleDateChange = (modelData, field) => {
   }
 };
 
-const getReport = async () => {
-  const formattedStartDate = dates.value.startDate.toISOString().split('T')[0];
-  const formattedEndDate = dates.value.endDate.toISOString().split('T')[0];
-
-  const response = await axios.get('/report', {
-    params: {
-      beginingDate: formattedStartDate,
-      endDate: formattedEndDate,
-      source: selectedSource.value
-    }
-  });
-  registros.value = response.data;
-  await nextTick();
-  await animateLoadingOut(loadingDiv, tableDiv, loads);
-}
-
 const getReportByPeriod = async () => {
   const response = await axios.get('/report_by_period', {
     params: {
       source: selectedSource.value,
-      period: selectedPeriod.value.ejercicio
+      period: selectedPeriod.value.ejercicio,
     }
   });
 
@@ -186,7 +186,7 @@ const getReportByPeriod = async () => {
       saldoIterado = parseFloat(item.saldo);
       return { ...item };
     } else {
-      const saldoAnterior = saldoIterado;
+      const saldoAnterior = saldoIterado; 
       const ingresosActuales = parseFloat(item.depositos) || 0;
       const egresosActuales = parseFloat(item.retiros) || 0;
       
@@ -202,52 +202,19 @@ const getReportByPeriod = async () => {
 
   registros.value = registrosProcesados;
   await nextTick();
-  await animateLoadingOut(loadingDiv, tableDiv, loads);
+  
 }
 
 const handleGenReport = async () => {
-  if (rangeSearch.value) {
-    if (dates.value.startDateSelected && dates.value.endDateSelected && selectedSource.value) {
+  if (selectedSource.value && selectedPeriod.value.ejercicio !== 'Periodo requerido *') {
       try {
-        await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
-        startAnimations(loadingText, spinner);
-        await getReport();
-
-        totales.value.registros = registros.value.length;
-        //totales.value.depositos = registros.value.reduce((total, item) => total + parseFloat(item.depositos || 0), 0).toFixed(2);
-        //totales.value.retiros = registros.value.reduce((total, item) => total + parseFloat(item.retiros || 0), 0).toFixed(2);
-        //totales.value.saldo = totales.value.depositos - totales.value.retiros;
-      } catch (e) {
-        console.log(e);
-      }
-    } else {
-      notify({
-        title: 'Formulario incompleto',
-        text: 'Debe completar los campos de fecha de inicio, fin y fuente de financiamiento para generar el reporte',
-        type: 'error',
-        duration: 5000,
-        speed: 1000,
-      });
-    }
-  } else {
-    if (selectedSource.value && selectedPeriod.value.ejercicio !== 'Periodo requerido *') {
-      try {
-        await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
-        startAnimations(loadingText, spinner);
+        //await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
+        //startAnimations(loadingText, spinner);
         await getReportByPeriod();
       } catch (e) {
         console.log(e);
       }
-    } else {
-      notify({
-        title: 'Formulario incompleto',
-        text: 'Debe completar el campo fuente de financiamiento y el periodo para generar el reporte',
-        type: 'error',
-        duration: 5000,
-        speed: 1000,
-      });
     }
-  }
 };
 
 const toggleSetRangeSearch = () => {
@@ -256,6 +223,10 @@ const toggleSetRangeSearch = () => {
 
 const handleSelectPeriod = (period) => {
   selectedPeriod.value = period;
+
+  if(selectedSource.value && selectedPeriod.value !== "Periodo requerido *"){
+    handleGenReport();
+  }
 }
 
 const formatearCantidad = (value) => {
@@ -350,6 +321,25 @@ const calculateFilteredTotals = async (params) => {
   totales.value.retiros = filteredEgresosSum;
   totales.value.saldo = filteredSaldoTotal;
 };
+
+const handleFilterReport = async () => {
+  if(selectedSource.value && selectedPeriod.value !== "Periodo requerido *" && selectedMonth.value && selectedYear.value){
+    await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
+    startAnimations(loadingText, spinner);
+
+    report.value = registros.value.filter(item => item.mes === selectedMonth.value.toUpperCase() && item.fechas.includes(selectedYear.value));
+
+    await animateLoadingOut(loadingDiv, tableDiv, loads);
+  }else{
+    notify({
+      title: 'Error al buscar el periodo',
+      text: 'Para generar el reporte debe completar todos los campos',
+      type: 'error',
+      duration: 5000,
+      speed: 1000,
+    });
+  }
+}
 </script>
 
 <style lang="scss">

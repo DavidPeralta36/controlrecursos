@@ -58,6 +58,7 @@ class HomeController extends Controller
 
         $registros = registrobancos::where('ejercicio', $period)
         ->where('idfuente', $source) 
+        #->where('mes', $month)
         ->get();
 
         return response()->json($registros);

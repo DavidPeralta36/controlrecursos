@@ -1,35 +1,26 @@
 <template>
-    <div class="d-flex align-items-center">
-        <Popper placement="top-start" hover openDelay="500" content="Cambia entre el tipo de busqueda para el reporte" arrow>
-            <Toggle v-model="localRangeSearch" class="mt-2" />
-        </Popper>
-        <p class="mb-0 ms-2 mx-2 mt-1">Tipo de busqueda: <strong>{{ props.rangeSearch ? 'Fechas' : 'Periodo' }}</strong></p>
-    </div>
+
     <div class="controlsContainer">
-        <div class="d-flex" v-if="localRangeSearch">
-            <div>
-                <label for="dpInicio" class="ml-1">Fecha de inicio</label>
-                <VueDatePicker :model-value="props.dates.startDate" @update:model-value="(value) => props.handleDateChange(value, 'startDate')" id="dpInicio" clereable auto-apply :flow="flow" :enable-time-picker="false" :state="props.dates.startDateSelected"/>
-                </div>
-                <div class="mx-3">
-                <label for="dpFin" class="ml-1">Fecha de fin</label>
-                <VueDatePicker :model-value="props.dates.endDate" @update:model-value="(value) => props.handleDateChange(value, 'endDate')" id="dpFin" clereable auto-apply :flow="flow" :enable-time-picker="false" :state="props.dates.endDateSelected"/>
-            </div>
-        </div>
-        <div class="w-100 h-100"  v-else>
+        <div class="w-100 h-100">
             <p>Seleccione el periodo requerido:</p> 
             <VueSelect v-model="localSelectedPeriod" :options="periodos" label="ejercicio" class="mt-1"/>
         </div>
-        <div>
-          <label for="mes" class="ml-1">Selecciona el mes del reporte</label>
-          <VueSelect v-model="localSelectedMOnth" :options="months" label="label" class="mt-1" id="mes"/>
+        <div class="d-flex justify-content-between w-100" >
+          <div>
+            <label for="mes" class="ml-1">Selecciona el año en el periodo</label>
+            <VueSelect label="label" :options="years" v-model="selectedYear" class="mt-1" id="mes"/>
+          </div>
+          <div>
+            <label for="mes" class="ml-1">Selecciona el mes del reporte</label>
+            <VueSelect v-model="localSelectedMOnth" :options="months" label="label" class="mt-1" id="mes"/>
+          </div>
         </div>
         <div class="w-100 h-100 d-flex justify-content-end mt-1">
-            <button class="btn btn-primary align-self-center" @click="props.handleGenReport">
-              <v-icon name="fa-chart-bar" animation="ring" hover/>
-              Consulta informacion del periodo
-            </button>
-        </div>
+          <button class="btn btn-success  align-self-center" @click="props.handleFilterReport">
+            <v-icon name="fa-chart-bar" animation="ring" hover/>
+            Consultar reporte
+          </button>
+      </div>
     </div>
 </template>
 <script setup>
@@ -39,12 +30,14 @@ import '@vueform/toggle/themes/default.css'
 import Toggle from '@vueform/toggle'
 import VueSelect from "vue-select";
 import "vue-select/dist/vue-select.css"
-import { ref, defineProps, defineEmits, watch, toRef } from 'vue';
+import { ref, defineProps, defineEmits, watch, computed } from 'vue';
 
 const flow = ref(['year', 'month', 'day']);
 const localSelectedPeriod = ref('Periodo requerido *');
 const localRangeSearch = ref(false);
 const localSelectedMOnth = ref(null);
+const years = ref([]);
+const selectedYear = ref(null);
 
 const months = ref([
     { value: 1, label: 'Enero' },
@@ -60,7 +53,6 @@ const months = ref([
     { value: 11, label: 'Noviembre' },
     { value: 12, label: 'Diciembre' },
 ]);
-
 const props = defineProps({
   dates: Object,
   rangeSearch: Boolean,
@@ -70,9 +62,22 @@ const props = defineProps({
   handleGenReport: Function,
   toggleSetRangeSearch: Function,
   handleSelectPeriod: Function,
+  registros: Array,
+  handleFilterReport: Function,
 })
 
-const emit = defineEmits(['update:selectedPeriod', 'update:rangeSearch', 'update:selectedMonth']);
+const registrosLocales = computed(() => {
+    if (props.registros.length === 0) return [];
+    return props.registros;
+});
+
+watch(registrosLocales, (newValue) => {
+    const uniqueYears = [...new Set(newValue.map(item => new Date(item.fechas).getFullYear()))];
+    years.value = uniqueYears.map(year => ({ value: year, label: year.toString() }));
+});
+
+
+const emit = defineEmits(['update:selectedPeriod', 'update:rangeSearch', 'update:selectedMonth', 'update:selectedYear']);
 
 function syncPropsWithEmit(propName, localRef, emit) {
   // Watch for local changes and emit them
@@ -90,6 +95,7 @@ function syncPropsWithEmit(propName, localRef, emit) {
 syncPropsWithEmit('selectedPeriod', localSelectedPeriod, emit);
 syncPropsWithEmit('rangeSearch', localRangeSearch, emit);
 syncPropsWithEmit('selectedMonth', localSelectedMOnth, emit);
+syncPropsWithEmit('selectedYear', selectedYear, emit);
 
 </script>
 <style scoped>
