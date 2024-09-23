@@ -88,7 +88,7 @@
 
             <div class="container h-100 w-100 d-flex justify-content-start align-items-center p-5">
                 <div class="m-b-md">
-                    <p class="title">Sistema de control y monitoreo de recursos </p>
+                    <p class="title">Sistema de control y monitoreo de recursos, gitpull </p>
                     <p class="subtitle">En tiempo real, en cualquier momento</p>
                     <small>Inicia sesion para acceder a todas las funcionalidades</small>
                 </div>
