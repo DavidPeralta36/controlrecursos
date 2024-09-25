@@ -91,18 +91,26 @@
                       <p>Por ejercer</p>
                     </div>
                   </div>
-                  <div v-for="rubro in generalReport" :key="rubro.idcapitulo" class="row ">
+                  <div v-for="rubro in generalReport" :key="rubro.idcapitulo" class="row flex justify-content-start align-items-center" style="height: 100px;">
                     <div class="d-flex">
                       <div class="col col-md-4 d-flex justify-content-start text-start">{{ rubro.nombre_capitulo }}</div>
-                      <div class="col">{{ rubro.monto_programado }}</div>
-                      <div class="col">{{ rubro.ejercido_mes }}</div>
-                      <div class="col">{{ rubro.ejercido_acumulado }}</div>
-                      <div class="col">{{ rubro.reintegros }}</div>
-                      <div class="col">{{ rubro.por_ejercer }}</div>
+                      <div class="col">{{ formatCurrency(rubro.monto_programado) }}</div>
+                      <div class="col">{{ formatCurrency(rubro.ejercido_mes) }}</div>
+                      <div class="col">{{ formatCurrency(rubro.ejercido_acumulado) }}</div>
+                      <div class="col">{{ formatCurrency(rubro.reintegros) }}</div>
+                      <div class="col">{{ formatCurrency(rubro.por_ejercer) }}</div>
                     </div>
                     <hr>
                   </div>
                   <hr>
+                  <div class="d-flex" v-if="generalReport">
+                    <div class="col col-md-4 d-flex justify-content-start text-start font-weight-bold">Total</div>
+                    <div class="col programado">{{ formatCurrency(generalReport.reduce((total, item) => total + item.monto_programado, 0)) }}</div>
+                    <div class="col mes">{{ formatCurrency(generalReport.reduce((total, item) => total + item.ejercido_mes, 0)) }}</div>
+                    <div class="col acumulado">{{ formatCurrency(generalReport.reduce((total, item) => total + item.ejercido_acumulado, 0)) }}</div>
+                    <div class="col reintegros">{{ formatCurrency(generalReport.reduce((total, item) => total + item.reintegros, 0)) }}</div>
+                    <div class="col " :class="getClass(generalReport.reduce((total, item) => total + item.por_ejercer, 0))">{{ formatCurrency(generalReport.reduce((total, item) => total + item.por_ejercer, 0)) }}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -417,6 +425,18 @@ const calculateFilteredTotals = async (params) => {
   totales.value.saldo = filteredSaldoTotal;
 };
 
+function getYearFromDate(dateString) {
+  if (dateString.includes('-')) {
+    // Formato yyyy-MM-dd
+    return parseInt(dateString.split('-')[0]);
+  } else if (dateString.includes('/')) {
+    // Formato dd/MM/yyyy
+    return parseInt(dateString.split('/')[2]);
+  }
+  // Si no coincide con ninguno de los formatos, devolver null o algún valor predeterminado
+  return null;
+}
+
 const handleFilterReport = async () => {
   if(selectedSource.value && selectedPeriod.value !== "Periodo requerido *" && selectedMonth.value && selectedYear.value){
     await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
@@ -429,21 +449,39 @@ const handleFilterReport = async () => {
     const startIndex = monthOrder.indexOf(startMonth);
     const endIndex = monthOrder.indexOf(selectedMonth.value.toUpperCase());
 
-    // Filtrar registros dentro del rango de meses y año
-    const filteredRegistros = registros.value.filter(item => {
+    const filteredRegistrosMes = registros.value.filter(item => {
       const itemYear = item.fechas.includes(selectedYear.value);
       const itemMonthIndex = monthOrder.indexOf(item.mes);
 
-      return itemYear && itemMonthIndex >= startIndex && itemMonthIndex <= endIndex;
+      const valido = itemYear && itemMonthIndex >= startIndex && itemMonthIndex === endIndex
+
+      if(valido){
+        return item;
+      }else{
+        return ;
+      }
     });
 
-    // Calcular el ejercido acumulado dentro del rango
-    const ejercidoAcumulado = filteredRegistros.reduce((total, item) => {
+    const filteredRegistros = registros.value.filter(item => {
+      const itemYear = item.fechas.includes(selectedYear.value) || item.fechas.includes(selectedPeriod.value.ejercicio);
+      const itemMonthIndex = monthOrder.indexOf(item.mes);
+
+      const valido = itemYear && itemMonthIndex >= startIndex && itemMonthIndex <= endIndex
+
+      if(valido || parseInt(selectedYear.value) > getYearFromDate(item.fechas)){
+        return item;
+      }else{
+        return ;
+      }
+    });
+
+    const ejercidoAcumuladoTotal = filteredRegistros.reduce((total, item) => {
       const retiro = parseFloat(item.retiros);
       return !isNaN(retiro) ? total + retiro : total;
     }, 0);
 
-    console.log(ejercidoAcumulado);
+    //console.log(ejercidoAcumuladoTotal);
+    //console.log(filteredRegistros)
     console.log("------------------------------------------------------------------------------");
     //------------------------------------------------------------------------------
 
@@ -455,7 +493,17 @@ const handleFilterReport = async () => {
 
     getProgramacionRubros();
 
-    const groupedRegistros = registros.value.reduce((acc, item) => {
+    const groupedRegistros = filteredRegistrosMes.reduce((acc, item) => {
+      const cap = item.r
+      if (acc[cap]) {
+        acc[cap].push(item);
+      } else {
+        acc[cap] = [item];
+      }
+      return acc;
+    }, {});
+
+    const groupedFilteredRegistros = filteredRegistros.reduce((acc, item) => {
       const cap = item.r
       if (acc[cap]) {
         acc[cap].push(item);
@@ -470,17 +518,21 @@ const handleFilterReport = async () => {
       const rubro = rubros.value.find(rubro => rubro.id === capitulo.id);
       const numberRubro = rubro.descripcion.split("R")[1];
       const registrosRubros = groupedRegistros[numberRubro];
+      const registrosRubroAcumulado = groupedFilteredRegistros[numberRubro];
 
-      if (registrosRubros) {
+      if (registrosRubros && registrosRubroAcumulado) {
         const rubroProgramado = programadoRubros.value.find(rubro => rubro.idrubro === capitulo.id);
         const monto_programado = parseFloat(rubroProgramado.monto_programado);
         const ejercido_mes = registrosRubros.reduce((total, item) => {
           const retiro = parseFloat(item.retiros);
-          // Verificamos si el valor es un número válido
           return !isNaN(retiro) ? total + retiro : total;
         }, 0);
 
-        const ejercido_acumulado = 0;
+        const ejercido_acumulado = registrosRubroAcumulado.reduce((totalAcumulado, itemAcumlado) => {
+          const retiroAcumulado = parseFloat(itemAcumlado.retiros);
+          return !isNaN(retiroAcumulado) ? totalAcumulado + retiroAcumulado : totalAcumulado;
+        }, 0);
+
         const reintegros = 0;
 
         const obj = {
@@ -488,17 +540,25 @@ const handleFilterReport = async () => {
           nombre_capitulo: capitulo.descripcion,
           monto_programado: monto_programado,
           ejercido_mes,
-          ejercido_acumulado,
+          ejercido_acumulado: ejercido_acumulado,
           reintegros,
-          por_ejercer: parseFloat(monto_programado) - ejercido_mes // Use colon instead of assignment
+          por_ejercer: parseFloat(monto_programado) - ejercido_acumulado // Use colon instead of assignment
         }
 
         //console.log(obj);
         return obj;
 
       }else{
+        const rubroProgramado = programadoRubros.value.find(rubro => rubro.idrubro === capitulo.id);
+        const monto_programado = parseFloat(rubroProgramado.monto_programado);
         return {
-          idcapitulo: "No valido",
+          idcapitulo: capitulo.id,
+          nombre_capitulo: capitulo.descripcion,
+          monto_programado: monto_programado,
+          ejercido_mes: 0,
+          ejercido_acumulado: 0,
+          reintegros: 0,
+          por_ejercer: monto_programado,
         }
       }
     });
@@ -535,6 +595,20 @@ const getProgramacionRubros = async () => {
   }
 }
 
+function formatCurrency(param) {
+
+    if (isNaN(param)) return ''; 
+
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(param); 
+}
+
+const getClass = (param) => {
+  if (param > 0) {
+    return 'positivo';
+  } else if (param < 0) {
+    return 'negativo';
+  }
+}
 </script>
 
 <style lang="scss">
@@ -604,4 +678,30 @@ const getProgramacionRubros = async () => {
   border-radius: 15px;
   margin-bottom: 5vh;
 }
+
+.positivo{
+  color: #2e7d32;
+  font-weight: bold;
+}
+.negativo{
+  color: #e3342f;
+  font-weight: bold;
+}
+.programado{
+  color: #1f49be;
+  font-weight: bold;
+}
+.mes{
+  color: #590d85;
+  font-weight: bold;
+}
+.acumulado{
+  color: #ffee00;
+  font-weight: bold;
+}
+.reintegros{
+  color: #016e99;
+  font-weight: bold;
+}
+
 </style>
