@@ -142,6 +142,7 @@ const props = defineProps({
   fuentes: Array,
   periodos: Array
 });
+//#region Variables
 const dates = ref({
   startDate: new Date(),
   startDateSelected: false,
@@ -181,6 +182,7 @@ const generalReport = ref(null);
 const programadoRubros = ref(null);
 const capitulos = ref(null);
 const rubros = ref(null);
+//#endregion
 
 onMounted(async () => {
   getCapitulos();
@@ -439,6 +441,8 @@ function getYearFromDate(dateString) {
 
 const handleFilterReport = async () => {
   if(selectedSource.value && selectedPeriod.value !== "Periodo requerido *" && selectedMonth.value && selectedYear.value){
+    getProgramacionRubros();
+
     await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
     startAnimations(loadingText, spinner);
 
@@ -475,23 +479,13 @@ const handleFilterReport = async () => {
       }
     });
 
-    const ejercidoAcumuladoTotal = filteredRegistros.reduce((total, item) => {
-      const retiro = parseFloat(item.retiros);
-      return !isNaN(retiro) ? total + retiro : total;
-    }, 0);
-
-    //console.log(ejercidoAcumuladoTotal);
-    //console.log(filteredRegistros)
-    console.log("------------------------------------------------------------------------------");
-    //------------------------------------------------------------------------------
-
     report.value = registros.value.filter(item => item.mes === selectedMonth.value.toUpperCase() && item.fechas.includes(selectedYear.value));
 
     await animateLoadingOut(loadingDiv, tableDiv, loads);
 
     await nextTick();
 
-    getProgramacionRubros();
+ 
 
     const groupedRegistros = filteredRegistrosMes.reduce((acc, item) => {
       const cap = item.r
