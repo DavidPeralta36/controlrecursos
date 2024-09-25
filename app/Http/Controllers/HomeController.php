@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\models\capitulos;
 use Illuminate\Http\Request;
 use App\models\fuentefinan;
 use App\models\registrobancos;
@@ -62,5 +63,12 @@ class HomeController extends Controller
         ->get();
 
         return response()->json($registros);
+    }
+
+    public function getCapitulos(Request $request)
+    {
+        $capitulos = capitulos::all();
+
+        return response()->json($capitulos);
     }
 }

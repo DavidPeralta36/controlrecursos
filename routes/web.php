@@ -40,6 +40,7 @@ Route::get('/programacion', 'ProgramacionController@index')->name('programacion'
 
 Route::get('/report', 'HomeController@getReport')->name('report');
 Route::get('/report_by_period', 'HomeController@getReportByPeriod')->name('report_by_period');
+Route::get('/get_capitulos', 'HomeController@getCapitulos')->name('get_capitulos');
 
 
 Route::post('/upload_report', 'CargaController@uploadReport')->name('upload_report');

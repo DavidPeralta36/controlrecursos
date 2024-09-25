@@ -50,9 +50,11 @@
               </div>
             </div>
             <hr class="mt-2"/>
+            <h4 class="nunito-bold">Servicios Estatales de salud</h4>
+            <h5 class="nunito">Informes generados</h5>
             <div v-if="loads.loaded" class="informe">
               <div class="container p-2">
-                <h4 class="nunito-bold">Servicios Estatales de salud</h4>
+                <h4 class="nunito-bold">Reporte basico</h4>
                 <h5 class="nunito">Informe del ejercicio de los Recursos Federales para la prestacion gratuita de servicios de salud</h5>
                 <hr/>
                 <p>Total de registros: <strong>{{ registros.length }}</strong></p>
@@ -62,13 +64,55 @@
                 <p>Total de saldo: <strong>{{ formatearCantidad(totales.saldo) }}</strong></p>
               </div>
             </div>
+
+            <div class="informe">
+              <div class="container p-2">
+                <h4 class="nunito-bold">Informe mensual del ejercicio</h4>
+                <h5 class="nunito">Informe del ejercicio de los Recursos Federales para la prestacion gratuita de servicios de salud</h5>
+                <hr/>
+                <div class="container text-center w-100">
+                  <div class="row bg-dark text-light rounded-2">
+                    <div class="col col-md-4">
+                      <p>Capitulo</p>
+                    </div>
+                    <div class="col">
+                      <p>Programado</p>
+                    </div>
+                    <div class="col">
+                      <p>Ejercido mes</p>
+                    </div>
+                    <div class="col">
+                      <p>Ejercido acumulado</p>
+                    </div>
+                    <div class="col">
+                      <p>Reintegros</p>
+                    </div>
+                    <div class="col">
+                      <p>Por ejercer</p>
+                    </div>
+                  </div>
+                  <div v-for="rubro in generalReport" :key="rubro.idcapitulo" class="row ">
+                    <div class="d-flex">
+                      <div class="col col-md-4 d-flex justify-content-start text-start">{{ rubro.nombre_capitulo }}</div>
+                      <div class="col">{{ rubro.monto_programado }}</div>
+                      <div class="col">{{ rubro.ejercido_mes }}</div>
+                      <div class="col">{{ rubro.ejercido_acumulado }}</div>
+                      <div class="col">{{ rubro.reintegros }}</div>
+                      <div class="col">{{ rubro.por_ejercer }}</div>
+                    </div>
+                    <hr>
+                  </div>
+                  <hr>
+                </div>
+              </div>
+            </div>
         </div>
         <Notifications position="bottom left" />
     </div>
 </template>
 
 <script setup>
-import { ref, defineProps, nextTick, watch } from 'vue';
+import { ref, defineProps, nextTick, watch, onMounted } from 'vue';
 import '../../sass/app.scss';
 import SourcePicker from './homepage_components/SourcePicker.vue';
 import ControlsGeneralReport from './homepage_components/ControlsGeneralReport.vue';
@@ -125,6 +169,61 @@ const tableDiv = ref(null);
 const selectedMonth = ref(null);
 const selectedYear = ref(null);
 const report = ref(null);
+const generalReport = ref(null);
+const programadoRubros = ref(null);
+const capitulos = ref(null);
+const rubros = ref(null);
+
+onMounted(async () => {
+  getCapitulos();
+  getRubros();
+})
+
+const getCapitulos = async () => {
+  try{
+    const response = await axios.get('/get_capitulos');
+    if(response.status === 200){
+      capitulos.value = response.data;
+    }else{
+      notify({
+        title: 'Error al obtener capitulos',
+        text: 'Error: ' + e.response.data.message,
+        type: 'error',
+        duration: 5000,
+      })
+    }
+  }catch(e){
+    notify({
+      title: 'Error al obtener capitulos',
+      text: 'Error: ' + e.response.data.message,
+      type: 'error',
+      duration: 5000,
+    })
+  }
+}
+
+const getRubros = async () => {
+  try{
+    const response = await axios.get('/get_rubros');
+    if(response.status === 200){
+      rubros.value = response.data;
+    }else{
+      notify({
+        title: 'Error al obtener rubros',
+        text: 'Error: ' + e.response.data.message,
+        type: 'error',
+        duration: 5000,
+      })
+    }
+  }catch(e){
+    notify({
+      title: 'Error al obtener rubros',
+      text: 'Error: ' + e.response.data.message,
+      type: 'error',
+      duration: 5000,
+    })
+  }
+}
 
 watch(selectedSource, () => {
   switch (selectedSource.value) {
@@ -144,14 +243,10 @@ watch(selectedSource, () => {
 
 const handleSelectYear = (year) => {
   selectedYear.value = year.label;
-  console.log(selectedYear.value);
-
-
 }
 
 const handleSelectMonth = (month) => {
   selectedMonth.value = month.label;
-  console.log(selectedMonth.value);
 }
 
 const handleSelect = (source) => {
@@ -327,9 +422,89 @@ const handleFilterReport = async () => {
     await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
     startAnimations(loadingText, spinner);
 
+    const monthOrder = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+  
+    const startMonth = 'ENERO';
+
+    const startIndex = monthOrder.indexOf(startMonth);
+    const endIndex = monthOrder.indexOf(selectedMonth.value.toUpperCase());
+
+    // Filtrar registros dentro del rango de meses y año
+    const filteredRegistros = registros.value.filter(item => {
+      const itemYear = item.fechas.includes(selectedYear.value);
+      const itemMonthIndex = monthOrder.indexOf(item.mes);
+
+      return itemYear && itemMonthIndex >= startIndex && itemMonthIndex <= endIndex;
+    });
+
+    // Calcular el ejercido acumulado dentro del rango
+    const ejercidoAcumulado = filteredRegistros.reduce((total, item) => {
+      const retiro = parseFloat(item.retiros);
+      return !isNaN(retiro) ? total + retiro : total;
+    }, 0);
+
+    console.log(ejercidoAcumulado);
+    console.log("------------------------------------------------------------------------------");
+    //------------------------------------------------------------------------------
+
     report.value = registros.value.filter(item => item.mes === selectedMonth.value.toUpperCase() && item.fechas.includes(selectedYear.value));
 
     await animateLoadingOut(loadingDiv, tableDiv, loads);
+
+    await nextTick();
+
+    getProgramacionRubros();
+
+    const groupedRegistros = registros.value.reduce((acc, item) => {
+      const cap = item.r
+      if (acc[cap]) {
+        acc[cap].push(item);
+      } else {
+        acc[cap] = [item];
+      }
+      return acc;
+    }, {});
+
+    generalReport.value = capitulos.value.map(capitulo => {
+
+      const rubro = rubros.value.find(rubro => rubro.id === capitulo.id);
+      const numberRubro = rubro.descripcion.split("R")[1];
+      const registrosRubros = groupedRegistros[numberRubro];
+
+      if (registrosRubros) {
+        const rubroProgramado = programadoRubros.value.find(rubro => rubro.idrubro === capitulo.id);
+        const monto_programado = parseFloat(rubroProgramado.monto_programado);
+        const ejercido_mes = registrosRubros.reduce((total, item) => {
+          const retiro = parseFloat(item.retiros);
+          // Verificamos si el valor es un número válido
+          return !isNaN(retiro) ? total + retiro : total;
+        }, 0);
+
+        const ejercido_acumulado = 0;
+        const reintegros = 0;
+
+        const obj = {
+          idcapitulo: capitulo.id,
+          nombre_capitulo: capitulo.descripcion,
+          monto_programado: monto_programado,
+          ejercido_mes,
+          ejercido_acumulado,
+          reintegros,
+          por_ejercer: parseFloat(monto_programado) - ejercido_mes // Use colon instead of assignment
+        }
+
+        //console.log(obj);
+        return obj;
+
+      }else{
+        return {
+          idcapitulo: "No valido",
+        }
+      }
+    });
+
+    console.log(generalReport.value);
+
   }else{
     notify({
       title: 'Error al buscar el periodo',
@@ -340,6 +515,26 @@ const handleFilterReport = async () => {
     });
   }
 }
+
+const getProgramacionRubros = async () => {
+  try{
+    const response = await axios.get('/get_programacion_rubros', {
+      params: {
+        ejercicio: selectedPeriod.value.ejercicio,
+        source: selectedSource.value
+      }
+    });
+    programadoRubros.value = response.data;
+  }catch(e){
+    notify({
+      title: 'Error al obtener programación por rubro',
+      text: 'Error: ' + e.response.data.message,
+      type: 'error',
+      duration: 5000,
+    })
+  }
+}
+
 </script>
 
 <style lang="scss">
