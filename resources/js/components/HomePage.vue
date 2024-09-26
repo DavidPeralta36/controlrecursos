@@ -692,7 +692,7 @@ const getClass = (param) => {
   font-weight: bold;
 }
 .acumulado{
-  color: #ffee00;
+  color: #cabd02;
   font-weight: bold;
 }
 .reintegros{
