@@ -39,7 +39,7 @@
                         </div>
                     </div>
                 </div>
-                <button v-if="readyToSend" ref="sendButton" class="btn btn-primary" @click="habdleUploadFile">{{ sendButtonAnimated ? 'Subir origen de datos' : ''}}</button>
+                <button v-if="readyToSend" ref="sendButton" class="btn btn-primary" :disabled="loading" @click="habdleUploadFile">{{ sendButtonAnimated ? 'Subir origen de datos' : ''}}</button>
                 <ModalPreliminarData v-if="showPreliminarData" ref="modalPreliminarData" :preliminarData="datosPreliminares" @cancelData="handleCancelData" :selectedSource="selectedSource"/>
             </div>
             <div v-if="activeTab === 'modify'" ref="modifyContainer">
@@ -181,6 +181,7 @@ const headerColumnsSearch = ['FECHA', 'MES'];
 const datosPreliminares = ref([]);
 const showPreliminarData = ref(false);
 const modalPreliminarData = ref(null);
+const loading = ref(false);
 //#endregion
 
 watch(selectedSource, () => {
@@ -246,7 +247,6 @@ const handleFileChange = async (e) => {
 }
 
 const handleCancelData = () => {
-    alert("Datos cancelados");
     registros.value = [];
     datosPreliminares.value = [];
     valid.value = false;
@@ -668,6 +668,31 @@ const loadU013= () => {
 }
 
 const habdleUploadFile = async () => {
+    if(newBank.value){
+        if(!newBankYear.value || !selectedSource.value || !excelData.value ){
+            notify({
+                title: 'Error al subir archivo',
+                text: 'Debe completar todos los campos',
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+            return;
+        }
+    }else{
+        if(!selectedPeriod.value || !selectedSource.value || !excelData.value ){
+            notify({
+                title: 'Error al subir archivo',
+                text: 'Debe completar todos los campos',
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+            return;
+        }
+    }
+
+    loading.value = true;
     sendButtonAnimated.value = false;
     await nextTick();
     animateLoading();
@@ -719,6 +744,7 @@ const habdleUploadFile = async () => {
     } catch (e) {
         console.log(e);
     }
+    loading.value = false;
 }
 
 watch(selectedPeriod, async () => {

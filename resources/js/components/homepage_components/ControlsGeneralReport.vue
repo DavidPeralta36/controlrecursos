@@ -16,7 +16,7 @@
           </div>
         </div>
         <div class="w-100 h-100 d-flex justify-content-end mt-1">
-          <button class="btn btn-success  align-self-center" @click="props.handleFilterReport">
+          <button class="btn btn-success  align-self-center " :disabled="props.disabled" @click="props.handleFilterReport">
             <v-icon name="fa-chart-bar" animation="ring" hover/>
             Consultar reporte
           </button>
@@ -64,6 +64,7 @@ const props = defineProps({
   handleSelectPeriod: Function,
   registros: Array,
   handleFilterReport: Function,
+  disabled: Boolean,
 })
 
 const registrosLocales = computed(() => {

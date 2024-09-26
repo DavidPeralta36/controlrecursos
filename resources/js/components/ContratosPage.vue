@@ -13,7 +13,7 @@
                         <VueSelect v-model="selectedPeriod" :options="periodos" label="ejercicio" style="min-width: 11vw;" />
                     </div>
                     <div> 
-                        <button class="btn btn-primary" @click="handleFindPeriod">
+                        <button class="btn btn-primary" @click="handleFindPeriod" :disabled="loading">
                             <v-icon name="fa-chart-bar" animation="ring" hover/>
                             Consulta informacion del periodo
                         </button>
@@ -26,7 +26,7 @@
                             <v-icon name="fa-edit" animation="spin" hover />
                             Cancelar edición
                         </button>
-                        <button class="btn btn-success mx-2" @click="handleEdit">
+                        <button class="btn btn-success mx-2" @click="handleEdit" :disabled="loadingEdit">
                             Guardar
                         </button>
                     </div>
@@ -118,6 +118,8 @@ const editButtons = ref(null);
 const editButtonsContainer = ref(null);
 const editingValues = ref(false);
 const animatedButtonsContainer = ref(false);
+const loading = ref(false);
+const loadingEdit = ref(false);
 //#endregion
 
 onBeforeMount(() => {
@@ -220,6 +222,7 @@ const handleSelect = async (source) => {
 
 const handleFindPeriod = async () => {
     if(selectedSource && selectedPeriod.value != "Periodo requerido *"){
+        loading.value = true;
         await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
         startAnimations(loadingText, spinner);
         
@@ -234,6 +237,7 @@ const handleFindPeriod = async () => {
         
         await nextTick();
         await animateLoadingOut(loadingDiv, tableDiv, loads);
+        loading.value = false;
     }else{
         notify({
             title: 'Error al buscar el periodo',
@@ -271,7 +275,7 @@ const onCellValueChanged = async (params) => {
 
 const handleEdit = async () => {
     if(editingRecords.value.length > 0){
-       
+        loadingEdit.value = true;
         try{
             const formData = new FormData();
             formData.append('records', JSON.stringify(editingRecords.value));
@@ -291,6 +295,7 @@ const handleEdit = async () => {
                     duration: 5000,
                     speed: 1000,
                 });
+                loadingEdit.value = false;
             }else{
                 notify({
                     title: 'Error al editar los registros',

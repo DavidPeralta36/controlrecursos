@@ -16,6 +16,7 @@
               :handleGenReport="handleGenReport"
               :handleSelectPeriod="handleSelectPeriod"
               :handleFilterReport="handleFilterReport"
+              :disabled="disabled"
               @update:rangeSearch="toggleSetRangeSearch"
               @update:selectedPeriod="handleSelectPeriod"
               @update:selectedMonth="handleSelectMonth"
@@ -182,6 +183,7 @@ const generalReport = ref(null);
 const programadoRubros = ref(null);
 const capitulos = ref(null);
 const rubros = ref(null);
+const disabled = ref(false);
 //#endregion
 
 onMounted(async () => {
@@ -441,6 +443,7 @@ function getYearFromDate(dateString) {
 
 const handleFilterReport = async () => {
   if(selectedSource.value && selectedPeriod.value !== "Periodo requerido *" && selectedMonth.value && selectedYear.value){
+    disabled.value = true;
     getProgramacionRubros();
 
     await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
@@ -557,8 +560,7 @@ const handleFilterReport = async () => {
       }
     });
 
-    console.log(generalReport.value);
-
+    disabled.value = false;
   }else{
     notify({
       title: 'Error al buscar el periodo',

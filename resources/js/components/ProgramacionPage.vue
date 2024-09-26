@@ -75,7 +75,7 @@
             <hr/>
             <p v-if="activeTab === 'modify'">Total programado: {{ computedTotalProgramadoDb }} MXN</p>
             <p v-if="activeTab === 'new'">Total programado: {{ computedTotalProgramado }} MXN</p>
-            <button v-if="activeTab === 'new'" class="btn rojo mt-2" @click="handleSave">Guardar programacion del ejercicio</button>
+            <button v-if="activeTab === 'new'" class="btn rojo mt-2" @click="handleSave" :disabled="loadingSave">Guardar programacion del ejercicio</button>
             <button v-if="activeTab === 'modify'" class="btn rojo mt-2" @click="generateProgramacionRubros">Generar programación por rubro</button>
             <hr/>
             <p v-if="activeTab === 'modify'">Programación por rubro</p>
@@ -113,6 +113,8 @@ const props = defineProps({
     periodos: Array,
     partidas: Array
 });
+
+const loadingSave = ref(false);
 
 onBeforeMount( async () => {
     partidasFormateadas.value = props.partidas.map(partida => ({
@@ -315,6 +317,7 @@ const handleSave = async () => {
     }
 
     try {
+        loadingSave.value = true;
         const formData = new FormData();
         formData.append('partidas', JSON.stringify(partidasProgramadas.value));
         const response = await axios.post('/save_programacion_partidas', formData, {
@@ -329,6 +332,7 @@ const handleSave = async () => {
                 type: 'success',
                 duration: 5000,
             })
+            loadingSave.value = false;
         }
     } catch (e) {
         notify({
