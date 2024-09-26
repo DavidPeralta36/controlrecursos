@@ -42,6 +42,7 @@
                 <button v-if="readyToSend" ref="sendButton" class="btn btn-primary" :disabled="loading" @click="habdleUploadFile">{{ sendButtonAnimated ? 'Subir origen de datos' : ''}}</button>
                 <ModalPreliminarData v-if="showPreliminarData" ref="modalPreliminarData" :preliminarData="datosPreliminares" @cancelData="handleCancelData" :selectedSource="selectedSource"/>
             </div>
+
             <div v-if="activeTab === 'modify'" ref="modifyContainer">
                 <p class="h2 nunito-bold mt-2" style="font-style: normal">Modificacion de informacion del banco</p>
                 <hr/>
@@ -732,6 +733,10 @@ const habdleUploadFile = async () => {
             selectedPeriod.value = null;
             selectedSource.value = null;
             newBankYear.value = null;
+            excelData.value = null;
+            bankFile.value = null;
+            //readyToSend.value = false;
+            //valid.value = false;
         } else {
             notify({
                 title: 'Error al subir archivo',
@@ -979,6 +984,7 @@ const endAnimation = () => {
             sendButtonAnimated.value = true;
         }
     });
+    readyToSend.value = false;
 }
 
 const animateUploadMainContainer = () => {
