@@ -127,7 +127,7 @@ import {
   startAnimations,
 } from '../utils/animations.js';
 import ModalPreliminarData from './auxiliares/ModalPreliminarData.vue';
-import { U013, ALE, E001 } from '../lib/Headers.js';
+import { U013Editable, ALEEditable, E001Editable } from '../lib/Headers.js';
 
 const props = defineProps({
     user: Object,
@@ -188,13 +188,13 @@ const loading = ref(false);
 watch(selectedSource, () => {
   switch (selectedSource.value) {
     case 1:
-      colDefs.value = U013;
+      colDefs.value = U013Editable;
       break;
     case 4:
-      colDefs.value = ALE;
+      colDefs.value = ALEEditable;
       break;
     case 5:
-      colDefs.value = E001;
+      colDefs.value = E001Editable;
       break;
     default:
       colDefs.value = [];
