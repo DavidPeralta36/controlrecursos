@@ -202,3 +202,63 @@
 [2024-09-26 02:16:28] local.INFO: Iniciando transaccion  
 [2024-09-26 02:16:50] local.INFO: Iniciando transaccion  
 [2024-09-26 02:17:07] local.INFO: Iniciando transaccion  
+[2024-09-26 02:31:31] local.INFO: array (
+  'idfuente' => 5,
+  'ejercicio' => '2023',
+  'idpartida' => 1,
+  'descripcion' => 'Sueldos base',
+  'idcapitulo' => 1,
+  'monto_programado' => 20000000,
+)  
+[2024-09-26 02:31:31] local.INFO: {"id":8,"idpartida":1,"idcapitulo":1,"idrubro":1,"ejercicio":"2023","idfuente":1,"monto_programado":"20000"}  
+[2024-09-26 02:31:31] local.INFO: array (
+  'idfuente' => 5,
+  'ejercicio' => '2023',
+  'idpartida' => 1,
+  'descripcion' => 'Sueldos base',
+  'idcapitulo' => 1,
+  'monto_programado' => 20000000,
+  'idrubro' => 1,
+)  
+[2024-09-26 02:31:31] local.INFO: array (
+  'idfuente' => 5,
+  'ejercicio' => '2023',
+  'idpartida' => 18,
+  'descripcion' => 'Materiales y útiles de oficina',
+  'idcapitulo' => 3,
+  'monto_programado' => 20000000,
+)  
+[2024-09-26 02:31:31] local.INFO:   
+[2024-09-26 02:31:31] local.INFO: array (
+  'idfuente' => 5,
+  'ejercicio' => '2023',
+  'idpartida' => 18,
+  'descripcion' => 'Materiales y útiles de oficina',
+  'idcapitulo' => 3,
+  'monto_programado' => 20000000,
+  'idrubro' => 3,
+)  
+[2024-09-26 02:31:31] local.INFO: array (
+  'idfuente' => 5,
+  'ejercicio' => '2023',
+  'idpartida' => 34,
+  'descripcion' => 'Medicinas y productos farmacéuticos',
+  'idcapitulo' => 2,
+  'monto_programado' => 20000000,
+)  
+[2024-09-26 02:31:31] local.INFO:   
+[2024-09-26 02:31:31] local.INFO: array (
+  'idfuente' => 5,
+  'ejercicio' => '2023',
+  'idpartida' => 34,
+  'descripcion' => 'Medicinas y productos farmacéuticos',
+  'idcapitulo' => 2,
+  'monto_programado' => 20000000,
+  'idrubro' => 2,
+)  
+[2024-09-26 02:31:46] local.INFO: -------------------------------------------------------------------------------------------------------------  
+[2024-09-26 02:31:46] local.INFO: 2023  
+[2024-09-26 02:31:46] local.INFO: -------------------------------------------------------------------------------------------------------------  
+[2024-09-26 02:31:46] local.INFO: 2023  
+[2024-09-26 02:31:46] local.INFO: -------------------------------------------------------------------------------------------------------------  
+[2024-09-26 02:31:46] local.INFO: 2023  
