@@ -53,116 +53,108 @@
             <hr class="mt-2"/>
             <h4 class="nunito-bold">Servicios Estatales de salud</h4>
             <h5 class="nunito">Informes generados</h5>
-            <div v-if="loads.loaded" class="informe">
-              <div class="container p-2">
-                <h4 class="nunito-bold">Reporte basico</h4>
-                <h5 class="nunito">Informe del ejercicio de los Recursos Federales para la prestacion gratuita de servicios de salud</h5>
-                <hr/>
-                <p>Total de registros: <strong>{{ registros.length }}</strong></p>
-                <p>Total de retiros: <strong>{{ formatearCantidad(totales.retiros) }}</strong></p>
-                <p>Total de depósitos: <strong>{{ formatearCantidad(totales.depositos) }}</strong></p>
-                <hr/>
-                <p>Total de saldo: <strong>{{ formatearCantidad(totales.saldo) }}</strong></p>
-              </div>
-            </div>
-
-            <div class="informe">
-              <div class="container p-2">
-                <h4 class="nunito-bold">Informe mensual del ejercicio</h4>
-                <h5 class="nunito">Informe del ejercicio de los Recursos Federales para la prestacion gratuita de servicios de salud</h5>
-                <hr/>
-                <div class="container text-center w-100">
-                  <div class="row bg-dark text-light rounded-2">
-                    <div class="col col-md-4">
-                      <p>Capitulo</p>
+            <div v-if="loads.loaded ">
+              <div class="informe">
+                <div class="container p-2">
+                  <h4 class="nunito-bold">Informe mensual del ejercicio</h4>
+                  <h5 class="nunito">Informe del ejercicio de los Recursos Federales para la prestacion gratuita de servicios de salud</h5>
+                  <hr/>
+                  <div class="container text-center w-100">
+                    <div class="row bg-dark text-light rounded-2">
+                      <div class="col col-md-4">
+                        <p>Capitulo</p>
+                      </div>
+                      <div class="col">
+                        <p>Programado</p>
+                      </div>
+                      <div class="col">
+                        <p>Ejercido mes</p>
+                      </div>
+                      <div class="col">
+                        <p>Ejercido acumulado</p>
+                      </div>
+                      <div class="col">
+                        <p>Reintegros</p>
+                      </div>
+                      <div class="col">
+                        <p>Por ejercer</p>
+                      </div>
                     </div>
-                    <div class="col">
-                      <p>Programado</p>
-                    </div>
-                    <div class="col">
-                      <p>Ejercido mes</p>
-                    </div>
-                    <div class="col">
-                      <p>Ejercido acumulado</p>
-                    </div>
-                    <div class="col">
-                      <p>Reintegros</p>
-                    </div>
-                    <div class="col">
-                      <p>Por ejercer</p>
-                    </div>
-                  </div>
-                  <div v-for="rubro in generalReport" :key="rubro.idcapitulo" class="row flex justify-content-start align-items-center" style="height: 100px;">
-                    <div class="d-flex">
-                      <div class="col col-md-4 d-flex justify-content-start text-start">{{ rubro.nombre_capitulo }}</div>
-                      <div class="col">{{ formatCurrency(rubro.monto_programado) }}</div>
-                      <div class="col">{{ formatCurrency(rubro.ejercido_mes) }}</div>
-                      <div class="col">{{ formatCurrency(rubro.ejercido_acumulado) }}</div>
-                      <div class="col">{{ formatCurrency(rubro.reintegros) }}</div>
-                      <div class="col">{{ formatCurrency(rubro.por_ejercer) }}</div>
+                    <div v-for="rubro in generalReport" :key="rubro.idcapitulo" class="row flex justify-content-start align-items-center" style="height: 100px;">
+                      <div class="d-flex">
+                        <div class="col col-md-4 d-flex justify-content-start text-start">{{ rubro.nombre_capitulo }}</div>
+                        <div class="col">{{ formatCurrency(rubro.monto_programado) }}</div>
+                        <div class="col">{{ formatCurrency(rubro.ejercido_mes) }}</div>
+                        <div class="col">{{ formatCurrency(rubro.ejercido_acumulado) }}</div>
+                        <div class="col">{{ formatCurrency(rubro.reintegros) }}</div>
+                        <div class="col">{{ formatCurrency(rubro.por_ejercer) }}</div>
+                      </div>
+                      <hr>
                     </div>
                     <hr>
-                  </div>
-                  <hr>
-                  <div class="d-flex" v-if="generalReport">
-                    <div class="col col-md-4 d-flex justify-content-start text-start font-weight-bold">Total</div>
-                    <div class="col programado">{{ formatCurrency(generalReport.reduce((total, item) => total + item.monto_programado, 0)) }}</div>
-                    <div class="col mes">{{ formatCurrency(generalReport.reduce((total, item) => total + item.ejercido_mes, 0)) }}</div>
-                    <div class="col acumulado">{{ formatCurrency(generalReport.reduce((total, item) => total + item.ejercido_acumulado, 0)) }}</div>
-                    <div class="col reintegros">{{ formatCurrency(generalReport.reduce((total, item) => total + item.reintegros, 0)) }}</div>
-                    <div class="col " :class="getClass(generalReport.reduce((total, item) => total + item.por_ejercer, 0))">{{ formatCurrency(generalReport.reduce((total, item) => total + item.por_ejercer, 0)) }}</div>
+                    <div class="d-flex" v-if="generalReport">
+                      <div class="col col-md-4 d-flex justify-content-start text-start font-weight-bold">Total</div>
+                      <div class="col programado">{{ formatCurrency(generalReport.reduce((total, item) => total + item.monto_programado, 0)) }}</div>
+                      <div class="col mes">{{ formatCurrency(generalReport.reduce((total, item) => total + item.ejercido_mes, 0)) }}</div>
+                      <div class="col acumulado">{{ formatCurrency(generalReport.reduce((total, item) => total + item.ejercido_acumulado, 0)) }}</div>
+                      <div class="col reintegros">{{ formatCurrency(generalReport.reduce((total, item) => total + item.reintegros, 0)) }}</div>
+                      <div class="col " :class="getClass(generalReport.reduce((total, item) => total + item.por_ejercer, 0))">{{ formatCurrency(generalReport.reduce((total, item) => total + item.por_ejercer, 0)) }}</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="my-3">
-              <button class="btn btn-secondary" @click="handleFilterReportByPartida">Generar informe por partidas</button>
-            </div>
-            <div class="informe ">
-              <div class="container p-2">
-                <h4 class="nunito-bold">Informe por partidas</h4>
-                <h5 class="nunito">Resultados</h5>
-                <hr/>
-                  <div v-for="cap in capitulosData" :key="cap.idcapitulo" class="row flex justify-content-start align-items-center container">
-                    <div class="col">
-                      <p class="h3">{{ cap.nombre_capitulo }}</p>
-                      <div class="container text-center w-100">
-                        <div class="row bg-dark text-light rounded-2">
-                          <div class="col">
-                            <p>Partida</p>
-                          </div>
-                          <div class="col">
-                            <p>Descripcion</p>
-                          </div>
-                          <div class="col">
-                            <p>Ejercido Programado</p>
-                          </div>
-                          <div class="col">
-                            <p>Ejercido del mes</p>
-                          </div>
-                          <div class="col">
-                            <p>Ejercido acumulado</p>
-                          </div>
-                          <div class="col">
-                            <p>Reintegros</p>
-                          </div>
-                          <div class="col">
-                            <p>Por ejercer</p>
+              <div class="my-3">
+                <button class="btn btn-secondary" @click="handleFilterReportByPartida">Generar informe por partidas</button>
+              </div>
+              <div class="informe ">
+                <div class="container p-2">
+                  <h4 class="nunito-bold">Informe por partidas</h4>
+                  <h5 class="nunito">Resultados</h5>
+                  <hr/>
+                    <div v-for="cap in capitulosData" :key="cap.idcapitulo" class="row flex justify-content-start align-items-center container">
+                      <div class="col">
+                        <p class="h3">{{ cap.nombre_capitulo }}</p>
+                        <div class="container text-center w-100">
+                          <div class="row bg-dark text-light rounded-2">
+                            <div class="col">
+                              <p>Partida</p>
+                            </div>
+                            <div class="col">
+                              <p>Descripcion</p>
+                            </div>
+                            <div class="col">
+                              <p>Ejercido Programado</p>
+                            </div>
+                            <div class="col">
+                              <p>Ejercido del mes</p>
+                            </div>
+                            <div class="col">
+                              <p>Ejercido acumulado</p>
+                            </div>
+                            <div class="col">
+                              <p>Reintegros</p>
+                            </div>
+                            <div class="col">
+                              <p>Por ejercer</p>
+                            </div>
                           </div>
                         </div>
+                        <div v-for="partida in cap.partidas" :key="partida.idpartida">
+                          <div  class="d-flex">
+                            <div class="col">{{ partida.descripcion }}</div>
+                            <div class="col">{{ partida.nombre }}</div>
+                            <div class="col">{{ formatCurrency(partida.monto_programado) }}</div>
+                            <div class="col">{{ getEjercidoMes(partida.records) }}</div>
+                            <div class="col">{{ getEjercidoAcumulado(partida.records) }}</div>
+                            <div class="col">0</div>
+                            <div class="col">{{ getPorEjercer(partida.monto_programado, partida.records) }}</div>
+                          </div>
+                          <hr class="my-1">
+                        </div>
                       </div>
-                      <div v-for="partida in cap.partidas" :key="partida.idpartida" class="d-flex">
-                        <div class="col">{{ partida.descripcion }}</div>
-                        <div class="col">{{ formatCurrency(partida.monto_programado) }}</div>
-                        <div class="col">{{ formatCurrency(partida.ejercido_mes) }}</div>
-                        <div class="col">{{ formatCurrency(partida.ejercido_acumulado) }}</div>
-                        <div class="col">0</div>
-                        <div class="col">0</div>
-                        <div class="col">0</div>
-                      </div>
+                      <hr>
                     </div>
-                    <hr>
-                  </div>
+                </div>
               </div>
             </div>
         </div>
@@ -186,6 +178,7 @@ import {
   startAnimations,
 } from '../utils/animations.js';
 import { U013, ALE, E001 } from '../lib/Headers.js';
+import { get } from 'jquery';
 
 
 const props = defineProps({
@@ -726,6 +719,7 @@ const handleFilterReportByPartida = async () => {
         acc[partidaDesc] = {
           idpartida: partidaId,
           descripcion: partidaDesc,
+          nombre: partida.descripcion,
           records: [],
           monto_programado: partidaProgramada ? partidaProgramada.monto_programado : 0,
           ejercido_mes: 0, // Agrega los valores que necesites aquí
@@ -757,6 +751,61 @@ const handleFilterReportByPartida = async () => {
     });
   }
 
+}
+
+const getEjercidoMes = (records) => {
+  const monthOrder = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+  
+  const startMonth = 'ENERO';
+
+  const startIndex = monthOrder.indexOf(startMonth);
+  const endIndex = monthOrder.indexOf(selectedMonth.value.toUpperCase());
+
+  const filteredRegistrosMes = records.filter(item => {
+    const itemYear = item.fechas.includes(selectedYear.value);
+    const itemMonthIndex = monthOrder.indexOf(item.mes);
+
+    const valido = itemYear && itemMonthIndex >= startIndex && itemMonthIndex === endIndex
+
+    if(valido){
+      return item;
+    }else{
+      return ;
+    }
+  });
+
+  //console.log("registros mes",filteredRegistrosMes);
+
+  const ejercidoMes = formatCurrency(filteredRegistrosMes.reduce((total, item) => {
+    const retiro = parseFloat(item.retiros);
+    return !isNaN(retiro) ? total + retiro : total;
+  }, 0));
+
+  //console.log("ejercido mes", ejercidoMes);
+
+  return ejercidoMes;
+}
+const getEjercidoAcumulado = (records) => {
+
+  const ejercido = formatCurrency(records.reduce((total, item) => {
+    const retiro = parseFloat(item.retiros);
+    return !isNaN(retiro) ? total + retiro : total;
+  }, 0));
+
+  console.log("ejercido mes", ejercido);
+
+  return ejercido;
+}
+
+const getPorEjercer = (monto_programado, records) => {
+  const ejercido = records.reduce((total, item) => {
+    const retiro = parseFloat(item.retiros);
+    return !isNaN(retiro) ? total + retiro : total;
+  }, 0);
+  
+  const por_ejercer = parseFloat(monto_programado) - ejercido;
+
+  return formatCurrency(por_ejercer);
 }
 </script>
 
