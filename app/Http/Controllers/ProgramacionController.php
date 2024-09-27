@@ -209,4 +209,24 @@ class ProgramacionController extends Controller
 
         return response()->json('Programación por rubro eliminada exitosamente');
     }
+
+    public function getProgramacionPartidas(Request $request)
+    {
+        $ejercicio = $request->input('ejercicio');
+        $source = $request->input('source');
+
+        $partidasProgramadas = programacionpartidas::where('ejercicio', $ejercicio)
+            ->where('idfuente', $source)
+            ->get();
+
+        return response()->json($partidasProgramadas);
+    }
+
+    public function getPartidas()
+    {
+
+        $partidas = partidas::all();
+
+        return response()->json($partidas);
+    }
 }

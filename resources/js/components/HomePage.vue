@@ -115,6 +115,56 @@
                 </div>
               </div>
             </div>
+            <div class="my-3">
+              <button class="btn btn-secondary" @click="handleFilterReportByPartida">Generar informe por partidas</button>
+            </div>
+            <div class="informe ">
+              <div class="container p-2">
+                <h4 class="nunito-bold">Informe por partidas</h4>
+                <h5 class="nunito">Resultados</h5>
+                <hr/>
+                  <div v-for="cap in capitulosData" :key="cap.idcapitulo" class="row flex justify-content-start align-items-center container">
+                    <div class="col">
+                      <p class="h3">{{ cap.nombre_capitulo }}</p>
+                      <div class="container text-center w-100">
+                        <div class="row bg-dark text-light rounded-2">
+                          <div class="col">
+                            <p>Partida</p>
+                          </div>
+                          <div class="col">
+                            <p>Descripcion</p>
+                          </div>
+                          <div class="col">
+                            <p>Ejercido Programado</p>
+                          </div>
+                          <div class="col">
+                            <p>Ejercido del mes</p>
+                          </div>
+                          <div class="col">
+                            <p>Ejercido acumulado</p>
+                          </div>
+                          <div class="col">
+                            <p>Reintegros</p>
+                          </div>
+                          <div class="col">
+                            <p>Por ejercer</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div v-for="partida in cap.partidas" :key="partida.idpartida" class="d-flex">
+                        <div class="col">{{ partida.descripcion }}</div>
+                        <div class="col">{{ formatCurrency(partida.monto_programado) }}</div>
+                        <div class="col">{{ formatCurrency(partida.ejercido_mes) }}</div>
+                        <div class="col">{{ formatCurrency(partida.ejercido_acumulado) }}</div>
+                        <div class="col">0</div>
+                        <div class="col">0</div>
+                        <div class="col">0</div>
+                      </div>
+                    </div>
+                    <hr>
+                  </div>
+              </div>
+            </div>
         </div>
         <Notifications position="bottom left" />
     </div>
@@ -184,11 +234,15 @@ const programadoRubros = ref(null);
 const capitulos = ref(null);
 const rubros = ref(null);
 const disabled = ref(false);
+const programadoPartidas = ref(null);
+const partidasDB = ref(null);
+const capitulosData = ref(null);
 //#endregion
 
 onMounted(async () => {
   getCapitulos();
   getRubros();
+  getPartidas();
 })
 
 const getCapitulos = async () => {
@@ -199,7 +253,7 @@ const getCapitulos = async () => {
     }else{
       notify({
         title: 'Error al obtener capitulos',
-        text: 'Error: ' + e.response.data.message,
+        text: 'Error: ' + e.message,
         type: 'error',
         duration: 5000,
       })
@@ -207,7 +261,7 @@ const getCapitulos = async () => {
   }catch(e){
     notify({
       title: 'Error al obtener capitulos',
-      text: 'Error: ' + e.response.data.message,
+      text: 'Error: ' + e.message,
       type: 'error',
       duration: 5000,
     })
@@ -222,7 +276,7 @@ const getRubros = async () => {
     }else{
       notify({
         title: 'Error al obtener rubros',
-        text: 'Error: ' + e.response.data.message,
+        text: 'Error: ' + e.message,
         type: 'error',
         duration: 5000,
       })
@@ -230,7 +284,21 @@ const getRubros = async () => {
   }catch(e){
     notify({
       title: 'Error al obtener rubros',
-      text: 'Error: ' + e.response.data.message,
+      text: 'Error: ' + e.message,
+      type: 'error',
+      duration: 5000,
+    })
+  }
+}
+
+const getPartidas = async () => {
+  try{
+    const response = await axios.get('/get_partidas');
+    partidasDB.value = response.data;
+  }catch(e){
+    notify({
+      title: 'Error al obtener partidas',
+      text: 'Error: ' + e.message,
       type: 'error',
       duration: 5000,
     })
@@ -539,7 +607,8 @@ const handleFilterReport = async () => {
           ejercido_mes,
           ejercido_acumulado: ejercido_acumulado,
           reintegros,
-          por_ejercer: parseFloat(monto_programado) - ejercido_acumulado // Use colon instead of assignment
+          por_ejercer: parseFloat(monto_programado) - ejercido_acumulado, // Use colon instead of assignment
+          records: groupedFilteredRegistros[numberRubro],
         }
 
         //console.log(obj);
@@ -560,6 +629,7 @@ const handleFilterReport = async () => {
       }
     });
 
+    console.log(generalReport.value);
     disabled.value = false;
   }else{
     notify({
@@ -584,7 +654,7 @@ const getProgramacionRubros = async () => {
   }catch(e){
     notify({
       title: 'Error al obtener programación por rubro',
-      text: 'Error: ' + e.response.data.message,
+      text: 'Error: ' + e.message,
       type: 'error',
       duration: 5000,
     })
@@ -604,6 +674,89 @@ const getClass = (param) => {
   } else if (param < 0) {
     return 'negativo';
   }
+}
+
+const getProgramadoPartidas = async () => {
+  try{
+    const response = await axios.get('/get_programacion_partidas', {
+      params: {
+        ejercicio: selectedPeriod.value.ejercicio,
+        source: selectedSource.value
+      }
+    });
+    programadoPartidas.value = response.data;
+  }catch(e){
+    notify({
+      title: 'Error al obtener programación por partidas',
+      text: 'Error: ' + e.message,
+      type: 'error',
+      duration: 5000,
+    })
+  }
+}
+
+const handleFilterReportByPartida = async () => {
+  if(generalReport.value.length <= 0){
+    notify({
+      title: 'Error al generar informe por partidas',
+      text: 'Debe completar el informe antes de generar el informe por partidas',
+      type: 'error',
+      duration: 5000,
+      speed: 1000,
+    });
+    return;
+  }
+
+  getProgramadoPartidas();
+
+  try{
+
+    capitulosData.value = generalReport.value.map(item => {
+    // Group by partida
+    const partidas = Object.values(item.records.reduce((acc, rec) => {
+      const partidaDesc = rec.partida;
+
+      const partida = partidasDB.value.find(partida => partida.partida === partidaDesc);
+      if (!partida) return acc; // Skip if no partida found
+
+      const partidaId = partida.id;
+      const partidaProgramada = programadoPartidas.value.find(partida => partida.idpartida === partidaId);
+
+      if (!acc[partidaDesc]) {
+        acc[partidaDesc] = {
+          idpartida: partidaId,
+          descripcion: partidaDesc,
+          records: [],
+          monto_programado: partidaProgramada ? partidaProgramada.monto_programado : 0,
+          ejercido_mes: 0, // Agrega los valores que necesites aquí
+          ejercido_acumulado: 0, // Esto también
+        };
+      }
+
+      acc[partidaDesc].records.push(rec);
+      return acc;
+    }, {}));
+
+    // Construct the final cap object with idcapitulo and nombre_capitulo
+    return {
+      idcapitulo: item.idcapitulo,
+      nombre_capitulo: item.nombre_capitulo,
+      partidas // Aquí ahora es un array de partidas
+    };
+  });
+
+  console.log("Capitulos data", capitulosData.value);
+
+  }catch(e){
+    notify({
+      title: 'Error al generar informe por partidas',
+      text: 'Error: ' + e.message,
+      type: 'error',
+      duration: 5000,
+      speed: 1000,
+    });
+  }
+
 }
 </script>
 
