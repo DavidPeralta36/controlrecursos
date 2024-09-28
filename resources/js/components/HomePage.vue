@@ -587,7 +587,7 @@ const handleFilterReport = async () => {
       const registrosRubros = groupedRegistros[numberRubro];
       const registrosRubroAcumulado = groupedFilteredRegistros[numberRubro];
 
-      if (registrosRubros && registrosRubroAcumulado) {
+      if (registrosRubros && registrosRubroAcumulado) { // <-- mm?
         const rubroProgramado = programadoRubros.value.find(rubro => rubro.idrubro === capitulo.id);
         const monto_programado = parseFloat(rubroProgramado.monto_programado);
         var ejercido_mes = 0;
