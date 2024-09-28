@@ -151,6 +151,15 @@
                           </div>
                           <hr class="my-1">
                         </div>
+                        <div  class="d-flex">
+                          <div class="col"></div>
+                          <div class="col"> Totales </div>
+                          <div class="col programado">{{ getTotalProgramado(cap) }}</div>
+                          <div class="col mes">{{ getTotalMes(cap) }}</div>
+                          <div class="col acumulado">{{ getTotalEjercidoAcumulado(cap) }}</div>
+                          <div class="col reintegros">0</div>
+                          <div class="col " :class="getBalanceClass(cap)">{{ getTotalPorEjercer(cap) }}</div>
+                        </div>
                       </div>
                       <hr>
                     </div>
@@ -581,10 +590,14 @@ const handleFilterReport = async () => {
       if (registrosRubros && registrosRubroAcumulado) {
         const rubroProgramado = programadoRubros.value.find(rubro => rubro.idrubro === capitulo.id);
         const monto_programado = parseFloat(rubroProgramado.monto_programado);
-        const ejercido_mes = registrosRubros.reduce((total, item) => {
-          const retiro = parseFloat(item.retiros);
-          return !isNaN(retiro) ? total + retiro : total;
-        }, 0);
+        var ejercido_mes = 0;
+        if(registrosRubros)
+        {
+          ejercido_mes = registrosRubros.reduce((total, item) => {
+            const retiro = parseFloat(item.retiros);
+            return !isNaN(retiro) ? total + retiro : total;
+          }, 0);
+        }
 
         const ejercido_acumulado = registrosRubroAcumulado.reduce((totalAcumulado, itemAcumlado) => {
           const retiroAcumulado = parseFloat(itemAcumlado.retiros);
@@ -604,7 +617,6 @@ const handleFilterReport = async () => {
           records: groupedFilteredRegistros[numberRubro],
         }
 
-        //console.log(obj);
         return obj;
 
       }else{
@@ -618,11 +630,11 @@ const handleFilterReport = async () => {
           ejercido_acumulado: 0,
           reintegros: 0,
           por_ejercer: monto_programado,
+          records: [],
         }
       }
     });
 
-    console.log(generalReport.value);
     disabled.value = false;
   }else{
     notify({
@@ -700,17 +712,17 @@ const handleFilterReportByPartida = async () => {
     return;
   }
 
-  getProgramadoPartidas();
+  await getProgramadoPartidas();
 
   try{
 
     capitulosData.value = generalReport.value.map(item => {
     // Group by partida
-    const partidas = Object.values(item.records.reduce((acc, rec) => {
+    var partidas = Object.values(item.records.reduce((acc, rec) => {
       const partidaDesc = rec.partida;
 
       const partida = partidasDB.value.find(partida => partida.partida === partidaDesc);
-      if (!partida) return acc; // Skip if no partida found
+      if (!partida) return acc; 
 
       const partidaId = partida.id;
       const partidaProgramada = programadoPartidas.value.find(partida => partida.idpartida === partidaId);
@@ -722,14 +734,68 @@ const handleFilterReportByPartida = async () => {
           nombre: partida.descripcion,
           records: [],
           monto_programado: partidaProgramada ? partidaProgramada.monto_programado : 0,
-          ejercido_mes: 0, // Agrega los valores que necesites aquí
-          ejercido_acumulado: 0, // Esto también
+          ejercido_mes: 0, 
+          ejercido_acumulado: 0, 
         };
       }
 
       acc[partidaDesc].records.push(rec);
       return acc;
     }, {}));
+
+    if(partidas.length === 0){
+      var partidasProgramadas = programadoPartidas.value.filter(function(partida) {
+        return partida.idfuente === selectedSource.value && 
+              partida.ejercicio === selectedPeriod.value.ejercicio && 
+              partida.idcapitulo === item.idcapitulo;
+      });
+      
+      partidasProgramadas.forEach(function(partida) {
+        var partidaEncontrada = partidasDB.value.find(function(partidaDB) {
+            return partidaDB.id === partida.idpartida;
+        });
+
+        partidas.push({
+          idpartida: partida.idpartida,
+          descripcion: partidaEncontrada.partida,
+          nombre: partidaEncontrada.descripcion,
+          monto_programado: partida.monto_programado,
+          ejercido_mes: 0, 
+          ejercido_acumulado: 0, 
+          records: [],
+        });
+      });
+    }else{
+    var partidasProgramadas = programadoPartidas.value.filter(function(partida) {
+      return partida.idfuente === selectedSource.value && 
+              partida.ejercicio === selectedPeriod.value.ejercicio && 
+              partida.idcapitulo === item.idcapitulo;
+    });
+    
+    partidasProgramadas.forEach(function(partida) {
+      // Verifica si la partida ya está en el array `partidas`.
+      var partidaExiste = partidas.some(function(partidaExistente) {
+          return partidaExistente.idpartida === partida.idpartida;
+      });
+
+      // Si no está, haz push al array `partidas`.
+      if (!partidaExiste) {
+          var partidaEncontrada = partidasDB.value.find(function(partidaDB) {
+              return partidaDB.id === partida.idpartida;
+          });
+
+          partidas.push({
+            idpartida: partida.idpartida,
+            descripcion: partidaEncontrada.partida,
+            nombre: partidaEncontrada.descripcion,
+            monto_programado: partida.monto_programado,
+            ejercido_mes: 0, 
+            ejercido_acumulado: 0, 
+            records: [],
+          });
+      }
+    });
+    }
 
     // Construct the final cap object with idcapitulo and nombre_capitulo
     return {
@@ -738,8 +804,6 @@ const handleFilterReportByPartida = async () => {
       partidas // Aquí ahora es un array de partidas
     };
   });
-
-  console.log("Capitulos data", capitulosData.value);
 
   }catch(e){
     notify({
@@ -774,26 +838,23 @@ const getEjercidoMes = (records) => {
     }
   });
 
-  //console.log("registros mes",filteredRegistrosMes);
 
   const ejercidoMes = formatCurrency(filteredRegistrosMes.reduce((total, item) => {
     const retiro = parseFloat(item.retiros);
     return !isNaN(retiro) ? total + retiro : total;
   }, 0));
 
-  //console.log("ejercido mes", ejercidoMes);
 
   return ejercidoMes;
 }
+
 const getEjercidoAcumulado = (records) => {
 
   const ejercido = formatCurrency(records.reduce((total, item) => {
     const retiro = parseFloat(item.retiros);
     return !isNaN(retiro) ? total + retiro : total;
   }, 0));
-
-  console.log("ejercido mes", ejercido);
-
+  
   return ejercido;
 }
 
@@ -807,6 +868,109 @@ const getPorEjercer = (monto_programado, records) => {
 
   return formatCurrency(por_ejercer);
 }
+
+const getTotalProgramado = (capitulo) => {
+  
+  var total = capitulo.partidas.reduce((total, partida) => {
+    const retiro = parseFloat(partida.monto_programado);
+    return !isNaN(retiro) ? total + retiro : total;
+  }, 0);
+
+  return formatCurrency(total);
+}
+
+const getTotalMes = (capitulo) => {
+  var total = capitulo.partidas.reduce((total, partidaRecords) => {
+
+    const monthOrder = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+  
+    const startMonth = 'ENERO';
+
+    const startIndex = monthOrder.indexOf(startMonth);
+    const endIndex = monthOrder.indexOf(selectedMonth.value.toUpperCase());
+
+    const filteredRegistrosMes = partidaRecords.records.filter(item => {
+      const itemYear = item.fechas.includes(selectedYear.value);
+      const itemMonthIndex = monthOrder.indexOf(item.mes);
+
+      const valido = itemYear && itemMonthIndex >= startIndex && itemMonthIndex === endIndex
+
+      if(valido){
+        return item;
+      }else{
+        return ;
+      }
+    });
+
+    const totalPartida = filteredRegistrosMes.reduce((total, partida) => {
+      const retiro = parseFloat(partida.retiros);
+      return !isNaN(retiro) ? total + retiro : total;
+    }, 0);
+
+    return total + totalPartida;
+  }, 0);
+
+  return formatCurrency(total);
+}
+
+const getTotalEjercidoAcumulado = (capitulo) => {
+  var total = capitulo.partidas.reduce((total, partidaRecords) => {
+    const totalPartida = partidaRecords.records.reduce((total, partida) => {
+      const retiro = parseFloat(partida.retiros);
+      return !isNaN(retiro) ? total + retiro : total;
+    }, 0);
+
+    return total + totalPartida;
+  }, 0);
+
+  return formatCurrency(total);
+}
+
+const getTotalPorEjercer = (capitulo) => {
+  var totalProgramado = capitulo.partidas.reduce((total, partida) => {
+    const retiro = parseFloat(partida.monto_programado);
+    return !isNaN(retiro) ? total + retiro : total;
+  }, 0);
+
+  var totalAcumulado = capitulo.partidas.reduce((total, partidaRecords) => {
+    const totalPartida = partidaRecords.records.reduce((total, partida) => {
+      const retiro = parseFloat(partida.retiros);
+      return !isNaN(retiro) ? total + retiro : total;
+    }, 0);
+
+    return total + totalPartida;
+  }, 0);
+
+  const porEjercer = totalProgramado - totalAcumulado;
+  
+  return formatCurrency(porEjercer);
+}
+
+const getBalanceClass = (capitulo) => {
+  var totalProgramado = capitulo.partidas.reduce((total, partida) => {
+    const retiro = parseFloat(partida.monto_programado);
+    return !isNaN(retiro) ? total + retiro : total;
+  }, 0);
+
+  var totalAcumulado = capitulo.partidas.reduce((total, partidaRecords) => {
+    const totalPartida = partidaRecords.records.reduce((total, partida) => {
+      const retiro = parseFloat(partida.retiros);
+      return !isNaN(retiro) ? total + retiro : total;
+    }, 0);
+
+    return total + totalPartida;
+  }, 0);
+
+  const porEjercer = totalProgramado - totalAcumulado;
+
+  if(porEjercer < 0){
+    return 'negativo';
+  }
+  if(porEjercer >= 0){
+    return 'positivo';
+  }
+}
+
 </script>
 
 <style lang="scss">
