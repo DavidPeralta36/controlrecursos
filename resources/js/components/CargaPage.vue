@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
     <div class="container con">
         <div class="mt-3">
             <ul class="nav nav-tabs">
@@ -41,6 +41,7 @@
                 </div>
                 <button v-if="readyToSend" ref="sendButton" class="btn btn-primary" :disabled="loading" @click="habdleUploadFile">{{ sendButtonAnimated ? 'Subir origen de datos' : ''}}</button>
                 <ModalPreliminarData v-if="showPreliminarData" ref="modalPreliminarData" :preliminarData="datosPreliminares" @cancelData="handleCancelData" :selectedSource="selectedSource"/>
+                <ModalErrorData v-if="errorRecords" ref="modalErrorData" :errorData="errorRecords" :selectedSource="selectedSource"/>
             </div>
 
             <div v-if="activeTab === 'modify'" ref="modifyContainer">
@@ -128,6 +129,7 @@ import {
 } from '../utils/animations.js';
 import ModalPreliminarData from './auxiliares/ModalPreliminarData.vue';
 import { U013Editable, ALEEditable, E001Editable } from '../lib/Headers.js';
+import ModalErrorData from './auxiliares/ModalErrorData.vue';
 
 const props = defineProps({
     user: Object,
@@ -136,6 +138,10 @@ const props = defineProps({
 });
 
 //#region Variables
+const monthNames = {
+    "enero": 0, "febrero": 1, "marzo": 2, "abril": 3, "mayo": 4, "junio": 5,
+    "julio": 6, "agosto": 7, "septiembre": 8, "octubre": 9, "noviembre": 10, "diciembre": 11
+};
 const selectedSource = ref(null);
 const uploadContainer = ref(null);
 const newBank = ref(true);
@@ -183,6 +189,8 @@ const datosPreliminares = ref([]);
 const showPreliminarData = ref(false);
 const modalPreliminarData = ref(null);
 const loading = ref(false);
+const errorRecords = ref([]);
+const modalErrorData = ref(null);
 //#endregion
 
 watch(selectedSource, () => {
@@ -236,6 +244,10 @@ const handleFileChange = async (e) => {
         loadU013();
     }
 
+    if(selectedSource && selectedSource.value == 2){
+        loadS200();
+    }
+
     if(selectedSource && selectedSource.value == 4){
         loadASLE();
     }
@@ -245,6 +257,24 @@ const handleFileChange = async (e) => {
     }
     
   }
+}
+
+function parseDate(dateStr) {
+    // Usa una expresión regular para extraer día, mes y año
+    const regex = /^(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})$/;
+    const match = dateStr.match(regex);
+
+    if (match) {
+        const day = parseInt(match[1], 10);
+        const month = monthNames[match[2].toLowerCase()];
+        const year = parseInt(match[3], 10);
+
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+            return new Date(year, month, day);
+        }
+    }
+
+    return null; // Si el formato es incorrecto, devuelve null
 }
 
 const handleCancelData = () => {
@@ -261,7 +291,7 @@ const openModal = () => {
     modalPreliminarData.value.openModal();
 };
 
-const loadE001 = async () => {
+const loadE001 = async () => { 
     const reader = new FileReader();
 
     const formatFile = [
@@ -366,6 +396,168 @@ const loadE001 = async () => {
         }
 
         notify({
+        title: 'Archivo cargado y listo para enviar',
+        text: 'Favor de verificar el archivo antes de enviar',
+        type: 'info',
+        duration: 5000,
+        speed: 1000,
+        })
+        readyToSend.value = true;
+        await nextTick();
+        animateSendButton();
+
+      }
+      else{
+        notify({
+            title: 'Error al leer el archivo',
+            text: 'El archivo no tiene el formato correcto, el contenido debe de estar en la hoja 4 del excel',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+        return;
+      }
+    }
+
+    reader.onerror = () => {
+      notify({
+        title: 'Error al leer el archivo',
+        text: 'Ocurrió un problema al leer el archivo, por favor intente nuevamente.',
+        type: 'error',
+        duration: 5000,
+        speed: 1000,
+      });
+    };
+
+    reader.readAsArrayBuffer(bankFile.value);
+}
+
+const loadS200 = () => {
+    const reader = new FileReader();
+
+    const formatFile = [
+        "FECHA",
+        "MES",
+        "METODO \r\nDE PAGO",
+        "RFC",
+        "PROVEDOR",
+        "FACTURA ",
+        "PARCIAL",
+        "RETIROS",
+        "DEPOSITOS",
+        "SALDO",
+        "R",
+        "PARTIDA PRESUPUESTAL",
+        "FECHA DE FACTURA",
+        "FOLIO FISCAL",
+        "TIPO DE \r\nADJUDICACION",
+        "NUMERO DE ADJUDICACION \r\nO CONTRATO",
+        "NUMERO DE \r\nTECHO FINANCIERO",
+        "ORDEN DE SERVICIO \r\nO COMPRA",
+        "CLC",
+        "POLIZA",
+        "NUMERO DE CUENTA\r\nDEL PROVEEDOR",
+        "REFERENCIA BANCARIA",
+        "CLUE",
+        "APLICA EN:",
+        "NOMBRE DE LA PARTIDA"
+    ];
+
+
+    reader.onload = async (event) => {
+      const data = new Uint8Array(event.target.result);
+      const woorkbook = XLSX.read(data, { type: 'array' });
+
+      const sheetName = woorkbook.SheetNames[2];
+
+      if(!sheetName){
+        notify({
+            title: 'Error al leer el archivo',
+            text: 'El archivo no tiene el formato correcto, el contenido debe de estar en la hoja 3 del excel',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+        return;
+      }
+    
+      if(sheetName){
+        const woorksheet = woorkbook.Sheets[sheetName];
+
+        const sheetJson = XLSX.utils.sheet_to_json(woorksheet, { header: 1, blankrows: false });
+
+
+        const matchFileFormat = sheetJson.length > 0 && formatFile.every(column => 
+            sheetJson[6].includes(column)
+        );
+
+        if(!matchFileFormat){{
+            notify({
+                title: 'Error al leer el archivo',
+                text: 'El archivo no tiene el formato correcto',
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+            return;
+        }}
+
+        const headerRowIndex = sheetJson.findIndex(row => 
+            headerColumnsSearch.some(col => row.includes(col))
+        );
+
+        if(headerRowIndex !== -1){
+            const dataRows = sheetJson.slice(headerRowIndex);
+          
+            const maxColumns = dataRows.reduce((max, row) => Math.max(max, row.length), 0);
+
+            const formattedDataRows = dataRows.map(row => {
+                const formattedRow = row.map(cell => {
+                    
+                    if (typeof cell === 'number' && cell === row[0]) {
+                        if (cell > 59 && cell < 2958465) { 
+                            return XLSX.SSF.format("yyyy-mm-dd", cell);
+                        }
+                    }
+
+                    if (typeof cell === 'string' && cell === row[0]) {
+                        const parsedDate = parseDate(cell);
+                        if (parsedDate) {
+                            const dt = XLSX.SSF.format("yyyy-mm-dd", parsedDate);
+                            console.log(dt);
+                            return dt;
+                        }
+                    }
+
+                    if (typeof cell === 'string' && cell === row[11]) {
+                        if(cell.length === 0 || cell === '' || cell === ' '){
+                            return null;
+                        }
+                    }
+                    
+                    return cell;
+                });
+
+                while (formattedRow.length < maxColumns) {
+                formattedRow.push(null);
+                }
+
+                return formattedRow;
+            });
+
+            excelData.value = formattedDataRows;
+
+            if(!newBank.value){
+                if (excelData.value && excelData.value.length > 0) {
+                    datosPreliminares.value = formattedDataRows;;
+                    showPreliminarData.value = true;
+                    await nextTick();
+                    openModal();
+                }
+            }
+        }
+
+        notify({
             title: 'Archivo cargado y listo para enviar',
             text: 'Favor de verificar el archivo antes de enviar',
             type: 'info',
@@ -391,7 +583,6 @@ const loadE001 = async () => {
 
     reader.readAsArrayBuffer(bankFile.value);
 }
-
 const loadASLE = () => {
     const reader = new FileReader();
 
@@ -430,6 +621,17 @@ const loadASLE = () => {
 
       const sheetName = woorkbook.SheetNames[3];
     
+      if(!sheetName){
+        notify({
+            title: 'Error al leer el archivo',
+            text: 'El archivo no tiene el formato correcto, el contenido debe de estar en la hoja 4 del excel',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+        return;
+      }
+
       if(sheetName){
         const woorksheet = woorkbook.Sheets[sheetName];
 
@@ -494,14 +696,14 @@ const loadASLE = () => {
                     openModal();
                 }
             }
-        }
+            }
 
-        notify({
-            title: 'Archivo cargado y listo para enviar',
-            text: 'Favor de verificar el archivo antes de enviar',
-            type: 'info',
-            duration: 5000,
-            speed: 1000,
+            notify({
+                title: 'Archivo cargado y listo para enviar',
+                text: 'Favor de verificar el archivo antes de enviar',
+                type: 'info',
+                duration: 5000,
+                speed: 1000,
             })
         }
 
@@ -562,6 +764,17 @@ const loadU013= () => {
       const woorkbook = XLSX.read(data, { type: 'array' });
 
       const sheetName = woorkbook.SheetNames[3];
+
+      if(!sheetName){
+        notify({
+            title: 'Error al leer el archivo',
+            text: 'El archivo no tiene el formato correcto, el contenido debe de estar en la hoja 4 del excel',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+        return;
+      }
     
       if(sheetName){
         const woorksheet = woorkbook.Sheets[sheetName];
@@ -722,13 +935,26 @@ const habdleUploadFile = async () => {
         });
 
         if (response.status === 200) {
-            notify({
-                title: 'Banco actualizado',
-                text: 'La información se ha subido correctamente',
-                type: 'success',
-                duration: 5000,
-                speed: 1000,
-            });
+            if(response.data.status === 'success'){
+                notify({
+                    title: 'Banco actualizado',
+                    text: 'La información se ha subido correctamente',
+                    type: 'success',
+                    duration: 5000,
+                    speed: 1000,
+                });
+            }else{
+                notify({
+                    title: 'Error al guardar los registros',
+                    text: 'Error: Hay registros con errores',
+                    type: 'warn',
+                    duration: 5000,
+                    speed: 1000,
+                });
+                console.log(response.data.errores);
+                errorRecords.value = response.data.errores;
+                modalErrorData.value.openModal();
+            }
             endAnimation();
             selectedPeriod.value = null;
             selectedSource.value = null;
@@ -745,9 +971,20 @@ const habdleUploadFile = async () => {
                 duration: 5000,
                 speed: 1000,
             });
+            selectedPeriod.value = null;
+            selectedSource.value = null;
+            newBankYear.value = null;
+            excelData.value = null;
+            bankFile.value = null;
         }
     } catch (e) {
-        console.log(e);
+        notify({
+                title: 'Error al subir archivo',
+                text: e.message,
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
     }
     loading.value = false;
 }

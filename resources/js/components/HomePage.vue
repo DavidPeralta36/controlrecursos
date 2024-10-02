@@ -516,6 +516,18 @@ const handleFilterReport = async () => {
     disabled.value = true;
     getProgramacionRubros();
 
+    if(!programadoRubros.value){ 
+      notify({
+        title: 'Error al generar informe por partidas',
+        text: 'Debe completar el programación de recursos antes de generar el informe',
+        type: 'error',
+        duration: 5000,
+        speed: 1000,
+      });
+      disabled.value = true;
+      return;
+    }
+
     await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
     startAnimations(loadingText, spinner);
 
