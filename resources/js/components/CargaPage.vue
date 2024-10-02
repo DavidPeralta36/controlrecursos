@@ -128,7 +128,7 @@ import {
   startAnimations,
 } from '../utils/animations.js';
 import ModalPreliminarData from './auxiliares/ModalPreliminarData.vue';
-import { U013Editable, ALEEditable, E001Editable } from '../lib/Headers.js';
+import { U013Editable, ALEEditable, E001Editable, S200Editable } from '../lib/Headers.js';
 import ModalErrorData from './auxiliares/ModalErrorData.vue';
 
 const props = defineProps({
@@ -197,6 +197,9 @@ watch(selectedSource, () => {
   switch (selectedSource.value) {
     case 1:
       colDefs.value = U013Editable;
+      break;
+    case 2:
+      colDefs.value = S200Editable;
       break;
     case 4:
       colDefs.value = ALEEditable;

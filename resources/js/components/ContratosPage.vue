@@ -84,7 +84,7 @@ import {
   animateLoadingOut,
   startAnimations,
 } from '../utils/animations.js';
-import { U013, ALE, E001 } from '../lib/Headers.js';
+import { U013, ALE, E001, S200 } from '../lib/Headers.js';
 
 const props = defineProps({
     user: Object,
@@ -138,6 +138,14 @@ watch(selectedSource, () => {
         }));
         console.log(colDefsEditableU013);
         colDefs.value = colDefsEditableU013;
+        break;
+    case 2:
+        const colDefsEditableS200 = S200.map(col => ({
+            ...col, 
+            editable: getEditable(col.field),
+            cellClass: getClass(col.field) ? 'validClass' : 'invalidClass'
+        }));
+        colDefs.value = colDefsEditableS200;
         break;
     case 4:
         const colDefsEditableALE = ALE.map(col => ({

@@ -186,7 +186,7 @@ import {
   animateLoadingOut,
   startAnimations,
 } from '../utils/animations.js';
-import { U013, ALE, E001 } from '../lib/Headers.js';
+import { U013, ALE, E001, S200 } from '../lib/Headers.js';
 import { get } from 'jquery';
 
 
@@ -311,6 +311,9 @@ watch(selectedSource, () => {
   switch (selectedSource.value) {
     case 1:
       colDefs.value = U013;
+      break;
+    case 2:
+      colDefs.value = S200;
       break;
     case 4:
       colDefs.value = ALE;
