@@ -15,19 +15,19 @@ export const U013=[
     { 
         field: 'depositos', 
         headerName: 'Depositos', 
-        valueFormatter: formatCurrency, 
+        valueFormatter: formatCurrency , 
         cellClass: (params) => params.value ? 'deposit-cell' : '',
     },
     { 
         field: 'retiros', 
         headerName: 'Retiros', 
-        valueFormatter: formatCurrency, 
+        valueFormatter: formatCurrency , 
         cellClass: (params) => params.value ? 'withdrawal-cell' : '',
     },
     { 
         field: 'saldo', 
         headerName: 'Saldo', 
-        valueFormatter: formatCurrency, 
+        valueFormatter: formatCurrency , 
         cellClass: (params) => params.value ? 'balance-cell' : '',
     },
     { field: 'r', headerName: 'Rubro', filter: true, sortable: true }, 
@@ -152,12 +152,23 @@ export const E001=[
 
 function formatCurrency(params) {
     if (!params.value) return '';
-    
-    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, '')); 
-    if (isNaN(number)) return ''; 
 
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number); 
+    let number;
+
+    // Verificar si el valor es un número o una cadena
+    if (typeof params.value === 'number') {
+        number = params.value;
+    } else if (typeof params.value === 'string') {
+        // Remover caracteres no numéricos si es una cadena
+        number = parseFloat(params.value.replace(/[^0-9.-]+/g, ''));
+    }
+
+    if (isNaN(number)) return ''; // Si no es un número válido, retornar una cadena vacía
+
+    // Formatear como moneda en MXN
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number);
 }
+
 
 export const U013Editable=[
     { field: 'fechas', headerName: 'Fecha', filter: true, sortable: true, editable: true },

@@ -953,6 +953,7 @@ const habdleUploadFile = async () => {
                 });
                 console.log(response.data.errores);
                 errorRecords.value = response.data.errores;
+                console.log(modalErrorData.value);
                 modalErrorData.value.openModal();
             }
             endAnimation();

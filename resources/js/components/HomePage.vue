@@ -514,7 +514,7 @@ function getYearFromDate(dateString) {
 const handleFilterReport = async () => {
   if(selectedSource.value && selectedPeriod.value !== "Periodo requerido *" && selectedMonth.value && selectedYear.value){
     disabled.value = true;
-    getProgramacionRubros();
+    await getProgramacionRubros();
 
     if(!programadoRubros.value){ 
       notify({

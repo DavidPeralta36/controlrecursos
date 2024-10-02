@@ -3,14 +3,15 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Datos preliminares a cargar</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Errores encontrados en los registros cargados</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <h5>Verifique los registros que está por guardar en el sistema</h5>
-                    <p>Los registros se pueden modificar más tarde</p>
+                    <h5>Verifique los registros que están causando error en el sistema</h5>
+                    <p>Verifique y agregue las regitros clave para poder continuar</p>
                     <hr/>
                     <div v-for="(group, key) in errorData" :key="key">
+                        <p class="fs-5">Registro clave causando error: <span style="font-weight: bold;">{{ key.toString().toUpperCase() }}</span></p>
                         <AgGridVue
                             :rowData="group"
                             :columnDefs="colDefs"
@@ -39,7 +40,7 @@ import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
 import { U013, ALE, E001 } from '../../lib/Headers.js';
 
 const props = defineProps({
-    errorData: Array,
+    errorData: Object,
     selectedSource: Number
 });
 
