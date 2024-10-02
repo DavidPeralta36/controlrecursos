@@ -49,29 +49,29 @@ class CargaController extends Controller
         $source = $request->input('source');
         $periodo = $request->input('periodo');
 
-        if($source == 1){//U013
+        if ($source == 1) {//U013
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);
-    
-                array_shift($data);
-    
-                $ckp = [];
-    
-                try{
-                    Log::info("Iniciando transaccion");
-    
-                    DB::beginTransaction();
-    
-                    foreach($data as $row){
 
-                        if($row[1] == null || $row[1] == '_' || $row[1] == ' ' || $row[1] == '' ){
+                array_shift($data);
+
+                $ckp = [];
+
+                try {
+                    Log::info("Iniciando transaccion");
+
+                    DB::beginTransaction();
+
+                    foreach ($data as $row) {
+
+                        if ($row[1] == null || $row[1] == '_' || $row[1] == ' ' || $row[1] == '') {
                             continue;
                         }
                         $registro = [
-                            'fechas' => $row[1], 
+                            'fechas' => $row[1],
                             'mes' => $row[2],
-                            'forma_pago' => $row[3], 
-                            'metodo_pago' => $row[4], 
+                            'forma_pago' => $row[3],
+                            'metodo_pago' => $row[4],
                             'rfc' => $row[5],
                             'proveedor' => $row[6],
                             'factura' => $row[7],
@@ -101,86 +101,97 @@ class CargaController extends Controller
                             'ejercicio' => $periodo,
                         ];
                         $ckp = $registro;
-                        
-                        try{
+
+                        if (strpos($registro['clue'], '-') !== false) {
+                            $registro['clue'] = str_replace('-', '', $registro['clue']);
+                        }
+                        try {
                             registrobancos::create($registro);
-                        }catch(\Exception $ex){
+                        } catch (\Exception $ex) {
                             $allOk = false;
-                            //TODO: verificar si el error es un error de llave foranea
-                            //TODO: verificar que clave foranea es la que causa el error
-                            //TODO: Identificar y agregar a una lista de registros que no se pueden insertar
-                            //TODO: Agregar un mensaje de error en la pantalla y regresar la lista a la vista
                             Log::info("Error al insertar registro: " . $ex->getMessage());
-                            if(strpos($ex->getMessage(), 'a foreign key constraint fails') !== false){
-                                if(preg_match('/FOREIGN KEY \(`(.*?)`\)/', $ex->getMessage(), $matches))
-                                {
+                            if (strpos($ex->getMessage(), 'a foreign key constraint fails') !== false) {
+                                if (preg_match('/FOREIGN KEY \(`(.*?)`\)/', $ex->getMessage(), $matches)) {
                                     $columna = $matches[1];
+
+                                    if ($columna == 'clue') {
+                                        //buscar en clues por clue y asigna por la propiedad clue
+                                        $clue = clues::where('clue_homologada', $registro['clue'])->first();
+                                        if ($clue) {
+                                            $registro['clue'] = $clue->clue;
+
+                                            try {
+                                                registrobancos::create($registro);
+                                                $allOk = true;
+                                            } catch (\Exception $ex) {
+                                                Log::info("Error al reintentar insertar el registro corregido: " . $ex->getMessage());
+                                                $allOk = false;
+                                            }
+                                        }
+                                    }
+
                                     if (!isset($erroresClaveForanea[$columna])) {
                                         $erroresClaveForanea[$columna] = [];
                                     }
                                     $erroresClaveForanea[$columna][] = $registro;
                                     Log::info("Errores", $erroresClaveForanea);
                                     $mensajeError = "Error de clave foránea en la columna: $columna.";
-                                }
-                                else
-                                {
+                                } else {
                                     $mensajeError = "Error de clave foránea, pero no se pudo determinar la columna.";
                                 }
+                            } else {
+                                $mensajeError = "Error inesperado: " . $ex->getMessage();
                             }
-                                else
-                                {
-                                    $mensajeError = "Error inesperado: " . $ex->getMessage();
-                                }
-                                
-                            }
+
                         }
-                        if ($allOk) {
-                            DB::commit();
-                            return response()->json([
-                                'status' => 'success',
-                                'message' => 'Datos insertados correctamente.'
-                            ], 200);
-                        } else {
-                            Log::info("" ,$erroresClaveForanea);
-                            DB::rollBack();
-                            Log::info("", $erroresClaveForanea);
-                            return response()->json([
-                                'status' => 'error',
-                                'message' => $mensajeError,
-                                'errores' => $erroresClaveForanea  // Retorna la lista de errores agrupados por columna
-                            ], 200);  // Puedes usar el código 400 Bad Request para indicar que hubo un error
-                        }
-                        
-                }catch(\Exception $ex){
-                    Log::info("Errorsote: ".$ex->getMessage());
-                    Log::info("",$ckp);
+                    }
+                    if ($allOk) {
+                        DB::commit();
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Datos insertados correctamente.'
+                        ], 200);
+                    } else {
+                        Log::info("", $erroresClaveForanea);
+                        DB::rollBack();
+                        Log::info("", $erroresClaveForanea);
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $mensajeError,
+                            'errores' => $erroresClaveForanea  // Retorna la lista de errores agrupados por columna
+                        ], 200);  // Puedes usar el código 400 Bad Request para indicar que hubo un error
+                    }
+
+                } catch (\Exception $ex) {
+                    Log::info("Errorsote: " . $ex->getMessage());
+                    Log::info("", $ckp);
                     echo "Error al insertar los datos: " + $ex->getMessage();
                 }
-            } 
+            }
         }
 
-        if($source == 2){//S200
+        if ($source == 2) {//S200
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);
-    
+
                 array_shift($data);
-    
+
                 $ckp = [];
-    
-                try{
+
+                try {
                     Log::info("Iniciando transaccion");
-    
+
                     DB::beginTransaction();
-    
-                    foreach($data as $row){
-    
-                        if($row[0] == null || $row[0] == '_' || $row[0] == ' ' || $row[0] == '' ){
+
+                    foreach ($data as $row) {
+
+                        if ($row[0] == null || $row[0] == '_' || $row[0] == ' ' || $row[0] == '') {
                             continue;
                         }
                         $registro = [
-                            'fechas' => $row[0], 
+                            'fechas' => $row[0],
                             'mes' => $row[1],
-                            'forma_pago' => $row[2], 
+                            'forma_pago' => $row[2],
                             'rfc' => $row[3],
                             'proveedor' => $row[4],
                             'factura' => $row[5],
@@ -210,55 +221,95 @@ class CargaController extends Controller
                         ];
                         $ckp = $registro;
 
-                        if(strpos($registro['clue'], '-') !== false){
+                        if (strpos($registro['clue'], '-') !== false) {
                             $registro['clue'] = str_replace('-', '', $registro['clue']);
                         }
-                        try{
+                        try {
                             registrobancos::create($registro);
-                        }catch(\Exception $ex){
-                            //verificar si el error es un error de llave foranea
-                            if(strpos($ex->getMessage(), 'foriegn key constraint') !== false){
-                                //buscar en clues por clue y asigna por la propiedad clue
-                                $clue = clues::where('clue_homolagada', $registro['clue'])->first();
-                                if($clue){
-                                    $registro['clue'] = $clue->clue_homologada;
-                                    registrobancos::create($registro);
+                        } catch (\Exception $ex) {
+                            $allOk = false;
+                            Log::info("Error al insertar registro: " . $ex->getMessage());
+                            if (strpos($ex->getMessage(), 'a foreign key constraint fails') !== false) {
+                                if (preg_match('/FOREIGN KEY \(`(.*?)`\)/', $ex->getMessage(), $matches)) {
+                                    $columna = $matches[1];
+
+                                    if ($columna == 'clue') {
+                                        //buscar en clues por clue y asigna por la propiedad clue
+                                        $clue = clues::where('clue_homologada', $registro['clue'])->first();
+                                        if ($clue) {
+                                            $registro['clue'] = $clue->clue;
+
+                                            try {
+                                                registrobancos::create($registro);
+                                                $allOk = true;
+                                            } catch (\Exception $ex) {
+                                                Log::info("Error al reintentar insertar el registro corregido: " . $ex->getMessage());
+                                                $allOk = false;
+                                            }
+                                        }
+                                    }
+
+                                    if (!isset($erroresClaveForanea[$columna])) {
+                                        $erroresClaveForanea[$columna] = [];
+                                    }
+                                    $erroresClaveForanea[$columna][] = $registro;
+                                    Log::info("Errores", $erroresClaveForanea);
+                                    $mensajeError = "Error de clave foránea en la columna: $columna.";
+                                } else {
+                                    $mensajeError = "Error de clave foránea, pero no se pudo determinar la columna.";
                                 }
+                            } else {
+                                $mensajeError = "Error inesperado: " . $ex->getMessage();
                             }
+
                         }
                     }
-                    DB::commit();
-                    echo "Datos insertados correctamente.";
-                }catch(\Exception $ex){
-                    Log::info("Errorsote: ".$ex->getMessage());
-                    Log::info("",$ckp);
+                    if ($allOk) {
+                        DB::commit();
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Datos insertados correctamente.'
+                        ], 200);
+                    } else {
+                        Log::info("", $erroresClaveForanea);
+                        DB::rollBack();
+                        Log::info("", $erroresClaveForanea);
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $mensajeError,
+                            'errores' => $erroresClaveForanea  // Retorna la lista de errores agrupados por columna
+                        ], 200);  // Puedes usar el código 400 Bad Request para indicar que hubo un error
+                    }
+                } catch (\Exception $ex) {
+                    Log::info("Errorsote: " . $ex->getMessage());
+                    Log::info("", $ckp);
                     echo "Error al insertar los datos: " + $ex->getMessage();
                 }
-            } 
+            }
         }
 
-        if($source == 4){//ASLE
+        if ($source == 4) {//ASLE
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);
-    
-                array_shift($data);
-    
-                $ckp = [];
-    
-                try{
-                    Log::info("Iniciando transaccion");
-    
-                    DB::beginTransaction();
-    
-                    foreach($data as $row){
 
-                        if($row[1] == null || $row[1] == '_' || $row[1] == ' ' || $row[1] == '' ){
+                array_shift($data);
+
+                $ckp = [];
+
+                try {
+                    Log::info("Iniciando transaccion");
+
+                    DB::beginTransaction();
+
+                    foreach ($data as $row) {
+
+                        if ($row[1] == null || $row[1] == '_' || $row[1] == ' ' || $row[1] == '') {
                             continue;
                         }
                         $registro = [
-                            'fechas' => $row[1], 
+                            'fechas' => $row[1],
                             'mes' => $row[2],
-                            'metodo_pago' => $row[3], 
+                            'metodo_pago' => $row[3],
                             'rfc' => $row[4],
                             'proveedor' => $row[5],
                             'factura' => $row[6],
@@ -288,40 +339,95 @@ class CargaController extends Controller
                             'ejercicio' => $periodo,
                         ];
                         $ckp = $registro;
-                        registrobancos::create($registro);
+                        if (strpos($registro['clue'], '-') !== false) {
+                            $registro['clue'] = str_replace('-', '', $registro['clue']);
+                        }
+                        try {
+                            registrobancos::create($registro);
+                        } catch (\Exception $ex) {
+                            $allOk = false;
+                            Log::info("Error al insertar registro: " . $ex->getMessage());
+                            if (strpos($ex->getMessage(), 'a foreign key constraint fails') !== false) {
+                                if (preg_match('/FOREIGN KEY \(`(.*?)`\)/', $ex->getMessage(), $matches)) {
+                                    $columna = $matches[1];
+
+                                    if ($columna == 'clue') {
+                                        //buscar en clues por clue y asigna por la propiedad clue
+                                        $clue = clues::where('clue_homologada', $registro['clue'])->first();
+                                        if ($clue) {
+                                            $registro['clue'] = $clue->clue;
+
+                                            try {
+                                                registrobancos::create($registro);
+                                                $allOk = true;
+                                            } catch (\Exception $ex) {
+                                                Log::info("Error al reintentar insertar el registro corregido: " . $ex->getMessage());
+                                                $allOk = false;
+                                            }
+                                        }
+                                    }
+
+                                    if (!isset($erroresClaveForanea[$columna])) {
+                                        $erroresClaveForanea[$columna] = [];
+                                    }
+                                    $erroresClaveForanea[$columna][] = $registro;
+                                    Log::info("Errores", $erroresClaveForanea);
+                                    $mensajeError = "Error de clave foránea en la columna: $columna.";
+                                } else {
+                                    $mensajeError = "Error de clave foránea, pero no se pudo determinar la columna.";
+                                }
+                            } else {
+                                $mensajeError = "Error inesperado: " . $ex->getMessage();
+                            }
+
+                        }
                     }
-                    DB::commit();
-                    echo "Datos insertados correctamente.";
-                }catch(\Exception $ex){
-                    Log::info("Errorsote: ".$ex->getMessage());
-                    Log::info("",$ckp);
+                    if ($allOk) {
+                        DB::commit();
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Datos insertados correctamente.'
+                        ], 200);
+                    } else {
+                        Log::info("", $erroresClaveForanea);
+                        DB::rollBack();
+                        Log::info("", $erroresClaveForanea);
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $mensajeError,
+                            'errores' => $erroresClaveForanea  // Retorna la lista de errores agrupados por columna
+                        ], 200);  // Puedes usar el código 400 Bad Request para indicar que hubo un error
+                    }
+                } catch (\Exception $ex) {
+                    Log::info("Errorsote: " . $ex->getMessage());
+                    Log::info("", $ckp);
                     echo "Error al insertar los datos: " + $ex->getMessage();
                 }
-            } 
+            }
         }
 
-        if($source == 5){ //E001
+        if ($source == 5) { //E001
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);
-    
+
                 array_shift($data);
-    
+
                 $ckp = [];
-    
-                try{
+
+                try {
                     Log::info("Iniciando transaccion");
-    
+
                     DB::beginTransaction();
-    
-                    foreach($data as $row){
-    
-                        if($row[0] == null || $row[0] == '_' || $row[0] == ' ' || $row[0] == '' ){
+
+                    foreach ($data as $row) {
+
+                        if ($row[0] == null || $row[0] == '_' || $row[0] == ' ' || $row[0] == '') {
                             continue;
                         }
                         $registro = [
-                            'fechas' => $row[0], 
+                            'fechas' => $row[0],
                             'mes' => $row[1],
-                            'forma_pago' => $row[2], 
+                            'forma_pago' => $row[2],
                             'rfc' => $row[3],
                             'proveedor' => $row[4],
                             'factura' => $row[5],
@@ -350,16 +456,71 @@ class CargaController extends Controller
                             'ejercicio' => $periodo,
                         ];
                         $ckp = $registro;
-                        registrobancos::create($registro);
+                        if (strpos($registro['clue'], '-') !== false) {
+                            $registro['clue'] = str_replace('-', '', $registro['clue']);
+                        }
+                        try {
+                            registrobancos::create($registro);
+                        } catch (\Exception $ex) {
+                            $allOk = false;
+                            Log::info("Error al insertar registro: " . $ex->getMessage());
+                            if (strpos($ex->getMessage(), 'a foreign key constraint fails') !== false) {
+                                if (preg_match('/FOREIGN KEY \(`(.*?)`\)/', $ex->getMessage(), $matches)) {
+                                    $columna = $matches[1];
+
+                                    if ($columna == 'clue') {
+                                        //buscar en clues por clue y asigna por la propiedad clue
+                                        $clue = clues::where('clue_homologada', $registro['clue'])->first();
+                                        if ($clue) {
+                                            $registro['clue'] = $clue->clue;
+
+                                            try {
+                                                registrobancos::create($registro);
+                                                $allOk = true;
+                                            } catch (\Exception $ex) {
+                                                Log::info("Error al reintentar insertar el registro corregido: " . $ex->getMessage());
+                                                $allOk = false;
+                                            }
+                                        }
+                                    }
+
+                                    if (!isset($erroresClaveForanea[$columna])) {
+                                        $erroresClaveForanea[$columna] = [];
+                                    }
+                                    $erroresClaveForanea[$columna][] = $registro;
+                                    Log::info("Errores", $erroresClaveForanea);
+                                    $mensajeError = "Error de clave foránea en la columna: $columna.";
+                                } else {
+                                    $mensajeError = "Error de clave foránea, pero no se pudo determinar la columna.";
+                                }
+                            } else {
+                                $mensajeError = "Error inesperado: " . $ex->getMessage();
+                            }
+
+                        }
                     }
-                    DB::commit();
-                    echo "Datos insertados correctamente.";
-                }catch(\Exception $ex){
-                    Log::info("Errorsote: ".$ex->getMessage());
-                    Log::info("",$ckp);
+                    if ($allOk) {
+                        DB::commit();
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Datos insertados correctamente.'
+                        ], 200);
+                    } else {
+                        Log::info("", $erroresClaveForanea);
+                        DB::rollBack();
+                        Log::info("", $erroresClaveForanea);
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $mensajeError,
+                            'errores' => $erroresClaveForanea  // Retorna la lista de errores agrupados por columna
+                        ], 200);  // Puedes usar el código 400 Bad Request para indicar que hubo un error
+                    }
+                } catch (\Exception $ex) {
+                    Log::info("Errorsote: " . $ex->getMessage());
+                    Log::info("", $ckp);
                     echo "Error al insertar los datos: " + $ex->getMessage();
                 }
-            } 
+            }
         }
 
         return response()->json([
@@ -371,15 +532,14 @@ class CargaController extends Controller
     public function edit_records(Request $request)
     {
         DB::beginTransaction();
-        try
-        {
+        try {
             $records = json_decode($request->input('records'), true);
 
             if (is_array($records)) {
                 foreach ($records as $record) {
-                    
+
                     $id = $record['id'];
-                    unset($record['id']); 
+                    unset($record['id']);
 
                     registrobancos::where('id', $id)->update($record);
                 }
@@ -389,9 +549,8 @@ class CargaController extends Controller
             } else {
                 return response()->json('Error al editar los registros', 400);
             }
-            
-        }catch(\Exception $ex)
-        {
+
+        } catch (\Exception $ex) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 400);
         }
