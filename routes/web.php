@@ -46,6 +46,8 @@ Route::get('/get_capitulos', 'HomeController@getCapitulos')->name('get_capitulos
 Route::post('/upload_report', 'CargaController@uploadReport')->name('upload_report');
 Route::post('/edit_records', 'CargaController@edit_records')->name('edit_records');
 Route::post('/save_new_partidas', 'CargaController@saveNewPartidas')->name('save_new_partidas');
+Route::post('/save_new_provedores', 'CargaController@saveNewProveedores')->name('save_new_provedores');
+Route::post('/save_new_clue', 'CargaController@saveNewClues')->name('save_new_clue');
 
 Route::post('/register', 'UsersController@createNewUser')->name('register');
 Route::get('/getusers', 'UsersController@getUsers')->name('users');

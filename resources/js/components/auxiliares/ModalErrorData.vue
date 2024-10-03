@@ -21,7 +21,8 @@
                             style="height: 500px"
                             class="ag-theme-quartz mb-5"
                         />
-                        <button v-if="group.key.toString().toLowerCase() !== 'partida'" class="btn btn-primary" @click="handleSaveNewRecords(group, key)">Agregar registro clave la tabla {{ key.toString().toUpperCase() }}</button>
+                        <button v-if="key.toString().toLowerCase() !== 'partida'" class="btn btn-primary" @click="handleSaveNewRecords(group, key)">Agregar registro clave la tabla {{ key.toString().toUpperCase() }}</button>
+                        <p v-else style="color: red; font-size: 1.5rem;">La partida se debe de agregar manualemente desde su catalogo</p>
                     </div>                    
                 </div>
                 <div class="modal-footer">
@@ -108,9 +109,7 @@ defineExpose({
 });
 
 const handleSaveNewRecords = async (group, key) => {
-    console.log("Handle save records");
-    console.log(group, key);
-
+    
     if(key.toString().toLowerCase() === 'partida') {
         const newPartidas = group.map(item => {
 
@@ -152,7 +151,7 @@ const handleSaveNewRecords = async (group, key) => {
         }catch(e){
             notify({
                 title: 'Error al guardar partidas',
-                text: 'Error: ' + e.response.data.message,
+                text: 'Error: ' + e.message,
                 type: 'error',
                 duration: 5000,
             })
@@ -161,11 +160,84 @@ const handleSaveNewRecords = async (group, key) => {
     }
 
     if(key.toString().toLowerCase() === 'rfc') {
-        
+        const newProveedores= group.map(item => {
+
+        return {
+            rfc: item.rfc,
+            proveedor: item.proveedor,
+            numero_cuenta_proovedor: item.numero_cuenta_proovedor,
+        }
+        });
+
+        try{
+            const response = await axios.post('/save_new_provedores', {
+                newProveedores: JSON.stringify(newProveedores)
+            });
+            if(response.status === 200){
+                notify({
+                    title: 'Proveedores guardados exitosamente', 
+                    text: 'Los proveedores se han guardado correctamente',
+                    type: 'success',
+                    duration: 5000,
+                })
+
+                console.log(response);
+            }else{
+                notify({
+                    title: 'Error al guardar los proveedores',
+                    text: 'Error: ' + response.message,
+                    type: 'error',
+                    duration: 5000,
+                })
+            }
+        }catch(e){
+            notify({
+                title: 'Error al guardar los proveedores',
+                text: 'Error: ' + e.message,
+                type: 'error',
+                duration: 5000,
+            })
+        }
     }
 
     if(key.toString().toLowerCase() === 'clue') {
-        
+        const newClues = group.map(item => {
+
+        return {
+            clue: item.clue,
+            nombre_clue: item.nombre_clue,
+        }
+        });
+
+        try{
+            const response = await axios.post('/save_new_clue', {
+                newClues: JSON.stringify(newClues)
+            });
+            if(response.status === 200){
+                notify({
+                    title: 'CLUES guardadas exitosamente',
+                    text: 'Las clues se han guardado correctamente',
+                    type: 'success',
+                    duration: 5000,
+                })
+
+                console.log(response);
+            }else{
+                notify({
+                    title: 'Error al guardar clues',
+                    text: 'Error: ' + response.message,
+                    type: 'error',
+                    duration: 5000,
+                })
+            }
+        }catch(e){
+            notify({
+                title: 'Error al guardar clues',
+                text: 'Error: ' + e.message,
+                type: 'error',
+                duration: 5000,
+            })
+        }
     }
 }
 

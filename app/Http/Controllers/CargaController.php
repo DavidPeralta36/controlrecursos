@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\models\clues;
 use App\models\partidas;
+use App\models\proveedor;
 use Illuminate\Http\Request;
 use App\models\fuentefinan;
 use App\models\registrobancos;
@@ -558,7 +559,7 @@ class CargaController extends Controller
     }
 
     public function saveNewPartidas(Request $request){
-        $newPartidas = json_decode($request->input('newPartidas'), true);
+        $newPartidas = json_decode($request->input('newProveedores'), true);
 
         if(is_array($newPartidas)){
             foreach($newPartidas as $partida){
@@ -573,6 +574,37 @@ class CargaController extends Controller
                     'adminInsumosMed' => $partida['adminInsumosMed'],
                     'gastosOperacion' => $partida['gastosOperacion'],
                     'idcapitulo' => $partida['idcapitulo']
+                ]);
+            }
+        }else{
+            return response()->json('Error al guardar nuevas partidas', 400);
+        }
+    }
+
+    public function saveNewProveedores(Request $request){
+        $newProveedores = json_decode($request->input('newProveedores'), true);
+
+        if(is_array($newProveedores)){
+            foreach($newProveedores as $proveedor){
+                proveedor::create([
+                    'rfc' => $proveedor['rfc'],
+                    'proveedor' => $proveedor['proveedor'],
+                    'numero_cuenta' => $proveedor['numero_cuenta_proovedor'],
+                ]);
+            }
+        }else{
+            return response()->json('Error al guardar nuevas partidas', 400);
+        }
+    }
+
+    public function saveNewClues(Request $request){
+        $newClues = json_decode($request->input('newClues'), true);
+
+        if(is_array($newClues)){
+            foreach($newClues as $clue){
+                clues::create([
+                    'clue' => $clue['clue'],
+                    'nombre_clue' => $clue['nombre_clue'], 
                 ]);
             }
         }else{
