@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\models\clues;
+use App\models\partidas;
 use Illuminate\Http\Request;
 use App\models\fuentefinan;
 use App\models\registrobancos;
@@ -553,6 +554,29 @@ class CargaController extends Controller
         } catch (\Exception $ex) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function saveNewPartidas(Request $request){
+        $newPartidas = json_decode($request->input('newPartidas'), true);
+
+        if(is_array($newPartidas)){
+            foreach($newPartidas as $partida){
+                partidas::create([
+                    'partida' => $partida['partida'],
+                    'aportacion_federal' => $partida['aportacion_federal'],
+                    'aportacion_estatal' => $partida['aportacion_estatal'],
+                    'descripcion' => $partida['descripcion'],
+                    'req_auth_a_imb' => $partida['req_auth_a_imb'],
+                    'req_auth_af' => $partida['req_auth_af'],
+                    'remuneracionPersonal' => $partida['remuneracionPersonal'],
+                    'adminInsumosMed' => $partida['adminInsumosMed'],
+                    'gastosOperacion' => $partida['gastosOperacion'],
+                    'idcapitulo' => $partida['idcapitulo']
+                ]);
+            }
+        }else{
+            return response()->json('Error al guardar nuevas partidas', 400);
         }
     }
 

@@ -21,6 +21,7 @@
                             style="height: 500px"
                             class="ag-theme-quartz mb-5"
                         />
+                        <button v-if="group.key.toString().toLowerCase() !== 'partida'" class="btn btn-primary" @click="handleSaveNewRecords(group, key)">Agregar registro clave la tabla {{ key.toString().toUpperCase() }}</button>
                     </div>                    
                 </div>
                 <div class="modal-footer">
@@ -38,6 +39,8 @@ import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the 
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
 import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
 import { U013, ALE, E001 } from '../../lib/Headers.js';
+import { notify } from '@kyvg/vue3-notification';
+import axios from 'axios';
 
 const props = defineProps({
     errorData: Object,
@@ -103,6 +106,68 @@ onMounted(() => {
 defineExpose({
     openModal
 });
+
+const handleSaveNewRecords = async (group, key) => {
+    console.log("Handle save records");
+    console.log(group, key);
+
+    if(key.toString().toLowerCase() === 'partida') {
+        const newPartidas = group.map(item => {
+
+            return {
+                partida: item.partida,
+                aportacion_federal: 0,
+                aportacion_estatal: 0,
+                descripcion: item.nombrepartida,
+                req_auth_a_imb: 0,
+                req_auth_af: 0,
+                remuneracionPersonal: 0,
+                adminInsumosMed: 0,
+                gastosOperacion: 0,
+                idcapitulo: null
+            }
+        });
+
+        try{
+            const response = await axios.post('/save_new_partidas', {
+                newPartidas: JSON.stringify(newPartidas)
+            });
+            if(response.status === 200){
+                notify({
+                    title: 'Partidas guardadas exitosamente',
+                    text: 'La partida se ha guardado correctamente',
+                    type: 'success',
+                    duration: 5000,
+                })
+
+                console.log(response);
+            }else{
+                notify({
+                    title: 'Error al guardar partidas',
+                    text: 'Error: ' + response.message,
+                    type: 'error',
+                    duration: 5000,
+                })
+            }
+        }catch(e){
+            notify({
+                title: 'Error al guardar partidas',
+                text: 'Error: ' + e.response.data.message,
+                type: 'error',
+                duration: 5000,
+            })
+        }
+        //console.log(newPartidas);
+    }
+
+    if(key.toString().toLowerCase() === 'rfc') {
+        
+    }
+
+    if(key.toString().toLowerCase() === 'clue') {
+        
+    }
+}
 
 </script>
 
