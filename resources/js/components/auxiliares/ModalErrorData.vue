@@ -39,7 +39,7 @@ import { ref, onMounted, defineExpose, defineProps, computed, defineEmits, watch
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
 import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
-import { U013, ALE, E001 } from '../../lib/Headers.js';
+import { U013, ALE, E001, S200, SaNAS } from '../../lib/Headers.js';
 import { notify } from '@kyvg/vue3-notification';
 import axios from 'axios';
 
@@ -53,6 +53,14 @@ const colDefs = ref([]);
 watch(props, (newValue) => {
     if(props.selectedSource === 1){
         colDefs.value = U013;
+    }
+
+    if(props.selectedSource === 2){
+        colDefs.value = S200;
+    }
+
+    if(props.selectedSource === 3){
+        colDefs.value = SaNAS;
     }
     
     if(props.selectedSource === 4){

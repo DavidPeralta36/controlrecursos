@@ -128,7 +128,7 @@ import {
   startAnimations,
 } from '../utils/animations.js';
 import ModalPreliminarData from './auxiliares/ModalPreliminarData.vue';
-import { U013Editable, ALEEditable, E001Editable, S200Editable } from '../lib/Headers.js';
+import { U013Editable, ALEEditable, E001Editable, S200Editable, SaNASEditable } from '../lib/Headers.js';
 import ModalErrorData from './auxiliares/ModalErrorData.vue';
 
 const props = defineProps({
@@ -201,6 +201,9 @@ watch(selectedSource, () => {
     case 2:
       colDefs.value = S200Editable;
       break;
+    case 2:
+      colDefs.value = SaNASEditable;
+    break;
     case 4:
       colDefs.value = ALEEditable;
       break;
@@ -649,7 +652,7 @@ const loadSaNAS= () => {
 
 
         const matchFileFormat = sheetJson.length > 0 && formatFile.every(column => 
-            sheetJson[2].includes(column)
+            sheetJson[0].includes(column)
         );
 
         if(!matchFileFormat){{
@@ -674,19 +677,19 @@ const loadSaNAS= () => {
 
             const formattedDataRows = dataRows.map(row => {
                 const formattedRow = row.map(cell => {
-                    if (typeof cell === 'number' && cell === row[1]) {
+                    if (typeof cell === 'number' && cell === row[0]) {
                         if (cell > 59 && cell < 2958465) { 
                             return XLSX.SSF.format("yyyy-mm-dd", cell);
                         }
                     }
 
-                    if (typeof cell === 'string' && cell === row[5]) {
+                    if (typeof cell === 'string' && cell === row[4]) {
                         if(cell.length === 0 || cell === '' || cell === ' '){
                             return null;
                         }
                     }
 
-                    if (typeof cell === 'string' && cell === row[13]) {
+                    if (typeof cell === 'string' && cell === row[12]) {
                         if(cell.length === 0 || cell === '' || cell === ' '){
                             return null;
                         }
@@ -1117,7 +1120,7 @@ const habdleUploadFile = async () => {
                 });
                 console.log(response.data.errores);
                 errorRecords.value = response.data.errores;
-                console.log(modalErrorData.value);
+                console.log(errorRecords.value);
                 modalErrorData.value.openModal();
             }
             endAnimation();

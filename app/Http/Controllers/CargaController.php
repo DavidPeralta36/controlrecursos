@@ -290,6 +290,126 @@ class CargaController extends Controller
             }
         }
 
+        if ($source == 3) {//SaNAS
+            if ($file->getClientOriginalExtension() === 'json') {
+                $data = json_decode(file_get_contents($file->getRealPath()), true);
+
+                array_shift($data);
+
+                $ckp = [];
+
+                try {
+                    Log::info("Iniciando transaccion");
+
+                    DB::beginTransaction();
+
+                    foreach ($data as $row) {
+
+                        if ($row[1] == null || $row[1] == '_' || $row[1] == ' ' || $row[1] == '') {
+                            continue;
+                        }
+                        $registro = [
+                            'fechas' => $row[0],
+                            'mes' => $row[1],
+                            'forma_pago' => $row[2],
+                            'metodo_pago' => $row[3],
+                            'rfc' => $row[4],
+                            'proveedor' => $row[5],
+                            'factura' => $row[6],
+                            'parcial' => $row[7],
+                            'depositos' => $row[8],
+                            'retiros' => $row[9],
+                            'saldo' => $row[10],
+                            'r' => $row[11],
+                            'partida' => $row[12],
+                            'fecha_factura' => $row[13],
+                            'folio_fiscal' => $row[14],
+                            'tipo_adjudicacion' => $row[15],
+                            'num_adj_contrato' => $row[16],
+                            'num_techo_financiero' => $row[17],
+                            //'num_suficiencia_presupuestal' => $row[18],
+                            'orden_servicio_compra' => $row[18],
+                            'clc' => $row[19],
+                            'poliza' => $row[20],
+                            'numero_cuenta_proovedor' => $row[21],
+                            'referencia_bancaria' => $row[22],
+                            'clue' => $row[23],
+                            'nombre_clue' => $row[24],
+                            'nombrepartida' => $row[25] ?? null, // Evitar errores si falta índice
+                            'mes_servicio' => $row[26] ?? null,
+                            'idfuente' => $source,
+                            'ejercicio' => $periodo,
+                        ];
+                        $ckp = $registro;
+
+                        if (strpos($registro['clue'], '-') !== false) {
+                            $registro['clue'] = str_replace('-', '', $registro['clue']);
+                        }
+                        try {
+                            registrobancos::create($registro);
+                        } catch (\Exception $ex) {
+                            $allOk = false;
+                            Log::info("Error al insertar registro: " . $ex->getMessage());
+                            if (strpos($ex->getMessage(), 'a foreign key constraint fails') !== false) {
+                                if (preg_match('/FOREIGN KEY \(`(.*?)`\)/', $ex->getMessage(), $matches)) {
+                                    $columna = $matches[1];
+
+                                    if ($columna == 'clue') {
+                                        //buscar en clues por clue y asigna por la propiedad clue
+                                        $clue = clues::where('clue_homologada', $registro['clue'])->first();
+                                        if ($clue) {
+                                            $registro['clue'] = $clue->clue;
+
+                                            try {
+                                                registrobancos::create($registro);
+                                                $allOk = true;
+                                            } catch (\Exception $ex) {
+                                                Log::info("Error al reintentar insertar el registro corregido: " . $ex->getMessage());
+                                                $allOk = false;
+                                            }
+                                        }
+                                    }
+
+                                    if (!isset($erroresClaveForanea[$columna])) {
+                                        $erroresClaveForanea[$columna] = [];
+                                    }
+                                    $erroresClaveForanea[$columna][] = $registro;
+                                    Log::info("Errores", $erroresClaveForanea);
+                                    $mensajeError = "Error de clave foránea en la columna: $columna.";
+                                } else {
+                                    $mensajeError = "Error de clave foránea, pero no se pudo determinar la columna.";
+                                }
+                            } else {
+                                $mensajeError = "Error inesperado: " . $ex->getMessage();
+                            }
+
+                        }
+                    }
+                    if ($allOk) {
+                        DB::commit();
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Datos insertados correctamente.'
+                        ], 200);
+                    } else {
+                        Log::info("", $erroresClaveForanea);
+                        DB::rollBack();
+                        Log::info("", $erroresClaveForanea);
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $mensajeError,
+                            'errores' => $erroresClaveForanea  // Retorna la lista de errores agrupados por columna
+                        ], 200);  // Puedes usar el código 400 Bad Request para indicar que hubo un error
+                    }
+
+                } catch (\Exception $ex) {
+                    Log::info("Errorsote: " . $ex->getMessage());
+                    Log::info("", $ckp);
+                    echo "Error al insertar los datos: " + $ex->getMessage();
+                }
+            }
+        }
+
         if ($source == 4) {//ASLE
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);

@@ -19,6 +19,9 @@ Route::get('/programacion', function () {
     return view('programacion');
 });
 
+Route::get('/catalogos', function () {
+    return view('catalogos');
+});
 
 Route::get('/users/{any}', function () {
     return view('newuser');  // Carga la misma vista para todas las subrutas de /users

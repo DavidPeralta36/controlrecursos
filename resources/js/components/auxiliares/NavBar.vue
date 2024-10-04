@@ -30,6 +30,7 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li v-if="props.user.role === 'proyectos'"><a class="dropdown-item" href="/programacion">Programacion de recursos</a></li>
+                                <li v-if="props.user.role === 'proyectos'"><a class="dropdown-item" href="/catalogos">Administrar catalogos</a></li>
                                 <li v-if="props.user.role === 'proyectos'"><a class="dropdown-item" href="/users/add">Administrar usuarios</a></li>
                                 <li>
                                     <a class="dropdown-item" href="#" @click="logout">Cerrar sesión</a>

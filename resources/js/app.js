@@ -13,6 +13,7 @@ import { createDynamicForms } from '@asigloo/vue-dynamic-forms';
 import router from './components/router/router.js';
 import ContratosPage from './components/ContratosPage.vue';
 import ProgramacionPage from './components/ProgramacionPage.vue';
+import CatalogosPage from './components/CatalogosPage.vue';
 
 const VueDinamicForms = createDynamicForms({
 
@@ -36,6 +37,7 @@ const app = createApp({
         'register-page': RegisterPage,
         'contratos-page': ContratosPage,
         'programacion-page': ProgramacionPage,
+        'catalogos-page': CatalogosPage,
     }
 });
 
