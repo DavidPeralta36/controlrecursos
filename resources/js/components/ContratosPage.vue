@@ -2,7 +2,7 @@
     <div class="container con">
         <div class="mt-3">
             <div>
-                <p class="h2 nunito-bold mt-2" style="font-style: normal">Modificacion de informacion del banco</p>
+                <p class="h2 nunito-bold mt-2" style="font-style: normal">LLenado de informacion del area de contratos</p>
                 <hr/>
                 <div style="min-height: 16vh">
                     <SourcePicker :fuentes="fuentes" :handleSelect="handleSelect"/>

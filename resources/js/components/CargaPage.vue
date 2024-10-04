@@ -251,6 +251,10 @@ const handleFileChange = async (e) => {
         loadS200();
     }
 
+    if(selectedSource && selectedSource.value == 3){
+        loadSaNAS();
+    }
+
     if(selectedSource && selectedSource.value == 4){
         loadASLE();
     }
@@ -586,6 +590,163 @@ const loadS200 = () => {
 
     reader.readAsArrayBuffer(bankFile.value);
 }
+
+const loadSaNAS= () => { 
+    const reader = new FileReader();
+
+    const formatFile = [
+        "FECHA",
+        "MES",
+        "FORMA\r\nDE PAGO",
+        "METODO DE PAGO",
+        "RFC",
+        "PROVEDOR",
+        "FACTURA ",
+        "PARCIAL",
+        "DEPOSITOS",
+        "RETIROS",
+        "SALDO",
+        "R",
+        "PARTIDA PRESUPUESTAL",
+        "FECHA DE FACTURA",
+        "FOLIO FISCAL",
+        "TIPO DE \r\nADJUDICACION",
+        "NUMERO DE ADJUDICACION \r\nO CONTRATO",
+        "NUMERO DE \r\nTECHO FINANCIERO",
+        "ORDEN DE SERVICIO \r\nO COMPRA",
+        "CLC",
+        "POLIZA",
+        "NUMERO DE CUENTA\r\nDEL PROVEEDOR",
+        "REFERENCIA BANCARIA",
+        "CLUE",
+        "APLICA EN:",
+        "NOMBRE DE LA PARTIDA",
+        "MES DE SERVICIO"
+    ];
+
+
+    reader.onload = async (event) => {
+      const data = new Uint8Array(event.target.result);
+      const woorkbook = XLSX.read(data, { type: 'array' });
+
+      const sheetName = woorkbook.SheetNames[0];
+
+      if(!sheetName){
+        notify({
+            title: 'Error al leer el archivo',
+            text: 'El archivo no tiene el formato correcto, el contenido debe de estar en la hoja 4 del excel',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+        return;
+      }
+    
+      if(sheetName){
+        const woorksheet = woorkbook.Sheets[sheetName];
+
+        const sheetJson = XLSX.utils.sheet_to_json(woorksheet, { header: 1, blankrows: false });
+
+
+        const matchFileFormat = sheetJson.length > 0 && formatFile.every(column => 
+            sheetJson[2].includes(column)
+        );
+
+        if(!matchFileFormat){{
+            notify({
+                title: 'Error al leer el archivo',
+                text: 'El archivo no tiene el formato correcto',
+                type: 'error',
+                duration: 5000,
+                speed: 1000,
+            });
+            return;
+        }}
+
+        const headerRowIndex = sheetJson.findIndex(row => 
+            headerColumnsSearch.some(col => row.includes(col))
+        );
+
+        if(headerRowIndex !== -1){
+            const dataRows = sheetJson.slice(headerRowIndex);
+          
+            const maxColumns = dataRows.reduce((max, row) => Math.max(max, row.length), 0);
+
+            const formattedDataRows = dataRows.map(row => {
+                const formattedRow = row.map(cell => {
+                    if (typeof cell === 'number' && cell === row[1]) {
+                        if (cell > 59 && cell < 2958465) { 
+                            return XLSX.SSF.format("yyyy-mm-dd", cell);
+                        }
+                    }
+
+                    if (typeof cell === 'string' && cell === row[5]) {
+                        if(cell.length === 0 || cell === '' || cell === ' '){
+                            return null;
+                        }
+                    }
+
+                    if (typeof cell === 'string' && cell === row[13]) {
+                        if(cell.length === 0 || cell === '' || cell === ' '){
+                            return null;
+                        }
+                    }
+
+                    if (typeof cell === 'string' && cell === row[24]) {
+                        if(cell.length === 0 || cell === '' || cell === ' '){
+                            return null;
+                        }
+                    }
+
+                    return cell;
+                });
+
+                while (formattedRow.length < maxColumns) {
+                formattedRow.push(null);
+                }
+
+                return formattedRow;
+            });
+
+            excelData.value = formattedDataRows;
+
+            if(!newBank.value){
+                if (excelData.value && excelData.value.length > 0) {
+                    datosPreliminares.value = formattedDataRows;;
+                    showPreliminarData.value = true;
+                    await nextTick();
+                    openModal();
+                }
+            }
+        }
+
+        notify({
+            title: 'Archivo cargado y listo para enviar',
+            text: 'Favor de verificar el archivo antes de enviar',
+            type: 'info',
+            duration: 5000,
+            speed: 1000,
+            })
+        }
+
+        readyToSend.value = true;
+        await nextTick();
+        animateSendButton();
+    }
+
+    reader.onerror = () => {
+      notify({
+        title: 'Error al leer el archivo',
+        text: 'Ocurrió un problema al leer el archivo, por favor intente nuevamente.',
+        type: 'error',
+        duration: 5000,
+        speed: 1000,
+      });
+    };
+
+    reader.readAsArrayBuffer(bankFile.value);
+}
+
 const loadASLE = () => {
     const reader = new FileReader();
 
