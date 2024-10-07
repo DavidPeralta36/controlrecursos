@@ -38,6 +38,7 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/carga', 'CargaController@index')->name('carga');
 Route::get('/contratos', 'ContratosController@index')->name('contratos');
 Route::get('/programacion', 'ProgramacionController@index')->name('programacion');
+Route::get('/catalogos', 'CatalogosController@index')->name('catalogos');
 
 //Route::get('/users', [HomeController::class,'getUsers']);
 
@@ -68,3 +69,9 @@ Route::get('/get_programacion_rubros', 'ProgramacionController@getProgramacionRu
 Route::delete('/delete_programacion_rubro/{id}', 'ProgramacionController@deleteProgramacionRubro')->name('delete_programacion_rubro');
 Route::get('/get_programacion_partidas', 'ProgramacionController@getProgramacionPartidas')->name('get_programacion_partidas');
 Route::get('/get_partidas', 'ProgramacionController@getPartidas')->name('get_partidas');
+
+//Catalogos
+Route::post('/save_edited_partidas', 'CatalogosController@saveEditedPartidas')->name('save_edited_partidas');
+Route::get('/get_partidas', 'CatalogosController@getPartidas')->name('get_partidas');
+Route::post('/save_new_partida', 'CatalogosController@saveNewPartida')->name('save_new_partida');
+Route::delete('/delete_partida/{id}', 'CatalogosController@deletePartida')->name('delete_partida');

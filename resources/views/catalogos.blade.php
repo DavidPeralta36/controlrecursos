@@ -2,6 +2,6 @@
 
 @section('content')
     <div class="w-100 h-100">
-        <catalogos-page :user="{{ json_encode(Auth::user()) }}" :fuentes="{{ json_encode($fuentes) }}" :periodos="{{ json_encode($periodos) }}"/>
+        <catalogos-page :user="{{ json_encode(Auth::user()) }}" :partidas="{{ json_encode($partidas) }}" :capitulos="{{ json_encode($capitulos) }}"/>
     </div>
 @endsection
