@@ -17,6 +17,7 @@
               :handleSelectPeriod="handleSelectPeriod"
               :handleFilterReport="handleFilterReport"
               :disabled="disabled"
+              :loadingReport="loadingReport"
               @update:rangeSearch="toggleSetRangeSearch"
               @update:selectedPeriod="handleSelectPeriod"
               @update:selectedMonth="handleSelectMonth"
@@ -239,6 +240,7 @@ const disabled = ref(false);
 const programadoPartidas = ref(null);
 const partidasDB = ref(null);
 const capitulosData = ref(null);
+const loadingReport = ref(false);
 //#endregion
 
 onMounted(async () => {
@@ -388,9 +390,11 @@ const getReportByPeriod = async () => {
 const handleGenReport = async () => {
   if (selectedSource.value && selectedPeriod.value.ejercicio !== 'Periodo requerido *') {
       try {
+        loadingReport.value = true;
         //await animateSkeletonOut(skeletonDiv, loadingDiv, loads);
         //startAnimations(loadingText, spinner);
         await getReportByPeriod();
+        loadingReport.value = false;
       } catch (e) {
         console.log(e);
       }

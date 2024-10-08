@@ -9,6 +9,7 @@
           <div>
             <label for="mes" class="ml-1">Selecciona el año en el periodo</label>
             <VueSelect label="label" :options="years" v-model="selectedYear" class="mt-1" id="mes"/>
+            <p v-if="props.loadingReport" style="color: red;">Cargando informacion basica de el reporte...</p>
           </div>
           <div>
             <label for="mes" class="ml-1">Selecciona el mes del reporte</label>
@@ -65,6 +66,7 @@ const props = defineProps({
   registros: Array,
   handleFilterReport: Function,
   disabled: Boolean,
+  loadingReport: Boolean,
 })
 
 const registrosLocales = computed(() => {
