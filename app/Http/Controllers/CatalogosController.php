@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\models\capitulos;
+use App\models\clues;
 use App\models\partidas;
 use Illuminate\Http\Request;
 use App\models\fuentefinan;
@@ -31,8 +32,9 @@ class CatalogosController extends Controller
     {
         $partidas = partidas::all();
         $capitulos = capitulos::all();
+        $clues = clues::all();
 
-        return view('catalogos', compact('partidas', 'capitulos'));
+        return view('catalogos', compact('partidas', 'capitulos', 'clues'));
     }
 
     public function saveEditedPartidas(Request $request)
@@ -81,5 +83,40 @@ class CatalogosController extends Controller
         partidas::where('id', $request->input('id'))->delete();
 
         return response()->json('Partida programada eliminada exitosamente');
+    }
+
+    public function saveNewClue(Request $request){
+        $clue = $request->input('clue');
+        $clue_homologada = $request->input('clue_homologada');
+        $nombre_clue = $request->input('nombre_clue');
+        
+        Log::info($clue_homologada);
+        clues::create([
+            'clue' => $clue,
+            'clue_homologada' => $clue_homologada,
+            'nombre_clue' => $nombre_clue,
+        ]);
+    }
+
+    public function saveEditedClues(Request $request)
+    {
+        $editedRecords = json_decode($request->input('records'), true);
+
+        if (is_array($editedRecords)) {
+            foreach ($editedRecords as $record) {
+                clues::where('id', $record['id'])->update($record);
+            }
+
+            return response()->json('Clue programada actualizada exitosamente');
+        } else {
+            return response()->json('Error al guardar la clue programada', 400);
+        }
+    }
+
+    public function deleteClue(Request $request)
+    {
+        clues::where('id', $request->input('id'))->delete();
+
+        return response()->json('Clue eliminada exitosamente');
     }
 }

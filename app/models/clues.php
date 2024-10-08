@@ -15,7 +15,7 @@ class clues extends Model
     protected $fillable = [
         'id',
         'clue',
-        'clue_homolagada',
+        'clue_homologada',
         'nombre_clue',
     ];
 }

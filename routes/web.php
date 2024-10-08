@@ -75,3 +75,6 @@ Route::post('/save_edited_partidas', 'CatalogosController@saveEditedPartidas')->
 Route::get('/get_partidas', 'CatalogosController@getPartidas')->name('get_partidas');
 Route::post('/save_new_partida', 'CatalogosController@saveNewPartida')->name('save_new_partida');
 Route::delete('/delete_partida/{id}', 'CatalogosController@deletePartida')->name('delete_partida');
+Route::post('/save_new_clue', 'CatalogosController@saveNewClue')->name('save_new_clue');
+Route::post('/save_edited_clues', 'CatalogosController@saveEditedClues')->name('save_edited_clues');
+Route::delete('/delete_clue/{id}', 'CatalogosController@deleteClue')->name('delete_clue');
