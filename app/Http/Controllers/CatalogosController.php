@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\models\capitulos;
 use App\models\clues;
 use App\models\partidas;
+use App\models\proveedor;
 use Illuminate\Http\Request;
 use App\models\fuentefinan;
 use App\models\registrobancos;
@@ -33,8 +34,9 @@ class CatalogosController extends Controller
         $partidas = partidas::all();
         $capitulos = capitulos::all();
         $clues = clues::all();
+        $proveedores = proveedor::all();
 
-        return view('catalogos', compact('partidas', 'capitulos', 'clues'));
+        return view('catalogos', compact('partidas', 'capitulos', 'clues', 'proveedores'));
     }
 
     public function saveEditedPartidas(Request $request)
@@ -118,5 +120,39 @@ class CatalogosController extends Controller
         clues::where('id', $request->input('id'))->delete();
 
         return response()->json('Clue eliminada exitosamente');
+    }
+
+    public function saveNewProveedor(Request $request){
+        $proveedor = $request->input('proveedor');
+        $rfc = $request->input('rfc');
+        $numero_cuenta_proovedor = $request->input('numero_cuenta_proovedor');
+
+        proveedor::create([
+            'rfc' => $rfc,
+            'proveedor' => $proveedor,
+            'numero_cuenta' => $numero_cuenta_proovedor,
+        ]);
+    }
+
+    public function saveEditedProveedores(Request $request)
+    {
+        $editedRecords = json_decode($request->input('records'), true);
+
+        if (is_array($editedRecords)) {
+            foreach ($editedRecords as $record) {
+                proveedor::where('id', $record['id'])->update($record);
+            }
+
+            return response()->json('Proveedor programada actualizada exitosamente');
+        } else {
+            return response()->json('Error al guardar la proveedor programada', 400);
+        }
+    }
+
+    public function deleteProveedor(Request $request)
+    {
+        proveedor::where('id', $request->input('id'))->delete();
+
+        return response()->json('Proveedor eliminada exitosamente');
     }
 }

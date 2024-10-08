@@ -83,6 +83,41 @@
                 <button class="btn rojo mt-2" type="submit" @click="handleSaveNewClue">Agregar clue</button>
             </div>
         </div>
+        <div>
+            
+        </div>
+        <div v-if="activeTab === 'proveedores'" calass="container my-5">
+            <h5>Administracion de proveedores</h5>
+            <AgGridVue
+                :rowData="proveedores"
+                :columnDefs="colDefsProveedores"
+                style="height: 500px"
+                class="ag-theme-quartz mb-5"
+                :animateRows="true"
+                :rowHeight="48"
+                @cellValueChanged="onCellValueChanged"
+                :frameworkComponents="{ ProveedoresRenderer }"
+            />
+            <hr>
+            <div class="my-5">
+                <p>Agregar nuevo proveedor</p>
+                <div class="">
+                    <label for="rfc" class="ml-1">RFC</label>
+                    <input type="text" class="form-control" placeholder="RFC" aria-label="RFC"  v-model="formProveedor.rfc" required>
+                </div>
+                <div class="">
+                    <label for="proveedor" class="ml-1">Proveedor</label>
+                    <input type="text" class="form-control" placeholder="Proveedor" aria-label="Proveedor" v-model="formProveedor.proveedor" required>
+                </div>
+                <div class="">
+                    <label for="numero_cuenta_proovedor" class="ml-1">Numero cuenta proovedor</label>
+                    <input type="text" class="form-control" placeholder="Numero cuenta proovedor" aria-label="Numero cuenta proovedor" v-model="formProveedor.numero_cuenta_proovedor" required>
+                </div>
+
+                <button class="btn rojo mt-2" type="submit" @click="handleSaveNewProveedor">Agregar proveedor</button>
+            </div>
+
+        </div>
         <Notifications position="bottom left" />
     </div>
 </template>
@@ -95,6 +130,7 @@ import { notify, Notifications } from '@kyvg/vue3-notification';
 import axios from 'axios';
 import PartidasRenderer from '../components/auxiliares/renderers/PartidasRenderer.vue';
 import CluesRenderer from './auxiliares/renderers/CluesRenderer.vue';
+import ProveedoresRenderer from './auxiliares/renderers/ProveedoresRenderer.vue';
 import '@vueform/toggle/themes/default.css'
 import VueSelect from 'vue-select';
 
@@ -102,7 +138,8 @@ const props = defineProps({
     user: Object,
     partidas: Array,
     capitulos: Array,
-    clues: Array
+    clues: Array,
+    proveedores: Array
 });
 
 const activeTab = ref('partidas');
@@ -129,6 +166,13 @@ const colDefsClues = ref([
     { field: 'actions', headerName: 'Acciones', cellRenderer: CluesRenderer},
 ])
 
+const colDefsProveedores = ref([
+    { field: 'rfc', headerName: 'RFC', filter: true, sortable: true, editable: true,  flex: 1 },
+    { field: 'proveedor', headerName: 'Proveedor', filter: true, sortable: true, editable: true, flex: 1 },
+    { field: 'numero_cuenta', headerName: 'Numero cuenta proovedor', filter: true, sortable: true, editable: true, flex: 1 },
+    { field: 'actions', headerName: 'Acciones', cellRenderer: ProveedoresRenderer},
+])
+
 const editedRecords = ref([]);
 const formPartida = ref({
     partida: null,
@@ -139,6 +183,11 @@ const formClue = ref({
     clue: null,
     clue_homologada: null,
     nombre_clue: null,
+});
+const formProveedor = ref({
+    rfc: null,
+    proveedor: null,
+    numero_cuenta_proovedor: null,
 });
 
 const handleTabClick = async (tab) => {
@@ -189,17 +238,43 @@ const saveCluesEdited = async () => {
         },
         });
         if (response.status === 200) {
-            notify({
-                title: 'Clue programada actualizada exitosamente',
-                text: 'La clue se ha actualizado correctamente',
-                type: 'success',
-                duration: 5000,
-            });
-            getClues();
+        notify({
+            title: 'Clue programada actualizada exitosamente',
+            text: 'La clue se ha actualizado correctamente',
+            type: 'success',
+            duration: 5000,
+        });
         }
     } catch (e) {
         notify({
             title: 'Error al actualizar clue programada',
+            text: 'Error: ' + e.message,
+            type: 'error',
+            duration: 5000,
+        });
+    }
+}
+
+const saveProveedoresEdited = async () => {
+    try {   
+        const formData = new FormData();
+        formData.append('records', JSON.stringify(editedRecords.value));
+        const response = await axios.post('/save_edited_proveedores', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+        });
+        if (response.status === 200) {
+        notify({
+            title: 'Proveedor programada actualizada exitosamente',
+            text: 'La proveedor se ha actualizado correctamente',
+            type: 'success',
+            duration: 5000,
+        });
+        }
+    } catch (e) {
+        notify({
+            title: 'Error al actualizar proveedor programada',
             text: 'Error: ' + e.message,
             type: 'error',
             duration: 5000,
@@ -223,6 +298,8 @@ const handleSave = async () => {
         await savePartidasEdited();
     }else if(activeTab.value === 'clues'){
         await saveCluesEdited();
+    }else if(activeTab.value === 'proveedores'){
+        await saveProveedoresEdited();
     }
 
     editedRecords.value = [];
@@ -244,7 +321,6 @@ const handleSaveNewPartida = async () => {
                     type: 'success',
                     duration: 5000,
                 })
-                getPartidas();
             }else{
                 notify({
                     title: 'Error al guardar partida',
@@ -317,40 +393,47 @@ const handleSaveNewClue = async () => {
     }
 }
 
-const getPartidas = async () => {
-    try{
-        const response = await axios.get('/get_partidas');
-        partidasDB.value = response.data;
-    }catch(e){
-        notify({
-            title: 'Error al obtener partidas',
-            text: 'Error: ' + e.message,
-            type: 'error',
-            duration: 5000,
-        })
-    }
-}
-
-const getCapitulos = async () => {
-    try{
-        const response = await axios.get('/get_capitulos');
-        if(response.status === 200){
-            capitulos.value = response.data;
-        }else{
+const handleSaveNewProveedor = async () => {
+    console.log(formProveedor.value);
+    if(formProveedor.value.rfc && formProveedor.value.proveedor && formProveedor.value.numero_cuenta_proovedor){
+        try{
+            const response = await axios.post('/save_new_proveedor', {
+                rfc: formProveedor.value.rfc,
+                proveedor: formProveedor.value.proveedor,
+                numero_cuenta_proovedor: formProveedor.value.numero_cuenta_proovedor
+            });
+            if(response.status === 200){
+                notify({
+                    title: 'Proveedor guardado exitosamente',
+                    text: 'El proveedor se ha guardado correctamente',
+                    type: 'success',
+                    duration: 5000,
+                })
+            }else{
+                notify({
+                    title: 'Error al guardar proveedor',
+                    text: 'Error: ' + response.message,
+                    type: 'error',
+                    duration: 5000,
+                })
+            }
+        }catch(e){
             notify({
-                title: 'Error al obtener capitulos',
+                title: 'Error al guardar proveedor',
                 text: 'Error: ' + e.message,
                 type: 'error',
                 duration: 5000,
             })
         }
-    }catch(e){
+    }else{
         notify({
-            title: 'Error al obtener capitulos',
-            text: 'Error: ' + e.message,
+            title: 'Error al guardar proveedor',
+            text: 'Debe completar todos los campos',
             type: 'error',
             duration: 5000,
-        })
+            speed: 1000,
+        });
+        return;
     }
 }
 
