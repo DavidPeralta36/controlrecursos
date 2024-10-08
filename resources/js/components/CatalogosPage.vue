@@ -83,8 +83,32 @@
                 <button class="btn rojo mt-2" type="submit" @click="handleSaveNewClue">Agregar clue</button>
             </div>
         </div>
-        <div>
-            
+        <div v-if="activeTab === 'capitulos'" calass="container my-5">
+            <h5>Administracion de capitulos</h5>
+            <AgGridVue
+                :rowData="capitulos"
+                :columnDefs="colDefsCapitulos"
+                style="height: 500px"
+                class="ag-theme-quartz mb-5"
+                :animateRows="true"
+                :rowHeight="48"
+                @cellValueChanged="onCellValueChanged"
+                :frameworkComponents="{ CapitulosRenderer }"
+            />
+            <hr>
+            <div class="my-5">
+                <p>Agregar nuevo capitulo</p>
+                <div class="">
+                    <label for="nombre" class="ml-1">Nombre</label>
+                    <input type="text" class="form-control" placeholder="Nombre" aria-label="Nombre"  v-model="formCapitulo.nombre" required>
+                </div>
+                <div class="">
+                    <label for="descripcion" class="ml-1">Descripcion</label>
+                    <input type="text" class="form-control" placeholder="Descripcion" aria-label="Descripcion" v-model="formCapitulo.descripcion" required>
+                </div>
+
+                <button class="btn rojo mt-2" type="submit" @click="handleSaveNewCapitulo">Agregar capitulo</button>
+            </div>
         </div>
         <div v-if="activeTab === 'proveedores'" calass="container my-5">
             <h5>Administracion de proveedores</h5>
@@ -131,6 +155,7 @@ import axios from 'axios';
 import PartidasRenderer from '../components/auxiliares/renderers/PartidasRenderer.vue';
 import CluesRenderer from './auxiliares/renderers/CluesRenderer.vue';
 import ProveedoresRenderer from './auxiliares/renderers/ProveedoresRenderer.vue';
+import CapitulosRenderer from './auxiliares/renderers/CapitulosRenderer.vue';
 import '@vueform/toggle/themes/default.css'
 import VueSelect from 'vue-select';
 
@@ -173,6 +198,12 @@ const colDefsProveedores = ref([
     { field: 'actions', headerName: 'Acciones', cellRenderer: ProveedoresRenderer},
 ])
 
+const colDefsCapitulos = ref([
+    { field: 'nombre', headerName: 'Nombre', filter: true, sortable: true, editable: true, flex: 1 },
+    { field: 'descripcion', headerName: 'Descripcion', filter: true, sortable: true, editable: true, flex: 1 },
+    { field: 'actions', headerName: 'Acciones', cellRenderer: CapitulosRenderer},
+])
+
 const editedRecords = ref([]);
 const formPartida = ref({
     partida: null,
@@ -188,6 +219,10 @@ const formProveedor = ref({
     rfc: null,
     proveedor: null,
     numero_cuenta_proovedor: null,
+});
+const formCapitulo = ref({
+    nombre: null,
+    descripcion: null,
 });
 
 const handleTabClick = async (tab) => {
@@ -282,6 +317,33 @@ const saveProveedoresEdited = async () => {
     }
 }
 
+const saveCapitulosEdited = async () => {
+    try {   
+        const formData = new FormData();
+        formData.append('records', JSON.stringify(editedRecords.value));
+        const response = await axios.post('/save_edited_capitulos', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+        });
+        if (response.status === 200) {
+        notify({
+            title: 'Capitulo programada actualizada exitosamente',
+            text: 'La capitulo se ha actualizado correctamente',
+            type: 'success',
+            duration: 5000,
+        });
+        }
+    } catch (e) {
+        notify({
+            title: 'Error al actualizar capitulo programada',
+            text: 'Error: ' + e.message,
+            type: 'error',
+            duration: 5000,
+        });
+    }
+}
+
 const handleSave = async () => {
     if(editedRecords.value.length <= 0){
         notify({
@@ -300,8 +362,9 @@ const handleSave = async () => {
         await saveCluesEdited();
     }else if(activeTab.value === 'proveedores'){
         await saveProveedoresEdited();
+    }else if(activeTab.value === 'capitulos'){
+        await saveCapitulosEdited();
     }
-
     editedRecords.value = [];
 };
 
@@ -437,6 +500,48 @@ const handleSaveNewProveedor = async () => {
     }
 }
 
+const handleSaveNewCapitulo = async () => {
+    console.log(formCapitulo.value);
+    if(formCapitulo.value.nombre && formCapitulo.value.descripcion){
+        try{
+            const response = await axios.post('/save_new_capitulo', {
+                nombre: formCapitulo.value.nombre,
+                descripcion: formCapitulo.value.descripcion
+            });
+            if(response.status === 200){
+                notify({
+                    title: 'Capitulo guardado exitosamente',
+                    text: 'El capitulo se ha guardado correctamente',
+                    type: 'success',
+                    duration: 5000,
+                })
+            }else{
+                notify({
+                    title: 'Error al guardar capitulo',
+                    text: 'Error: ' + response.message,
+                    type: 'error',
+                    duration: 5000,
+                })
+            }
+        }catch(e){
+            notify({
+                title: 'Error al guardar capitulo',
+                text: 'Error: ' + e.message,
+                type: 'error',
+                duration: 5000,
+            })
+        }
+    }else{
+        notify({
+            title: 'Error al guardar capitulo',
+            text: 'Debe completar todos los campos',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+        return;
+    }
+}
 </script>
 <style scoped>
 .con{

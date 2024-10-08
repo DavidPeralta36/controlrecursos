@@ -81,3 +81,6 @@ Route::delete('/delete_clue/{id}', 'CatalogosController@deleteClue')->name('dele
 Route::post('/save_new_proveedor', 'CatalogosController@saveNewProveedor')->name('save_new_proveedor');
 Route::post('/save_edited_proveedores', 'CatalogosController@saveEditedProveedores')->name('save_edited_proveedores');
 Route::delete('/delete_proveedor/{id}', 'CatalogosController@deleteProveedor')->name('delete_proveedor');
+Route::post('/save_new_capitulo', 'CatalogosController@saveNewCapitulo')->name('save_new_capitulo');
+Route::post('/save_edited_capitulos', 'CatalogosController@saveEditedCapitulos')->name('save_edited_capitulos');
+Route::delete('/delete_capitulo/{id}', 'CatalogosController@deleteCapitulo')->name('delete_capitulo');

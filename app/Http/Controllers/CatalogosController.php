@@ -155,4 +155,36 @@ class CatalogosController extends Controller
 
         return response()->json('Proveedor eliminada exitosamente');
     }
+
+    public function saveNewCapitulo(Request $request){
+        $nombre = $request->input('nombre');
+        $descripcion = $request->input('descripcion');
+
+        capitulos::create([
+            'nombre' => $nombre,
+            'descripcion' => $descripcion,
+        ]);
+    }
+
+    public function saveEditedCapitulos(Request $request)
+    {
+        $editedRecords = json_decode($request->input('records'), true);
+
+        if (is_array($editedRecords)) {
+            foreach ($editedRecords as $record) {
+                capitulos::where('id', $record['id'])->update($record);
+            }
+
+            return response()->json('Capitulo programada actualizada exitosamente');
+        } else {
+            return response()->json('Error al guardar la capitulo programada', 400);
+        }
+    }
+
+    public function deleteCapitulo(Request $request)
+    {
+        capitulos::where('id', $request->input('id'))->delete();
+
+        return response()->json('Capitulo eliminada exitosamente');
+    }
 }
