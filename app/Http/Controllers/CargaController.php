@@ -10,6 +10,9 @@ use App\models\fuentefinan;
 use App\models\registrobancos;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CargaController extends Controller
 {
@@ -730,6 +733,61 @@ class CargaController extends Controller
         }else{
             return response()->json('Error al guardar nuevas partidas', 400);
         }
+    }
+
+    public function downloadPlantilla(Request $request)
+    {
+        // Crear una nueva hoja de cálculo
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $formatFile = [
+            "FECHA",
+            "MES",
+            "FORMA\r\nDE PAGO",
+            "METODO DE PAGO",
+            "RFC",
+            "PROVEDOR",
+            "FACTURA",
+            "PARCIAL",
+            "DEPOSITOS",
+            "RETIROS",
+            "SALDO",
+            "R",
+            "PARTIDA PRESUPUESTAL",
+            "FECHA DE FACTURA",
+            "FOLIO FISCAL",
+            "TIPO DE \r\nADJUDICACION",
+            "NUMERO DE ADJUDICACION \r\nO CONTRATO",
+            "NUMERO DE SUFICIENCIA PRESUPUESTAL",
+            "ORDEN DE SERVICIO \r\nO COMPRA",
+            "CLC",
+            "POLIZA",
+            "NUMERO DE CUENTA\r\nDEL PROVEEDOR",
+            "REFERENCIA BANCARIA",
+            "CLUE",
+            "APLICA EN:",
+            "NOMBRE DE LA PARTIDA",
+            "MES DE SERVICIO"
+        ];
+
+
+        foreach ($formatFile as $index => $columnName) {
+            $sheet->setCellValueByColumnAndRow($index + 1, 1, $columnName);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+
+        $response = new StreamedResponse(function() use ($writer) {
+            $writer->save('php://output');
+        });
+
+        // Configurar los encabezados de la respuesta
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', 'attachment;filename="plantilla.xlsx"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
     }
 
 }

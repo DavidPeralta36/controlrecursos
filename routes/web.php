@@ -39,6 +39,7 @@ Route::get('/carga', 'CargaController@index')->name('carga');
 Route::get('/contratos', 'ContratosController@index')->name('contratos');
 Route::get('/programacion', 'ProgramacionController@index')->name('programacion');
 Route::get('/catalogos', 'CatalogosController@index')->name('catalogos');
+Route::get('/plantilla', 'CargaController@downloadPlantilla')->name('plantilla');
 
 //Route::get('/users', [HomeController::class,'getUsers']);
 

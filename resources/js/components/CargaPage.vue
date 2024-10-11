@@ -8,7 +8,11 @@
                 <li class="nav-item">
                     <a class="nav-link" :class="activeTab === 'modify' ? 'active' : '' " aria-current="page" href="#" @click="handleTabClick('modify')">Edición</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="activeTab === 'plantilla' ? 'active' : '' " aria-current="page" href="#" @click="handleTabClick('plantilla')">Plantilla</a>
+                </li>
             </ul>
+
             <div v-if="activeTab === 'upload'" ref="uploadMainContainer">
                 <p class="h2 nunito-bold mt-2" style="font-style: normal">Carga de banco a la base de datos</p>
                 <hr/>
@@ -102,6 +106,15 @@
                     </div>
                 </div>
                 <hr class="my-2"/>
+            </div>
+
+            <div v-if="activeTab === 'plantilla'" >
+                <p class="h2 nunito-bold mt-2" style="font-style: normal">Plantilla de carga</p>
+                <hr/>
+                <div>
+                    <p>Descargue el archivo de plantilla</p>
+                    <button class="btn btn-primary mt-2" @click="handleDownloadPlantilla">Descargar plantilla</button>
+                </div>
             </div>
         </div>
         <Notifications position="bottom left" />
@@ -1260,6 +1273,30 @@ const handleEdit = async () => {
         });
     }
 }
+
+const handleDownloadPlantilla = async () => {
+    try {
+        const response = await axios.get('/plantilla', {
+            responseType: 'blob' // Asegura que axios maneje la respuesta como un archivo binario
+        });
+
+        if (response.status === 200) {
+            const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'plantillaa.xlsx';
+            link.click();
+        }
+    } catch (e) {
+        notify({
+            title: 'Error al descargar plantilla',
+            text: 'Error: ' + e.message,
+            type: 'error',
+            duration: 5000,
+        });
+    }
+};
+
 
 //#region animations
 const animateInEditButtonsContainer = () => {

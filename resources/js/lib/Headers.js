@@ -251,7 +251,6 @@ export const E001=[
     { field: 'ejercicio', headerName: 'Ejercicio' },
 ]
 
-
 function formatCurrency(params) {
     if (!params.value) return '';
 
@@ -270,7 +269,6 @@ function formatCurrency(params) {
     // Formatear como moneda en MXN
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number);
 }
-
 
 export const U013Editable=[
     { field: 'fechas', headerName: 'Fecha', filter: true, sortable: true, editable: true },
@@ -381,7 +379,6 @@ export const S200Editable=[
     { field: 'ejercicio', headerName: 'Ejercicio', editable: true },
 ]
 
-
 export const SaNASEditable=[
     { field: 'fechas', headerName: 'Fecha', filter: true, sortable: true, editable: true },
     { field: 'mes', headerName: 'Mes', filter: true, sortable: true, editable: true },
@@ -437,7 +434,6 @@ export const SaNASEditable=[
     { field: 'mes_servicio', headerName: 'Mes de servicio', editable: true },
     { field: 'ejercicio', headerName: 'Ejercicio', editable: true },
 ]
-
 
 export const ALEEditable=[
     { field: 'fechas', headerName: 'Fecha', filter: true, sortable: true, editable: true },
