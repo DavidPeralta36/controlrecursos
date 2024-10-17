@@ -121,6 +121,10 @@ class UsersController extends Controller
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
+
+        if(!$user->name == "Dav0"){
+            return response()->json(['message' => 'No puede eliminar usuario'], 403);
+        }
     
         // Eliminar el usuario
         $user->delete();

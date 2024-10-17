@@ -39,6 +39,27 @@ class CargaController extends Controller
         return view('carga', compact('fuentes', 'periodos'));
     }
 
+    function getExpectedSourceDesc($source){
+        $desc = "";
+        if($source == 1){
+            $desc = "u013";
+        }
+        if($source == 2){
+            $desc = "s200";
+        }
+        if($source == 3){
+            $desc = "sanas";
+        }
+        if($source == 4){
+            $desc = "asle";
+        }
+        if($source == 5){
+            $desc = "e001";
+        }
+
+        return $desc;
+    }
+
     public function uploadReport(Request $request)
     {
         $allOk = true;
@@ -54,6 +75,7 @@ class CargaController extends Controller
         $source = $request->input('source');
         $periodo = $request->input('periodo');
 
+        /*
         if ($source == 1) {//U013
             if ($file->getClientOriginalExtension() === 'json') {
                 $data = json_decode(file_get_contents($file->getRealPath()), true);
@@ -73,35 +95,35 @@ class CargaController extends Controller
                             continue;
                         }
                         $registro = [
-                            'fechas' => $row[1],
-                            'mes' => $row[2],
-                            'forma_pago' => $row[3],
-                            'metodo_pago' => $row[4],
-                            'rfc' => $row[5],
-                            'proveedor' => $row[6],
-                            'factura' => $row[7],
-                            'parcial' => $row[8],
-                            'depositos' => $row[9],
-                            'retiros' => $row[10],
-                            'saldo' => $row[11],
-                            'r' => $row[12],
-                            'partida' => $row[13],
-                            'fecha_factura' => $row[14],
-                            'folio_fiscal' => $row[15],
-                            'tipo_adjudicacion' => $row[16],
-                            'num_adj_contrato' => $row[17],
-                            //'num_techo_financiero' => $row[17],
-                            'num_suficiencia_presupuestal' => $row[18],
-                            'orden_servicio_compra' => $row[19],
-                            'clc' => $row[20],
-                            'poliza' => $row[21],
-                            'numero_cuenta_proovedor' => $row[22],
-                            'referencia_bancaria' => $row[23],
-                            'clue' => $row[24],
-                            'nombre_clue' => $row[25],
-                            'nombrepartida' => $row[26] ?? null, // Evitar errores si falta índice
-                            'mes_servicio' => $row[27] ?? null,
-                            //'metodo_pago' => $row[26] ?? null,
+                            'fechas' => $row[0],
+                            'mes' => $row[1],
+                            'forma_pago' => $row[2],
+                            'metodo_pago' => $row[3],
+                            'rfc' => $row[4],
+                            'proveedor' => $row[5],
+                            'factura' => $row[6],
+                            'parcial' => $row[7],
+                            'depositos' => $row[8],
+                            'retiros' => $row[9],
+                            'saldo' => $row[10],
+                            'r' => $row[11],
+                            'partida' => $row[12],
+                            'fecha_factura' => $row[13],
+                            'folio_fiscal' => $row[14],
+                            'tipo_adjudicacion' => $row[15],
+                            'num_adj_contrato' => $row[16],
+                            //'num_techo_financiero' => $row[15],
+                            'num_suficiencia_presupuestal' => $row[17],
+                            'orden_servicio_compra' => $row[18],
+                            'clc' => $row[19],
+                            'poliza' => $row[20],
+                            'numero_cuenta_proovedor' => $row[21],
+                            'referencia_bancaria' => $row[22],
+                            'clue' => $row[23],
+                            'nombre_clue' => $row[24],
+                            'nombrepartida' => $row[25] ?? null,
+                            'mes_servicio' => $row[26] ?? null,
+                            //'metodo_pago' => $row[24] ?? null,
                             'idfuente' => $source,
                             'ejercicio' => $periodo,
                         ];
@@ -648,6 +670,151 @@ class CargaController extends Controller
             }
         }
 
+        */
+
+        if ($file->getClientOriginalExtension() === 'json') {
+            $data = json_decode(file_get_contents($file->getRealPath()), true);
+
+            if (isset($data[1][27])) {
+                $sourceDesc = strtolower($data[1][27]);
+
+                // Replace getSourceDesc($source) with a correct function or logic to obtain the description
+                $expectedSourceDesc = $this->getExpectedSourceDesc($source);
+
+                if($sourceDesc != $expectedSourceDesc)
+                {
+                    return response()->json([
+                        'status' => 'error_source',
+                        'message' => 'No se cargo el arhcivo correcto'
+                    ], 200);
+                }
+
+
+
+            } else {
+                return response()->json([
+                    'status' => 'error_emptySource',
+                    'message' => 'No se recibio la fuente en el archivo.'
+                ], 200);
+            }
+
+            array_shift($data);
+
+            $ckp = [];
+
+            try {
+                Log::info("Iniciando transaccion");
+
+                DB::beginTransaction();
+
+                foreach ($data as $row) {
+
+                    if ($row[1] == null || $row[1] == '_' || $row[1] == ' ' || $row[1] == '') {
+                        continue;
+                    }
+                    $registro = [
+                        'fechas' => $row[0],
+                        'mes' => $row[1],
+                        'forma_pago' => $row[2],
+                        'metodo_pago' => $row[3],
+                        'rfc' => $row[4],
+                        'proveedor' => $row[5],
+                        'factura' => $row[6],
+                        'parcial' => $row[7],
+                        'depositos' => $row[8],
+                        'retiros' => $row[9],
+                        'saldo' => $row[10],
+                        'r' => $row[11],
+                        'partida' => $row[12],
+                        'fecha_factura' => $row[13],
+                        'folio_fiscal' => $row[14],
+                        'tipo_adjudicacion' => $row[15],
+                        'num_adj_contrato' => $row[16],
+                        //'num_techo_financiero' => $row[15],
+                        'num_suficiencia_presupuestal' => $row[17],
+                        'orden_servicio_compra' => $row[18],
+                        'clc' => $row[19],
+                        'poliza' => $row[20],
+                        'numero_cuenta_proovedor' => $row[21],
+                        'referencia_bancaria' => $row[22],
+                        'clue' => $row[23],
+                        'nombre_clue' => $row[24],
+                        'nombrepartida' => $row[25] ?? null,
+                        'mes_servicio' => $row[26] ?? null,
+                        'fuente' => $row[27] ?? null,
+                        //'metodo_pago' => $row[24] ?? null,
+                        'idfuente' => $source,
+                        'ejercicio' => $periodo,
+                    ];
+                    $ckp = $registro;
+
+                    if (strpos($registro['clue'], '-') !== false) {
+                        $registro['clue'] = str_replace('-', '', $registro['clue']);
+                    }
+                    try {
+                        registrobancos::create($registro);
+                    } catch (\Exception $ex) {
+                        $allOk = false;
+                        Log::info("Error al insertar registro: " . $ex->getMessage());
+                        if (strpos($ex->getMessage(), 'a foreign key constraint fails') !== false) {
+                            if (preg_match('/FOREIGN KEY \(`(.*?)`\)/', $ex->getMessage(), $matches)) {
+                                $columna = $matches[1];
+
+                                if ($columna == 'clue') {
+                                    //buscar en clues por clue y asigna por la propiedad clue
+                                    $clue = clues::where('clue_homologada', $registro['clue'])->first();
+                                    if ($clue) {
+                                        $registro['clue'] = $clue->clue;
+
+                                        try {
+                                            registrobancos::create($registro);
+                                            $allOk = true;
+                                        } catch (\Exception $ex) {
+                                            Log::info("Error al reintentar insertar el registro corregido: " . $ex->getMessage());
+                                            $allOk = false;
+                                        }
+                                    }
+                                }
+
+                                if (!isset($erroresClaveForanea[$columna])) {
+                                    $erroresClaveForanea[$columna] = [];
+                                }
+                                $erroresClaveForanea[$columna][] = $registro;
+                                Log::info("Errores", $erroresClaveForanea);
+                                $mensajeError = "Error de clave foránea en la columna: $columna.";
+                            } else {
+                                $mensajeError = "Error de clave foránea, pero no se pudo determinar la columna.";
+                            }
+                        } else {
+                            $mensajeError = "Error inesperado: " . $ex->getMessage();
+                        }
+
+                    }
+                }
+                if ($allOk) {
+                    DB::commit();
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Datos insertados correctamente.'
+                    ], 200);
+                } else {
+                    Log::info("", $erroresClaveForanea);
+                    DB::rollBack();
+                    Log::info("", $erroresClaveForanea);
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => $mensajeError,
+                        'errores' => $erroresClaveForanea  // Retorna la lista de errores agrupados por columna
+                    ], 200);  // Puedes usar el código 400 Bad Request para indicar que hubo un error
+                }
+
+            } catch (\Exception $ex) {
+                Log::info("Errorsote: " . $ex->getMessage());
+                Log::info("", $ckp);
+                echo "Error al insertar los datos: " + $ex->getMessage();
+            }
+        }
+
         return response()->json([
             'status' => 'error',
             'message' => 'Formato de archivo no soportado.'
@@ -744,7 +911,7 @@ class CargaController extends Controller
         $formatFile = [
             "FECHA",
             "MES",
-            "FORMA\r\nDE PAGO",
+            "FORMA DE PAGO",
             "METODO DE PAGO",
             "RFC",
             "PROVEDOR",
@@ -757,18 +924,19 @@ class CargaController extends Controller
             "PARTIDA PRESUPUESTAL",
             "FECHA DE FACTURA",
             "FOLIO FISCAL",
-            "TIPO DE \r\nADJUDICACION",
-            "NUMERO DE ADJUDICACION \r\nO CONTRATO",
+            "TIPO DE ADJUDICACION",
+            "NUMERO DE ADJUDICACION O CONTRATO",
             "NUMERO DE SUFICIENCIA PRESUPUESTAL",
-            "ORDEN DE SERVICIO \r\nO COMPRA",
+            "ORDEN DE SERVICIO O COMPRA",
             "CLC",
             "POLIZA",
-            "NUMERO DE CUENTA\r\nDEL PROVEEDOR",
+            "NUMERO DE CUENTA DEL PROVEEDOR",
             "REFERENCIA BANCARIA",
             "CLUE",
             "APLICA EN:",
             "NOMBRE DE LA PARTIDA",
-            "MES DE SERVICIO"
+            "MES DE SERVICIO",
+            "FUENTE"
         ];
 
 
