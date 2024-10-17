@@ -5,9 +5,9 @@
       <p class="nunito h4 text-light">Fuentes de financiamiento disponibles</p>
       <small class="nunito h5 text-light">Selecciona las fuentes de financiamiento que deseas incluir en el reporte</small>
       <hr class="border-light" />
-      <div class="d-flex">
+      <div class="d-flex flex-wrap">
         <!-- Asignar ref correctamente para cada checkbox -->
-        <div :class="fuente.id === 1 ? 'form-check mr-2 ' : 'form-check mx-2'" 
+        <div class="mx-2" 
              v-if="contentAnimated" 
              v-for="(fuente, index) in fuentes.sort((a, b) => a.id - b.id)" 
              :key="fuente.id" 
@@ -48,7 +48,7 @@ onMounted(() => {
     .add({
       targets: fuentesContainerRef.value,
       width: [0, "15px"], 
-      height: [0, "15px"],
+      minHeight: [0, "15px"],
       borderRadius: "25px",
       easing: "easeOutExpo",
       duration: 200,
@@ -56,7 +56,7 @@ onMounted(() => {
     })
     .add({
       targets: fuentesContainerRef.value,
-      height: "16vh", 
+      minHeight: "16vh",
       easing: "easeOutExpo",
       duration: 500,
       delay: 100,

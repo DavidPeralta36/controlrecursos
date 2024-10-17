@@ -283,12 +283,21 @@ const handleFileChange = async (e) => {
     loadFile();
   }
 }
-
 function parseDate(dateStr) {
-    // Usa una expresión regular para extraer día, mes y año
-    const regex = /^(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})$/;
-    const match = dateStr.match(regex);
+    // Expresión regular para fechas en formato "02 de julio de 2024"
+    const regexWords = /^(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})$/;
+    // Expresión regular para fechas en formato "17/03/2024"
+    const regexNumeric = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+    
+    // Mapa de nombres de meses en español a números
+    const monthNames = {
+        'enero': 0, 'febrero': 1, 'marzo': 2, 'abril': 3, 
+        'mayo': 4, 'junio': 5, 'julio': 6, 'agosto': 7, 
+        'septiembre': 8, 'octubre': 9, 'noviembre': 10, 'diciembre': 11
+    };
 
+    // Intentar hacer match con el formato "02 de julio de 2024"
+    let match = dateStr.match(regexWords);
     if (match) {
         const day = parseInt(match[1], 10);
         const month = monthNames[match[2].toLowerCase()];
@@ -299,8 +308,21 @@ function parseDate(dateStr) {
         }
     }
 
+    // Intentar hacer match con el formato "17/03/2024"
+    match = dateStr.match(regexNumeric);
+    if (match) {
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1; // Restar 1 porque los meses en JS son 0-indexados
+        const year = parseInt(match[3], 10);
+
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+            return new Date(year, month, day);
+        }
+    }
+
     return null; // Si el formato es incorrecto, devuelve null
 }
+
 
 const handleCancelData = () => {
     registros.value = [];
@@ -1151,6 +1173,15 @@ const loadFile = () => {
                     if (typeof cell === 'number' && cell === row[0]) {
                         if (cell > 59 && cell < 2958465) { 
                             return XLSX.SSF.format("yyyy-mm-dd", cell);
+                        }
+                    }
+
+                    if (typeof cell === 'string' && cell === row[0]) {
+                        const parsedDate = parseDate(cell);
+                        if (parsedDate) {
+                            const dt = XLSX.SSF.format("yyyy-mm-dd", parsedDate);
+                            console.log(dt);
+                            return dt;
                         }
                     }
 
