@@ -93,11 +93,10 @@ function logout() {
     transition: all 0.3s ease-in-out;
 }
 .hov:hover{
-    border-bottom: 3px solid #9F2241;
+    color: #9F2241;
 }
 
 .borderItem{
-    border-top: 2px solid #9F2241;
     border-bottom: 2px solid #9F2241;
 }
 .activeLink{
