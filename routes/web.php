@@ -85,3 +85,5 @@ Route::delete('/delete_proveedor/{id}', 'CatalogosController@deleteProveedor')->
 Route::post('/save_new_capitulo', 'CatalogosController@saveNewCapitulo')->name('save_new_capitulo');
 Route::post('/save_edited_capitulos', 'CatalogosController@saveEditedCapitulos')->name('save_edited_capitulos');
 Route::delete('/delete_capitulo/{id}', 'CatalogosController@deleteCapitulo')->name('delete_capitulo');
+Route::get('/get_last_bank', 'CargaController@getLastBank')->name('get_last_bank');
+Route::delete('/deshacer_ultima_carga', 'CargaController@deshacerUltimaCarga')->name('deshacer_ultima_carga');

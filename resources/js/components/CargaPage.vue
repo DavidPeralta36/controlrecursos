@@ -11,6 +11,9 @@
                 <li class="nav-item">
                     <a class="nav-link" :class="activeTab === 'plantilla' ? 'active' : '' " aria-current="page" href="#" @click="handleTabClick('plantilla')">Plantilla</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="activeTab === 'eliminar' ? 'active' : '' " aria-current="page" href="#" @click="handleTabClick('eliminar')">Eliminar</a>
+                </li>
             </ul>
 
             <div v-if="activeTab === 'upload'" ref="uploadMainContainer">
@@ -116,8 +119,42 @@
                     <button class="btn btn-primary mt-2" @click="handleDownloadPlantilla">Descargar plantilla</button>
                 </div>
             </div>
+
+            <div v-if="activeTab === 'eliminar'" >
+                <p class="h2 nunito-bold mt-2" style="font-style: normal">Deshacer ultima carga</p>
+                <hr/>
+                <div>
+                    <p>Esta vista solo se puede usar para deshacer la última carga</p>
+                    <hr>
+                    <div>
+                        <p>Fuente: <span style="font-weight: bold;">{{ lastBank.fuente ? getNameSource(lastBank.fuente) : 'No se ha cargado ninguna fuente' }}</span></p> 
+                        <p>Ejercicio: <span style="font-weight: bold;">{{ lastBank.ejercicio ? lastBank.ejercicio : 'No se ha cargado ningún ejercicio' }}</span></p>
+                        <p>La carga inicia en el id: <span style="font-weight: bold;">{{ lastBank.idinicio ? lastBank.idinicio : 'No se ha cargado ningún inicio' }}</span></p>
+                        <p>La carga finaliza en el id: <span style="font-weight: bold;">{{ lastBank.idfin ? lastBank.idfin : 'No se ha cargado ningún fin' }}</span></p>
+                    </div>
+                    <hr>
+                    <button class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#deleteModal">Deshacer carga</button>
+                </div>
+            </div>
         </div>
         <Notifications position="bottom left" />
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel"> Eliminar ultima carga </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h1>¿Realmente desea eliminar la ultima carga?</h1>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" @click="handleDeshacerUltimaCarga">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -143,6 +180,7 @@ import {
 import ModalPreliminarData from './auxiliares/ModalPreliminarData.vue';
 import { U013Editable, ALEEditable, E001Editable, S200Editable, SaNASEditable } from '../lib/Headers.js';
 import ModalErrorData from './auxiliares/ModalErrorData.vue';
+import { get } from 'jquery';
 
 const props = defineProps({
     user: Object,
@@ -204,6 +242,7 @@ const modalPreliminarData = ref(null);
 const loading = ref(false);
 const errorRecords = ref([]);
 const modalErrorData = ref(null);
+const lastBank = ref(null);
 //#endregion
 
 watch(selectedSource, () => {
@@ -1396,6 +1435,24 @@ const handleTabClick = async (tab) => {
     }else{
         animateExitUploadMainContainer(tab);
     }
+    
+    if(tab === 'eliminar'){
+        try{
+            const response = await axios.get('/get_last_bank');
+            if(response.status === 200){
+                lastBank.value = response.data;
+            }
+        }catch(e){
+            notify({
+                title: 'Error al obtener ultima carga',
+                text: 'Error: ' + e.message,
+                type: 'error',
+                duration: 5000,
+            })
+        }
+    }
+    
+
 }
 
 const handleFindPeriod = async () => {
@@ -1486,6 +1543,48 @@ const handleEdit = async () => {
     }
 }
 
+const handleDeshacerUltimaCarga = async () => {
+    if(lastBank.value){
+        try{
+            const response = await axios.delete('/deshacer_ultima_carga');
+
+            if(response.status === 200){
+                notify({
+                    title: 'Ultima carga deshecha exitosamente',
+                    text: 'La ultima carga se ha deshecha correctamente',
+                    type: 'success',
+                    duration: 5000,
+                })
+                
+                //lastBank.value = null;
+            }else{
+                notify({
+                    title: 'Error al deshacer la ultima carga',
+                    text: 'Error: ' + response.message,
+                    type: 'error',
+                    duration: 5000,
+                })
+            }
+        }catch(e){
+            notify({
+                title: 'Error al deshacer la ultima carga',
+                text: 'Error: ' + e.message,
+                type: 'error',
+                duration: 5000,
+            })
+        }
+    }else{
+        notify({
+            title: 'Error al deshacer la ultima carga',
+            text: 'Debe completar todos los campos',
+            type: 'error',
+            duration: 5000,
+            speed: 1000,
+        });
+        return;
+    }
+}
+
 const handleDownloadPlantilla = async () => {
     try {
         const response = await axios.get('/plantilla', {
@@ -1509,7 +1608,22 @@ const handleDownloadPlantilla = async () => {
     }
 };
 
-
+const getNameSource = (source) => {
+    switch(source){
+        case 1:
+            return 'u013';
+        case 2:
+            return 's200';
+        case 3:
+            return 'sanas';
+        case 4:
+            return 'asle';
+        case 5:
+            return 'e001';
+        default:
+            return 'No se ha cargado ninguna fuente';
+    }
+}
 //#region animations
 const animateInEditButtonsContainer = () => {
     anime({

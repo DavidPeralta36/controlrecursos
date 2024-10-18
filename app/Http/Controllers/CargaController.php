@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\models\clues;
+use App\models\lastbank;
 use App\models\partidas;
 use App\models\proveedor;
 use Illuminate\Http\Request;
@@ -107,7 +108,7 @@ class CargaController extends Controller
 
             try {
                 //Obtein the last id of registrobancos
-                $lastIdBegin = registrobancos::max('id');
+                $lastIdBegin = registrobancos::max('id') + 1;
 
                 DB::beginTransaction();
 
@@ -202,10 +203,27 @@ class CargaController extends Controller
 
                     $lastIdSave = registrobancos::max('id');
 
-                    if($lastIdSave > $lastIdBegin){
-                        Log::info($lastIdBegin);
-                        Log::info($lastIdSave);
+                    // Verifica si existe un registro
+                    $lastBankRecord = lastbank::first();
+                    
+                    if ($lastBankRecord) {
+                        // Si existe, actualiza el registro
+                        $lastBankRecord->update([
+                            'idinicio' => $lastIdBegin,
+                            'idfin' => $lastIdSave,
+                            'fuente' => $source,
+                            'ejercicio' => $periodo,
+                        ]);
+                    } else {
+                        // Si no existe, crea uno nuevo
+                        lastbank::create([
+                            'idinicio' => $lastIdBegin,
+                            'idfin' => $lastIdSave,
+                            'fuente' => $source,
+                            'ejercicio' => $periodo,
+                        ]);
                     }
+
                     return response()->json([
                         'status' => 'success',
                         'message' => 'Datos insertados correctamente.'
@@ -371,4 +389,38 @@ class CargaController extends Controller
         return $response;
     }
 
+    public function getLastBank(Request $request)
+    {
+        $lastBank = lastbank::first();
+
+        return response()->json($lastBank);
+    }
+
+    public function deshacerUltimaCarga(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $lastBank = lastbank::first();
+
+            if($lastBank){
+                $idInicio = $lastBank->idinicio;
+                $idFin = $lastBank->idfin;
+
+                registrobancos::where('id', '>=', $idInicio)
+                    ->where('id', '<=', $idFin)
+                    ->delete();
+
+                lastbank::where('id', $lastBank->id)->delete();
+            }
+
+            DB::commit();
+
+            return response()->json('Ultima carga deshecha exitosamente');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json('Error al deshacer la ultima carga', 500);
+        }
+    }
 }
