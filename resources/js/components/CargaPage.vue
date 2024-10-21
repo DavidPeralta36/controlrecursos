@@ -150,7 +150,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-danger" @click="handleDeshacerUltimaCarga">Eliminar</button>
+                        <button type="button" class="btn btn-danger" @click="handleDeshacerUltimaCarga" data-bs-dismiss="modal">Eliminar</button>
                     </div>
                 </div>
             </div>
@@ -361,8 +361,6 @@ function parseDate(dateStr) {
 
     return null; // Si el formato es incorrecto, devuelve null
 }
-
-
 const handleCancelData = () => {
     registros.value = [];
     datosPreliminares.value = [];
@@ -372,11 +370,9 @@ const handleCancelData = () => {
     selectedSource.value = null;
     readyToSend.value = false;
 }
-
 const openModal = () => {
     modalPreliminarData.value.openModal();
 };
-
 //Ya no se usa
 const loadE001 = async () => { 
     const reader = new FileReader();
@@ -1544,7 +1540,7 @@ const handleEdit = async () => {
 }
 
 const handleDeshacerUltimaCarga = async () => {
-    if(lastBank.value){
+    if(lastBank.value.id){
         try{
             const response = await axios.delete('/deshacer_ultima_carga');
 
@@ -1576,7 +1572,7 @@ const handleDeshacerUltimaCarga = async () => {
     }else{
         notify({
             title: 'Error al deshacer la ultima carga',
-            text: 'Debe completar todos los campos',
+            text: 'No se ha actualizado la ultima carga',
             type: 'error',
             duration: 5000,
             speed: 1000,
