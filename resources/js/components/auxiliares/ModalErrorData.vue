@@ -119,9 +119,8 @@ defineExpose({
 const handleSaveNewRecords = async (group, key) => {
     
     if(key.toString().toLowerCase() === 'partida') {
-        const newPartidas = group.map(item => {
-
-            return {
+        const newPartidas = Array.from(
+            new Map(group.map(item => [item.partida, {
                 partida: item.partida,
                 aportacion_federal: 0,
                 aportacion_estatal: 0,
@@ -132,8 +131,8 @@ const handleSaveNewRecords = async (group, key) => {
                 adminInsumosMed: 0,
                 gastosOperacion: 0,
                 idcapitulo: null
-            }
-        });
+            }])).values()
+        );
 
         try{
             const response = await axios.post('/save_new_partidas', {
@@ -168,14 +167,13 @@ const handleSaveNewRecords = async (group, key) => {
     }
 
     if(key.toString().toLowerCase() === 'rfc') {
-        const newProveedores= group.map(item => {
-
-        return {
-            rfc: item.rfc,
-            proveedor: item.proveedor,
-            numero_cuenta_proovedor: item.numero_cuenta_proovedor,
-        }
-        });
+        const newProveedores = Array.from(
+            new Map(group.map(item => [item.rfc, {
+                rfc: item.rfc,
+                proveedor: item.proveedor,
+                numero_cuenta_proovedor: item.numero_cuenta_proovedor,
+            }])).values()
+        );
 
         try{
             const response = await axios.post('/save_new_provedores', {
@@ -209,13 +207,12 @@ const handleSaveNewRecords = async (group, key) => {
     }
 
     if(key.toString().toLowerCase() === 'clue') {
-        const newClues = group.map(item => {
-
-        return {
-            clue: item.clue,
-            nombre_clue: item.nombre_clue,
-        }
-        });
+        const newClues = Array.from(
+            new Map(group.map(item => [item.clue, {
+                clue: item.clue,
+                nombre_clue: item.nombre_clue,
+            }])).values()
+        );
 
         try{
             const response = await axios.post('/save_new_clue', {

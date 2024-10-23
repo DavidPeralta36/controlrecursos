@@ -384,6 +384,10 @@ const handleSaveNewPartida = async () => {
                     type: 'success',
                     duration: 5000,
                 })
+                //clear form
+                formPartida.value.partida = null;
+                formPartida.value.descripcion = null;
+                formPartida.value.capitulo = null;
             }else{
                 notify({
                     title: 'Error al guardar partida',
@@ -428,6 +432,10 @@ const handleSaveNewClue = async () => {
                     type: 'success',
                     duration: 5000,
                 })
+                //clear form
+                formClue.value.clue = null;
+                formClue.value.clue_homologada = null;
+                formClue.value.nombre_clue = null;
             }else{
                 notify({
                     title: 'Error al guardar clue',
@@ -472,6 +480,10 @@ const handleSaveNewProveedor = async () => {
                     type: 'success',
                     duration: 5000,
                 })
+                //clear form
+                formProveedor.value.rfc = null;
+                formProveedor.value.proveedor = null;
+                formProveedor.value.numero_cuenta_proovedor = null;
             }else{
                 notify({
                     title: 'Error al guardar proveedor',
@@ -515,6 +527,9 @@ const handleSaveNewCapitulo = async () => {
                     type: 'success',
                     duration: 5000,
                 })
+                //clear form
+                formCapitulo.value.nombre = null;
+                formCapitulo.value.descripcion = null;
             }else{
                 notify({
                     title: 'Error al guardar capitulo',

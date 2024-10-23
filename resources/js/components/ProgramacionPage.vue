@@ -289,6 +289,9 @@ const handleProgramar = async () => {
             idcapitulo: partidaSeleccionada.value.idcapitulo,
             monto_programado: monto.value
         });
+        //clear form
+        monto.value = null;
+        partidaSeleccionada.value = null;
     }else{
         notify({
             title: 'Error al programar recursos',
