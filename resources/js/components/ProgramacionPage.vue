@@ -6,10 +6,10 @@
         </header>
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
-                <a class="nav-link" :class="activeTab === 'new' ? 'active' : ''" aria-current="page" href="#" @click="handleTabClick('new')">Nuevo</a>
+                <a class="nav-link" :class="activeTab === 'new' ? 'active' : ''" aria-current="page" href="#" @click="handleTabClick('new')">Programar partidas</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" :class="activeTab === 'modify' ? 'active' : '' " aria-current="page" href="#" @click="handleTabClick('modify')">Modificar</a>
+                <a class="nav-link" :class="activeTab === 'modify' ? 'active' : '' " aria-current="page" href="#" @click="handleTabClick('modify')">Modificacion y Rubros</a>
             </li>
         </ul>
         <main class="mb-5">
@@ -212,7 +212,8 @@ const colDefsRubros = ref([
 function formatCurrency(params) {
     if (!params.value) return '';
 
-    const number = parseFloat(params.value.replace(/[^0-9.-]+/g, ''));
+    //const number = parseFloat(params.value.replace(/[^0-9.-]+/g, ''));
+    const number = params.value;
     if (isNaN(number)) return '';
 
     const formattedCurrency = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(number);
@@ -320,6 +321,9 @@ const handleSave = async () => {
     }
 
     try {
+
+
+        console.log(partidasProgramadas.value);
         loadingSave.value = true;
         const formData = new FormData();
         formData.append('partidas', JSON.stringify(partidasProgramadas.value));
